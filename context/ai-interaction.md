@@ -36,6 +36,7 @@ We will create a new branch for every feature/fix. Name branch **feature/[featur
 - Keep commits focused (one feature/fix per commit)
 - Never put "Generated With Claude" in the commit messages
 - Never add any information about using Claude
+- Please take it to the heart about not informing about using Claude!
 
 ## When Stuck
 

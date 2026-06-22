@@ -261,6 +261,9 @@ model User {
   image         String?
   bio           String?
 
+  // Credentials auth (nullable — OAuth/magic-link users never set one)
+  password      String?   // bcrypt hash, never plaintext
+
   // Currency & progression
   dust                    Int @default(0)
   packsSinceLastRare      Int @default(0)
@@ -640,7 +643,7 @@ model DustTransaction {
 
 ```
 /                          Landing (logged out) | Feed (logged in)
-/login                     OAuth providers
+/login                     OAuth providers + email/password
 /signup                    Username selection step
 
 /u/[username]              User profile (signature team, stats, recent activity)
@@ -700,7 +703,7 @@ Mirrors DevStash where possible (familiarity, monorepo potential):
 | UI           | React 19 + Tailwind v4 + shadcn/ui | Same design system                                            |
 | ORM          | Prisma 7 (Rust-free client)        | TypeScript query compiler, smaller bundle, edge-friendly      |
 | DB           | Neon Postgres                      | Branching for preview deploys                                 |
-| Auth         | NextAuth v5                        | OAuth (Google, GitHub) + email magic link                     |
+| Auth         | NextAuth v5                        | OAuth (Google, GitHub) + email magic link + email/password    |
 | File storage | Cloudflare R2                      | User avatars only (Pokémon images via PokeAPI sprites GitHub) |
 | Payments     | Stripe                             | Pro subscription (cosmetic-only)                              |
 | Cron         | Vercel Cron                        | Daily reset, streak rollover, weekly digest                   |
@@ -1063,5 +1066,47 @@ OAuth flow creates a User _before_ the user picks a handle (NextAuth populates e
 **No `@@index([username])` declaration.**
 `@unique` on `username` already creates a B-tree index in Postgres, so an explicit `@@index` would be redundant. Same applies to `email` and any other `@unique` fields — the unique index covers equality lookups.
 
-**OAuth + magic link, no password auth.**
-Reduces attack surface (no password storage, no reset flow), accelerates signup (one-click), aligns with NextAuth v5 defaults. Password auth always available as future addition if user research demands it.
+**OAuth + magic link + email/password.**
+Originally scoped as OAuth + magic link only (smaller attack surface, no password storage/reset flow). Revised: users should also be able to sign up/log in with email + password, since not every trainer wants to link a Google/GitHub account or wait on a magic-link email. `User.password` stores a bcrypt hash and is nullable — OAuth/magic-link users never set one. Password reset flow (forgot-password email) is required once this ships; deferred to the auth implementation task, not detailed here yet.
+
+---
+
+## 15. UI design prototype
+
+A high-fidelity UI prototype exists in Claude Design, covering both the logged-in app and the logged-out landing page. It captures the intended visual language and screen-level interaction patterns ahead of implementation.
+
+### 15.1 Location
+
+- Project: "PokeHub UI Prototype" — https://claude.ai/design/p/0c1d47b5-6b08-4235-a5b5-cb2849651a1d
+- Files: `PokeHub.dc.html` (logged-in app — Feed / Profile / Pokémon Detail / Packs), `PokeHub-Landing.dc.html` (logged-out marketing/landing page)
+- The prototype is edited independently of this document and can change between sessions — re-fetch via the `claude_design` MCP connector rather than relying on a cached summary when implementing a screen.
+
+### 15.2 Visual language
+
+- Dark theme: `#0c0e12` background, `#15181e` card surface, text `#e8eaed` / `#9aa0ab` / `#7b818c`
+- Brand gradient: `linear-gradient(135deg, #ff7a45, #c44fe0)` (orange → magenta)
+- Typography: Space Grotesk (headings, numerics, stats) + Hanken Grotesk (body)
+- Per-type color map for Pokémon type badges; gold (`#e6b450`) for star ratings; gold→pink shimmer for shiny pulls
+- Consistently large border radius (11–22px), soft card aesthetic
+
+### 15.3 Screens covered
+
+- **Feed** — review / list / pull activity cards, filter chips (All / Reviews / Lists / Pulls), "who to follow" + trending sidebar
+- **Profile** — signature team grid, stats row, favorite-types chart, recent activity
+- **Pokémon Detail** — hero artwork, community rating distribution, base stats chart, top reviews, lists featuring this Pokémon
+- **Packs** — pack-opening animation (staggered reveal), pity tracker, dust shop
+- **Landing** (logged out) — hero, auto-scrolling marquee, features grid, trending grid, testimonials, pack tease, login/signup modal
+
+### 15.4 Known discrepancies vs. this spec (unresolved)
+
+The prototype was designed somewhat independently and disagrees with this document in a few places. Each should be resolved (pick spec or design, then update this document) before the corresponding feature is implemented — do not silently default to either side.
+
+| Area | Design prototype | This spec |
+| --- | --- | --- |
+| Shiny odds | 1/4096 (classic mainline rate), with its own 200-pack shiny-pity counter | Flat 0.5% per slot (§4.1), no shiny-pity field in schema (§4.3) |
+| Dust shop | Sells a "Shiny Charm" (+50% shiny odds for 7 days, ◆4,000) | §9/§14: Pro/economy is strictly cosmetic, no odds boosts of any kind |
+| Nav label | "Browse" tab for Pokémon listing | §6: route documented as `/discover` |
+| Feed filters | Explicit "Pulls" filter chip alongside Reviews/Lists | Consistent with FeedEvent design (§4.6), but more prominent in the UI than documented |
+| Marketing copy | Landing page footer links to "Blog" and "API" | Neither product is in scope (not listed in §12 open questions) |
+
+> **Resolved:** the auth-UI discrepancy (design's email/password modal vs. an earlier OAuth-only spec) was resolved in favor of the design — §14 now documents email/password as a supported auth method alongside OAuth + magic link, and `User.password` was added to the schema (§5.3).
