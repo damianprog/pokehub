@@ -17,3 +17,5 @@
 ## History
 
 <!-- Keep this updated. Earliest to latest -->
+
+- Initial Next.js project setup (Create Next App) with Tailwind CSS configured.
