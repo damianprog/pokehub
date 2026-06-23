@@ -15,7 +15,7 @@ Sticky top navigation bar for the logged-out landing page.
 ## Content & copy
 
 - Logo: "P" gradient badge + "PokeHub" wordmark
-- Nav link: "Browse Pokémon"
+- Nav link: instead of "Browse Pokémon" should be "Pokedex"
 - Buttons: "Log in", "Sign up free"
 
 ## Layout & components
@@ -27,7 +27,7 @@ Sticky top navigation bar for the logged-out landing page.
 ## Interactions
 
 - "Log in" / "Sign up free" open the [auth modal](./auth-modal-spec.md) in the corresponding state (no real submission — see that spec)
-- "Browse Pokémon" links to the Pokémon browse/discover route (`/discover` per `project-overview_8.md` §6, even though that page isn't built yet)
+- "Pokedex" links to the Pokémon browse/discover route (`/discover` per `project-overview_8.md` §6, even though that page isn't built yet)
 
 ## Responsive notes
 
