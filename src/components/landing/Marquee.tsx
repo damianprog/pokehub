@@ -63,7 +63,7 @@ function ItemSet() {
 export function Marquee() {
   return (
     <div className="w-full overflow-hidden border-y border-white/[0.06] bg-white/[0.015] py-[14px]">
-      <div className="flex w-max animate-scroll-left gap-2">
+      <div className="marquee-track flex w-max gap-2">
         <ItemSet />
         <ItemSet />
       </div>

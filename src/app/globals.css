@@ -68,6 +68,12 @@
   }
 }
 
+@layer utilities {
+  .marquee-track {
+    animation: scrollLeft 42s linear infinite;
+  }
+}
+
 @keyframes floaty {
   0%,
   100% {
