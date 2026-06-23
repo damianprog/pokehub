@@ -52,6 +52,43 @@
   --color-brand-from: var(--brand-from);
   --color-brand-to: var(--brand-to);
   --color-gold: var(--gold);
+
+  --animate-float: floaty 4.8s ease-in-out infinite;
+  --animate-shiny-pulse: shiny-pulse 2.6s ease-in-out infinite;
+  --animate-shimmer: shimmer 2.8s linear infinite;
+}
+
+@keyframes floaty {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes shiny-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 28px rgba(255, 190, 120, 0.32),
+      inset 0 0 0 1px rgba(255, 212, 140, 0.55);
+  }
+  50% {
+    box-shadow:
+      0 0 52px rgba(255, 150, 222, 0.6),
+      inset 0 0 0 1px rgba(255, 184, 232, 0.75);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 :root {
@@ -105,4 +142,15 @@
   html {
     @apply font-sans;
   }
+}
+
+/* Landing page glow — applied to the full-page wrapper (matches Claude Design:
+   gradient lives on a regular element, not on body, to avoid the browser
+   propagating the body background to the canvas and shifting its position). */
+.landing-glow {
+  background-color: var(--background);
+  background-image:
+    radial-gradient(1400px 700px at 75% -5%, rgba(196, 79, 224, 0.09), transparent),
+    radial-gradient(900px 500px at -5% 8%, rgba(255, 122, 69, 0.06), transparent),
+    radial-gradient(700px 400px at 50% 95%, rgba(110, 170, 255, 0.04), transparent);
 }
