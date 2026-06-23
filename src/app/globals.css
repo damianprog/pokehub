@@ -56,6 +56,16 @@
   --animate-float: floaty 4.8s ease-in-out infinite;
   --animate-shiny-pulse: shiny-pulse 2.6s ease-in-out infinite;
   --animate-shimmer: shimmer 2.8s linear infinite;
+  --animate-scroll-left: scrollLeft 42s linear infinite;
+}
+
+@keyframes scrollLeft {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
 @keyframes floaty {

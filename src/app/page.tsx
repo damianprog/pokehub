@@ -1,4 +1,5 @@
 import { Hero } from "@/components/landing/Hero";
+import { Marquee } from "@/components/landing/Marquee";
 import { Nav } from "@/components/landing/Nav";
 
 export default function Home() {
@@ -6,6 +7,7 @@ export default function Home() {
     <div className="landing-glow min-h-screen">
       <Nav />
       <Hero />
+      <Marquee />
     </div>
   );
 }
