@@ -142,6 +142,9 @@
   html {
     @apply font-sans;
   }
+  button {
+    cursor: pointer;
+  }
 }
 
 /* Landing page glow — applied to the full-page wrapper (matches Claude Design:

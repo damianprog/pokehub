@@ -77,15 +77,17 @@ export function Hero() {
           captionColor="#e8c4d8"
           className="absolute top-[38px] right-[28px] h-[272px] w-[195px] rotate-[8deg] opacity-70"
         />
-        <PokemonCard
-          name="Charizard"
-          caption="✦ SHINY · ULTRA RARE"
-          spriteUrl={`${SPRITE_BASE}/shiny/6.png`}
-          background="radial-gradient(circle at 50% 72%, #ffd07a, #c44fe0 78%)"
-          captionColor="#ffffff"
-          shiny
-          className="absolute top-[14px] left-1/2 z-10 h-[294px] w-[210px] -translate-x-1/2 animate-float shadow-[0_28px_64px_rgba(196,79,224,0.48)]"
-        />
+        <div className="absolute top-[14px] left-1/2 z-10 -translate-x-1/2 animate-float">
+          <PokemonCard
+            name="Charizard"
+            caption="✦ SHINY · ULTRA RARE"
+            spriteUrl={`${SPRITE_BASE}/shiny/6.png`}
+            background="radial-gradient(circle at 50% 72%, #ffd07a, #c44fe0 78%)"
+            captionColor="#ffffff"
+            shiny
+            className="h-[294px] w-[210px] rounded-[18px] shadow-[0_28px_64px_rgba(196,79,224,0.48)]"
+          />
+        </div>
 
         {/* Notification pill */}
         <div className="absolute bottom-[18px] left-1/2 z-20 flex h-[34px] -translate-x-1/2 items-center gap-2 rounded-[10px] border border-[#ffd86b]/40 bg-[#10131a]/95 px-[14px] whitespace-nowrap shadow-[0_8px_24px_rgba(0,0,0,0.45)]">

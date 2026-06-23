@@ -21,7 +21,7 @@ export function PokemonCard({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-2xl shadow-[0_18px_50px_rgba(0,0,0,0.45)]",
+        "relative overflow-hidden rounded-[16px] shadow-[0_18px_50px_rgba(0,0,0,0.45)]",
         shiny && "animate-shiny-pulse",
         className
       )}
