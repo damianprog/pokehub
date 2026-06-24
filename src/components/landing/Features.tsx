@@ -55,7 +55,7 @@ function FeatureCard({
   );
 }
 
-export function FeaturesGrid() {
+export function Features() {
   return (
     <section className="mx-auto max-w-[1180px] px-[26px] pt-[90px]">
       <div className="mb-[50px] text-center">

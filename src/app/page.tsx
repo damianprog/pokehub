@@ -1,8 +1,9 @@
-import { FeaturesGrid } from "@/components/landing/FeaturesGrid";
+import { Features } from "@/components/landing/Features";
 import { Hero } from "@/components/landing/Hero";
 import { Marquee } from "@/components/landing/Marquee";
 import { Nav } from "@/components/landing/Nav";
-import { TrendingGrid } from "@/components/landing/TrendingGrid";
+import { Testimonials } from "@/components/landing/Testimonials";
+import { Trending } from "@/components/landing/Trending";
 
 export default function Home() {
   return (
@@ -10,8 +11,9 @@ export default function Home() {
       <Nav />
       <Hero />
       <Marquee />
-      <FeaturesGrid />
-      <TrendingGrid />
+      <Features />
+      <Trending />
+      <Testimonials />
     </div>
   );
 }

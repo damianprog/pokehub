@@ -45,7 +45,7 @@ function TrendingCard({
   );
 }
 
-export function TrendingGrid() {
+export function Trending() {
   return (
     <section className="mx-auto max-w-[1180px] px-[26px] pb-[90px]">
       <div className="mb-6 flex items-baseline justify-between">
