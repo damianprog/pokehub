@@ -1,4 +1,5 @@
 import { Features } from "@/components/landing/Features";
+import { FinalCta } from "@/components/landing/FinalCta";
 import { Hero } from "@/components/landing/Hero";
 import { Marquee } from "@/components/landing/Marquee";
 import { Nav } from "@/components/landing/Nav";
@@ -16,6 +17,7 @@ export default function Home() {
       <Trending />
       <Testimonials />
       <PackTease />
+      <FinalCta />
     </div>
   );
 }
