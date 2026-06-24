@@ -2,9 +2,11 @@
 
 <!-- Feature name and short description -->
 
+
 ## Status
 
 <!-- Not Started | In Progress | Completed -->
+Not Started
 
 ## Goals
 
@@ -25,3 +27,4 @@
 - 2026-06-24 Polish pass on hero card stack: reduced card border-radius to match design (16px back cards, 18px front), fixed Charizard float animation by separating centering wrapper from animation, fixed shimmer clipping with `relative` on PokemonCard, added `cursor-pointer` globally to buttons.
 - 2026-06-24 Built landing page marquee bar (`src/components/landing/Marquee.tsx`): full-width auto-scrolling strip of 12 Pokémon with avatars and star ratings, seamless loop via duplicated sets, `scrollLeft 42s linear infinite` animation.
 - 2026-06-24 Built landing page features grid (`src/components/landing/FeaturesGrid.tsx`): 3-column card grid with centred heading block and per-card icon chips (Rate & Review ★, Daily Packs ◆, Lists & Discovery ≡), each with unique gradient background and border. Collapses to single column below 768px. Verified at 1366px and 375px widths.
+- 2026-06-24 Built landing page trending grid (`src/components/landing/TrendingGrid.tsx`): 6-column ranked grid (3-col on mobile) with hardcoded top-6 Pokémon (Rayquaza–Gyarados), per-Pokémon gradient backgrounds, rank badges, star ratings, and a static "Rate all 1,302 Pokémon →" CTA. Mounted in `page.tsx` after `<FeaturesGrid />`.

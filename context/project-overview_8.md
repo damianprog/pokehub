@@ -94,7 +94,7 @@ Each pack contains **3 Pokémon**, each rolled independently against the rarity 
 | `RARE`       | 9%     | `is_legendary === true` on `pokemon-species`                   |
 | `ULTRA_RARE` | 1%     | `is_mythical === true` on `pokemon-species`                    |
 
-**Shiny:** independent ~0.5% roll per slot, applied after tier resolution. A shiny Magikarp is a celebrated outcome.
+**Shiny:** independent ~0.5% roll per slot, applied after tier resolution.
 
 ### 4.2 Pack sources
 
@@ -116,8 +116,6 @@ Stored on `User`:
 - `packsSinceLastRare` — increments per pack opened. On RARE+ pull, resets. At 20, next pack guarantees a RARE-tier slot.
 - `packsSinceLastUltraRare` — same, threshold 50, guarantees ULTRA_RARE.
 
-Pity is per-user and persists across sessions.
-
 ### 4.4 Duplicates & dust
 
 - Duplicate of a Pokémon you already have → `count` increments on `UserPokemon`.
@@ -129,18 +127,9 @@ Pity is per-user and persists across sessions.
 
 Users select up to 3 wishlist Pokémon. Each wishlisted Pokémon gets ×1.5 weight in _their_ pack rolls (only their own packs — not a global change).
 
-This solves "I never get my childhood favorite" without breaking the random feel.
-
 ### 4.6 Social feedback on rare pulls
 
 When a roll comes out RARE, ULTRA_RARE, or SHINY, a `FeedEvent` is created that surfaces to followers. Common pulls don't spam the feed.
-
-Example feed entries:
-
-- "Damian pulled a **shiny Charizard**!" 🔥
-- "Anna got **Mew** — her first mythical!"
-
-Reactions and comments allowed on these events.
 
 ---
 
@@ -695,8 +684,6 @@ model DustTransaction {
 
 ## 7. Tech stack
 
-Mirrors DevStash where possible (familiarity, monorepo potential):
-
 | Layer        | Choice                             | Notes                                                         |
 | ------------ | ---------------------------------- | ------------------------------------------------------------- |
 | Framework    | Next.js 16 (App Router)            | RSC for static Pokémon pages, route handlers for mutations    |
@@ -730,12 +717,8 @@ Re-runnable safely (idempotent).
 
 ### 8.2 Why GitHub sprites and not R2?
 
-- PokeAPI explicitly hosts these for public use
-- No bandwidth cost on us
-- No copyright proxy concern (we link, we don't host)
+- PokeAPI explicitly hosts these for public use; no bandwidth cost, no copyright proxy concern
 - Next.js Image component can still optimize them via `remotePatterns`
-
-If the GitHub repo ever changes its URL structure, we re-run the seeder. Cheap insurance.
 
 ---
 
@@ -758,8 +741,6 @@ If the GitHub repo ever changes its URL structure, we re-run the seeder. Cheap i
 | Ad-free                    | ✅ (always)   | ✅                                     |
 | Pricing                    | $0            | $3.99/mo or $29.99/year                |
 
-**Why this matters:** the moment Pro affects packs or content, the trust contract breaks. Letterboxd Pro is cosmetic + stats; we follow that model.
-
 ---
 
 ## 10. Development notes
@@ -772,168 +753,13 @@ If the GitHub repo ever changes its URL structure, we re-run the seeder. Cheap i
 
 ### 10.2 `DEV_UNLOCK_ALL` feature flag pattern
 
-Same as DevStash. Set `DEV_UNLOCK_ALL=true` in `.env.local` to:
-
-- Bypass daily pack cooldown (open infinite packs)
-- Bypass earned pack daily cap
-- Unlock all Pro features
-- Bypass NextAuth (auto-login as test user)
-- Skip Stripe checks
-
-```ts
-// src/lib/dev.ts
-export const DEV_UNLOCK_ALL =
-  process.env.DEV_UNLOCK_ALL === "true" &&
-  process.env.NODE_ENV !== "production";
-
-// Usage:
-export async function canOpenDailyPack(user: User) {
-  if (DEV_UNLOCK_ALL) return true;
-  if (!user.lastDailyAt) return true;
-  return Date.now() - user.lastDailyAt.getTime() >= 24 * 3600 * 1000;
-}
-```
-
-Hard-coded production check prevents accidental deploy.
+Set `DEV_UNLOCK_ALL=true` in `.env.local` to bypass daily pack cooldowns, earned pack cap, Pro features, NextAuth, and Stripe checks. Hard-coded `process.env.NODE_ENV !== "production"` guard prevents accidental deploy. See `src/lib/dev.ts`.
 
 ### 10.3 Pack opening flow
 
-```ts
-// Pseudocode for /api/packs/open
-async function openPack(userId: string, source: PackSource) {
-  return prisma.$transaction(async (tx) => {
-    // 1. Validate source (cooldowns, caps)
-    const user = await tx.user.findUniqueOrThrow({ where: { id: userId } });
-    validatePackEligibility(user, source);
+Single Prisma transaction: validate eligibility → roll 3 slots (tier + shiny) → persist Pack + PackRolls → upsert UserPokemon (isCaught, count, shinyCount) → update pity counters + lastDailyAt → emit FeedEvents for RARE/ULTRA_RARE/SHINY pulls. Atomic — no half-opened packs.
 
-    // 2. Roll 3 slots
-    const wishlist = await getWishlistedPokemonIds(tx, userId);
-    const rolls: PackRoll[] = [];
-    let pity = {
-      rare: user.packsSinceLastRare,
-      ultra: user.packsSinceLastUltraRare,
-    };
-
-    for (let i = 0; i < 3; i++) {
-      const tier = rollTier({ pity, slotIndex: i });
-      const pokemon = rollPokemonInTier(tier, { wishlistBoost: wishlist });
-      const isShiny = Math.random() < 0.005;
-      rolls.push({
-        position: i + 1,
-        pokemonId: pokemon.id,
-        rarity: tier,
-        isShiny,
-      });
-      pity = updatePity(pity, tier);
-    }
-
-    // 3. Persist Pack + PackRolls
-    const pack = await tx.pack.create({
-      data: {
-        userId,
-        source,
-        type: packTypeFromSource(source),
-        rolls: { create: rolls },
-      },
-    });
-
-    // 4. Update UserPokemon (collection state, counts)
-    for (const roll of rolls) {
-      await tx.userPokemon.upsert({
-        where: { userId_pokemonId: { userId, pokemonId: roll.pokemonId } },
-        create: {
-          userId,
-          pokemonId: roll.pokemonId,
-          isCaught: true,
-          count: 1,
-          shinyCount: roll.isShiny ? 1 : 0,
-          firstCaughtAt: new Date(),
-        },
-        update: {
-          isCaught: true,
-          count: { increment: 1 },
-          shinyCount: roll.isShiny ? { increment: 1 } : undefined,
-        },
-      });
-    }
-
-    // 5. Update user pity counters + lastDailyAt
-    await tx.user.update({
-      where: { id: userId },
-      data: {
-        packsSinceLastRare: pity.rare,
-        packsSinceLastUltraRare: pity.ultra,
-        lastDailyAt: source === "DAILY_FREE" ? new Date() : undefined,
-      },
-    });
-
-    // 6. Generate FeedEvents for rare/ultra/shiny pulls
-    for (const roll of rolls) {
-      if (
-        roll.isShiny ||
-        roll.rarity === "RARE" ||
-        roll.rarity === "ULTRA_RARE"
-      ) {
-        await tx.feedEvent.create({
-          data: {
-            userId,
-            type: roll.isShiny
-              ? "SHINY_PULL"
-              : roll.rarity === "ULTRA_RARE"
-                ? "ULTRA_RARE_PULL"
-                : "RARE_PULL",
-            metadata: {
-              packId: pack.id,
-              pokemonId: roll.pokemonId,
-              isShiny: roll.isShiny,
-            },
-          },
-        });
-      }
-    }
-
-    return pack;
-  });
-}
-```
-
-All in one transaction → atomic. If any step fails, no half-opened packs.
-
-### 10.4 Environment variables
-
-```bash
-# Database
-DATABASE_URL="postgresql://..."
-
-# NextAuth
-NEXTAUTH_SECRET="..."
-NEXTAUTH_URL="http://localhost:3000"
-GITHUB_CLIENT_ID="..."
-GITHUB_CLIENT_SECRET="..."
-GOOGLE_CLIENT_ID="..."
-GOOGLE_CLIENT_SECRET="..."
-EMAIL_SERVER_HOST="..."
-EMAIL_SERVER_PORT="..."
-EMAIL_FROM="..."
-
-# Cloudflare R2 (avatars)
-R2_ACCOUNT_ID="..."
-R2_ACCESS_KEY_ID="..."
-R2_SECRET_ACCESS_KEY="..."
-R2_BUCKET="pokehub-avatars"
-R2_PUBLIC_URL="..."
-
-# Stripe (Pro)
-STRIPE_SECRET_KEY="..."
-STRIPE_WEBHOOK_SECRET="..."
-STRIPE_PRICE_ID_MONTHLY="..."
-STRIPE_PRICE_ID_YEARLY="..."
-
-# Dev overrides
-DEV_UNLOCK_ALL="false"
-```
-
-### 10.5 Seeding & maintenance
+### 10.4 Seeding & maintenance
 
 | Job             | Schedule             | Action                            |
 | --------------- | -------------------- | --------------------------------- |
@@ -993,93 +819,51 @@ Pokémon is a trademark of Nintendo, Game Freak, and The Pokémon Company. PokeH
 
 - **No commercial deployment** without licensing review
 - **PokeAPI data is public**, but Pokémon imagery and names are trademarked
-- For production launch (if ever): rebrand to non-Pokémon-derived name, reach out to TPC about fan project guidelines, or pivot to a non-IP-encumbered theme (custom monsters)
-
-For portfolio / GitHub / personal-use deployment: low risk, but worth mentioning in the README so reviewers know you're aware.
+- For production launch (if ever): rebrand or reach out to TPC about fan project guidelines
 
 ---
 
 ## 14. Key design decisions
 
-Documented rationale for non-obvious choices. These are deliberate, defensible, and form the backbone of system-design talking points for interviews.
-
 ### Schema
 
-**`UserPokemon` combines collection state and review.**
-Rejected splitting into `UserPokemonStatus` + `Review` because they describe the same logical relationship ("user × pokemon"). Splitting forces a join on every profile read and creates two rows where one suffices. Wide-table here is correct.
-
-**Three separate `*Like` tables instead of polymorphic.**
-Postgres `NULL != NULL` breaks unique constraints on polymorphic patterns (e.g. `@@unique([userId, reviewId])` allows duplicates when `reviewId IS NULL`). Workarounds (partial indexes, application-level enforcement) are uglier than three tight tables. Lose one DRY point, gain proper composite primary keys.
-
-**`Comment` uses polymorphic two-nullable-FK with CHECK constraint.**
-Different from likes because comments need unified queries ("all comments by user X"). Trade-off: one application-side invariant (exactly one of `reviewId`/`listId` set) enforced via CHECK constraint in migration. Worth it for query unification.
-
-**Collection state as `isCaught: boolean`, not enum.**
-Original games use `NONE` / `SEEN` / `CAUGHT` because random encounters create a natural `SEEN` (you faced it but didn't catch it). PokeHub has no mechanic that produces "seen" — every Pokémon is browseable from the start, and packs are the only way to "catch". An enum value with no path to set it is dead code. If passive discovery is added later (e.g. a Pokémon enters `SEEN` when it appears in a pack opened by someone you follow), boolean → enum migration is trivial. YAGNI now.
-
-**Rarity stored on both `Pokemon` and `PackRoll`.**
-Snapshot pattern. If rarity tiers are rebalanced later (e.g. promoting Eevee to UNCOMMON), historical pulls preserve their original rarity. Standard pattern in any system where pricing or classification can change but historical records must remain truthful.
-
-**`Pokemon.id` is `Int` (pokedex number), not `cuid()`.**
-Pokédex numbers are stable, externally meaningful, and debugging-friendly. URLs become readable (`/p/25` vs `/p/clx9...`). The slug is the user-facing primary, but the ID stays human-meaningful.
-
-**`signatureTeam` as `Int[]` instead of join table.**
-Always 0–6 items, ordered, no per-slot metadata. Postgres array is the right primitive. A `SignatureTeamSlot` model adds a join for zero gain.
-
-**`DustTransaction` as ledger, not balance field.**
-User's dust balance = `SUM(amount)` over their transactions. Append-only ledger gives free audit trail, easy debugging ("where did my dust go?"), and concurrency safety. Standard double-entry-ish pattern.
-
-**`FeedEvent.metadata` as `Json` instead of typed columns.**
-Different event types carry different payloads (rare pull → pokemonId; list created → listId). Json + a TypeScript discriminated union for shape validation gives flexibility without per-event-type schema churn. Trade-off: weaker DB-level type safety, mitigated by Zod validation at write time.
+- **`UserPokemon` combines collection state and review.** One row per user×pokemon covers both axes — splitting forces a join on every profile read for zero gain.
+- **Three separate `*Like` tables.** Postgres `NULL != NULL` breaks `@@unique` on polymorphic patterns; three tight tables give proper composite PKs without workarounds.
+- **`Comment` uses polymorphic two-nullable-FK + CHECK constraint.** Needed for unified "all comments by user X" queries; application invariant (exactly one of `reviewId`/`listId` set) enforced in the migration.
+- **`isCaught` is boolean, not enum.** No mechanic produces a "SEEN" state — enum value with no write path is dead code. Boolean → enum migration is trivial if passive discovery is added later.
+- **Rarity snapshotted on `PackRoll`.** If rarity tiers are rebalanced, historical pulls preserve the rarity they were rolled at.
+- **`Pokemon.id` is the Pokédex number.** Stable, externally meaningful, makes URLs readable (`/p/25`).
+- **`signatureTeam` as `Int[]`.** Always 0–6 items, ordered, no per-slot metadata — Postgres array is the right primitive.
+- **`DustTransaction` as ledger.** Balance = `SUM(amount)`; append-only gives free audit trail and concurrency safety.
+- **`FeedEvent.metadata` as `Json`.** Different event types carry different payloads; flexibility outweighs weaker DB-level type safety (mitigated by Zod at write time).
 
 ### Mechanics
 
-**Two decoupled axes (opinion + collection), not coupled.**
-Coupling them ("must catch to rate") gates voices behind grind, breaks lists ("Top 10 Water Types" capped to RNG), and frustrates users who can't roll their childhood favorite. Decoupling preserves the Letterboxd value proposition while adding a parallel reward loop.
-
-**Pro tier is strictly cosmetic.**
-The moment Pro affects pack odds or content, the trust contract breaks and the platform becomes pay-to-win. Letterboxd Pro is the model: cosmetic + stats + larger limits, never gameplay advantage.
-
-**Dust economy in v1.**
-Could ship without it (duplicates just accumulate, dissolution in v2), but the ledger pattern + currency sources/sinks demonstrates real system design depth. Without dust this is a social media app with packs; with dust it's a social media app with an economy layer. Scope cost ~2–3 days, portfolio value high.
-
-**Streaks in v1.**
-Cost: one cron job + ~30 lines in pack-open flow. Benefit: strong retention hook (Duolingo, Wordle effect) and a `STREAK_BONUS` pack source that feeds the dust/pack economy. Edge-case timezones deferred — v1 treats "user's day" as UTC. `User.timezone` field added when someone complains.
-
-**Pity thresholds 20 (rare) / 50 (ultra rare).**
-Tunable. At daily-only cadence: ~3 weeks worst-case wait for a rare, ~7 weeks for a mythical. Tighten based on retention metrics post-launch.
-
-**Wishlist boost ×1.5 on 3 selected pokémon.**
-Soft targeting that respects randomness. Doesn't break rarity tiers (a wishlisted Mew is still ULTRA_RARE-tier; the boost only nudges _which_ ULTRA_RARE you're more likely to roll). Solves "I never get my childhood favorite" without feeling deterministic.
-
-**Hard cap of 5 earned packs/day.**
-Without a cap, content-spam (low-effort reviews, trash lists) is incentivized. With it, the floor (1 daily) and ceiling (1 + 5 earned + dust purchases) are predictable, and content quality matters more than quantity.
+- **Two decoupled axes.** Coupling opinion + collection gates voices behind grind and breaks lists ("Top 10 Water Types" capped to RNG). Decoupling preserves Letterboxd's value proposition while adding a parallel reward loop.
+- **Pro tier is strictly cosmetic.** The moment Pro affects pack odds or content, the trust contract breaks. Letterboxd Pro is the model.
+- **Dust economy in v1.** Ledger pattern + currency sources/sinks demonstrates real system design depth; significant portfolio value for ~2–3 days of scope.
+- **Streaks in v1.** Cost: one cron job + ~30 lines. Benefit: strong retention hook (Duolingo effect) + `STREAK_BONUS` pack source feeds the economy.
+- **Pity thresholds 20 (rare) / 50 (ultra rare).** Tunable post-launch. At daily-only cadence: ~3 weeks worst-case for a rare, ~7 weeks for a mythical.
+- **Wishlist boost ×1.5 on 3 selected Pokémon.** Soft targeting — doesn't change rarity tiers, only nudges _which_ Pokémon within a tier you're more likely to roll.
+- **Hard cap of 5 earned packs/day.** Prevents content-spam gaming; floor (1 daily) and ceiling (1 + 5 earned + dust purchases) are predictable.
 
 ### Routing & auth
 
-**Username required at signup, used in URLs.**
-`/u/[username]` is the canonical profile URL. Critical for shareability ("check out @damian's Top 10"). Locked at signup, changeable once per 90 days (v2).
-
-**Username field is nullable in schema, required at app level.**
-OAuth flow creates a User _before_ the user picks a handle (NextAuth populates email/name/image from the provider, but providers don't supply a username we want). Forcing `username` to be NOT NULL would require either auto-generating an ugly fallback (e.g. `damian-x9k2`) or making OAuth login a two-step DB transaction. Cleaner: schema allows null, post-login middleware redirects users with `username === null` to `/signup/username` before they can do anything else. After they pick one, app-level validation enforces format (3–20 chars, `[a-z0-9_-]+`) and uniqueness.
-
-**No `@@index([username])` declaration.**
-`@unique` on `username` already creates a B-tree index in Postgres, so an explicit `@@index` would be redundant. Same applies to `email` and any other `@unique` fields — the unique index covers equality lookups.
-
-**OAuth + magic link + email/password.**
-Originally scoped as OAuth + magic link only (smaller attack surface, no password storage/reset flow). Revised: users should also be able to sign up/log in with email + password, since not every trainer wants to link a Google/GitHub account or wait on a magic-link email. `User.password` stores a bcrypt hash and is nullable — OAuth/magic-link users never set one. Password reset flow (forgot-password email) is required once this ships; deferred to the auth implementation task, not detailed here yet.
+- **Username required at signup, used in URLs.** Critical for shareability (`/u/damian`). Nullable in schema because OAuth creates a User before the handle is chosen; middleware redirects `username === null` users to `/signup/username`.
+- **No explicit `@@index([username])`.** `@unique` already creates a B-tree index in Postgres — the extra declaration would be redundant.
+- **OAuth + magic link + email/password.** Not every user wants to link Google/GitHub or wait on a magic-link email. `User.password` stores a bcrypt hash and is nullable — OAuth/magic-link users never set one.
 
 ---
 
 ## 15. UI design prototype
 
-A high-fidelity UI prototype exists in Claude Design, covering both the logged-in app and the logged-out landing page. It captures the intended visual language and screen-level interaction patterns ahead of implementation.
+A high-fidelity UI prototype exists in Claude Design, covering both the logged-in app and the logged-out landing page.
 
 ### 15.1 Location
 
 - Project: "PokeHub UI Prototype" — https://claude.ai/design/p/0c1d47b5-6b08-4235-a5b5-cb2849651a1d
 - Files: `PokeHub.dc.html` (logged-in app — Feed / Profile / Pokémon Detail / Packs), `PokeHub-Landing.dc.html` (logged-out marketing/landing page)
-- The prototype is edited independently of this document and can change between sessions — re-fetch via the `claude_design` MCP connector rather than relying on a cached summary when implementing a screen.
+- Re-fetch via the `claude_design` MCP connector rather than relying on a cached summary when implementing a screen.
 
 ### 15.2 Visual language
 
@@ -1099,8 +883,6 @@ A high-fidelity UI prototype exists in Claude Design, covering both the logged-i
 
 ### 15.4 Known discrepancies vs. this spec (unresolved)
 
-The prototype was designed somewhat independently and disagrees with this document in a few places. Each should be resolved (pick spec or design, then update this document) before the corresponding feature is implemented — do not silently default to either side.
-
 | Area | Design prototype | This spec |
 | --- | --- | --- |
 | Shiny odds | 1/4096 (classic mainline rate), with its own 200-pack shiny-pity counter | Flat 0.5% per slot (§4.1), no shiny-pity field in schema (§4.3) |
@@ -1109,4 +891,4 @@ The prototype was designed somewhat independently and disagrees with this docume
 | Feed filters | Explicit "Pulls" filter chip alongside Reviews/Lists | Consistent with FeedEvent design (§4.6), but more prominent in the UI than documented |
 | Marketing copy | Landing page footer links to "Blog" and "API" | Neither product is in scope (not listed in §12 open questions) |
 
-> **Resolved:** the auth-UI discrepancy (design's email/password modal vs. an earlier OAuth-only spec) was resolved in favor of the design — §14 now documents email/password as a supported auth method alongside OAuth + magic link, and `User.password` was added to the schema (§5.3).
+> **Resolved:** the auth-UI discrepancy (design's email/password modal vs. an earlier OAuth-only spec) was resolved in favor of the design — §14 now documents email/password as a supported auth method alongside OAuth + magic link, and `User.password` was added to the schema.
