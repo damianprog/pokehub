@@ -1,4 +1,9 @@
+"use client";
+
+import { useAuthModal } from "@/store/auth-modal";
+
 export function FinalCta() {
+  const { open } = useAuthModal();
   return (
     <section
       className="px-[26px] py-[90px] text-center"
@@ -28,6 +33,7 @@ export function FinalCta() {
             background: "linear-gradient(135deg, #ff7a45, #c44fe0)",
             boxShadow: "0 10px 30px rgba(196,79,224,0.38)",
           }}
+          onClick={() => open("signup")}
         >
           Create free account
         </button>
@@ -49,6 +55,7 @@ export function FinalCta() {
         <button
           className="cursor-pointer border-0 bg-transparent p-0 text-[13px] font-semibold"
           style={{ color: "#c44fe0" }}
+          onClick={() => open("login")}
         >
           Log in
         </button>
