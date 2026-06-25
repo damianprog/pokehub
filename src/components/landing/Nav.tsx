@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { NavAuthButtons } from "@/components/auth/NavAuthButtons";
 
 export function Nav() {
   return (
@@ -23,19 +23,7 @@ export function Nav() {
           Browse Pokedex
         </Link>
 
-        <Button
-          variant="outline"
-          size="lg"
-          className="rounded-[9px] px-3 text-sm font-semibold whitespace-nowrap sm:px-[17px]"
-        >
-          Log in
-        </Button>
-        <Button
-          size="lg"
-          className="rounded-[9px] border-0 bg-[linear-gradient(135deg,var(--brand-from),var(--brand-to))] px-3 text-sm font-bold whitespace-nowrap text-white shadow-[0_4px_14px_rgba(196,79,224,0.32)] hover:brightness-110 sm:px-[17px]"
-        >
-          Sign up free
-        </Button>
+        <NavAuthButtons />
       </div>
     </header>
   );
