@@ -1,0 +1,422 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// =========================================================
+// NextAuth
+// =========================================================
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// =========================================================
+// User
+// =========================================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  username      String?   @unique
+  image         String?
+  bio           String?
+
+  // Credentials auth (nullable — OAuth/magic-link users never set one)
+  password String? // bcrypt hash, never plaintext
+
+  // Currency & progression
+  dust                    Int @default(0)
+  packsSinceLastRare      Int @default(0)
+  packsSinceLastUltraRare Int @default(0)
+
+  // Streaks
+  currentStreak Int       @default(0)
+  longestStreak Int       @default(0)
+  lastDailyAt   DateTime?
+
+  // Signature team — array of pokemonIds, max length 6 enforced in app
+  signatureTeam Int[] @default([])
+
+  // Subscription (cosmetic-only Pro)
+  isPro Boolean @default(false)
+
+  // Relations
+  accounts         Account[]
+  sessions         Session[]
+  pokemons         UserPokemon[]
+  packs            Pack[]
+  lists            List[]
+  comments         Comment[]
+  reviewLikes      ReviewLike[]
+  listLikes        ListLike[]
+  commentLikes     CommentLike[]
+  followers        Follow[]          @relation("Following")
+  following        Follow[]          @relation("Followers")
+  feedEvents       FeedEvent[]
+  dustTransactions DustTransaction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdAt])
+}
+
+// =========================================================
+// Pokemon (seeded from PokeAPI, ~1300 rows)
+// =========================================================
+
+enum Rarity {
+  COMMON
+  UNCOMMON
+  RARE
+  ULTRA_RARE
+}
+
+model Pokemon {
+  id          Int     @id // pokedex number
+  slug        String  @unique
+  name        String
+  types       String[]
+  generation  Int
+  isLegendary Boolean @default(false)
+  isMythical  Boolean @default(false)
+  rarity      Rarity
+
+  // Images (all hosted on raw.githubusercontent.com/PokeAPI/sprites)
+  artworkUrl      String // official-artwork
+  spriteUrl       String // small sprite
+  shinyArtworkUrl String?
+
+  // Stats
+  height    Int // decimeters
+  weight    Int // hectograms
+  baseStats Json // { hp, attack, defense, spAttack, spDefense, speed }
+
+  flavorText String?
+
+  userPokemons UserPokemon[]
+  packRolls    PackRoll[]
+  listItems    ListItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([rarity])
+  @@index([generation])
+  @@index([slug])
+  @@index([isLegendary])
+  @@index([isMythical])
+}
+
+// =========================================================
+// UserPokemon — central per-user-per-pokemon state
+// Holds collection status + review (one row per pair)
+// =========================================================
+
+model UserPokemon {
+  id        String @id @default(cuid())
+  userId    String
+  pokemonId Int
+
+  // Collection
+  isCaught      Boolean   @default(false)
+  count         Int       @default(0)
+  shinyCount    Int       @default(0)
+  firstCaughtAt DateTime?
+
+  // Personal flags
+  isFavorite Boolean @default(false)
+  isWishlist Boolean @default(false)
+
+  // Review (rating + optional text)
+  rating     Int?      // 1-5, validated app-side
+  reviewText String?
+  reviewedAt DateTime?
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pokemon     Pokemon      @relation(fields: [pokemonId], references: [id])
+  comments    Comment[]    @relation("CommentsOnReview")
+  reviewLikes ReviewLike[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, pokemonId])
+  @@index([userId, isCaught])
+  @@index([userId, isFavorite])
+  @@index([userId, isWishlist])
+  @@index([pokemonId, rating])
+  @@index([reviewedAt])
+}
+
+// =========================================================
+// Packs
+// =========================================================
+
+enum PackType {
+  DAILY
+  EARNED
+  PREMIUM
+  EVENT
+}
+
+enum PackSource {
+  DAILY_FREE
+  ACTIVITY_REVIEW
+  ACTIVITY_LIST
+  ACTIVITY_LIKES_RECEIVED
+  STREAK_BONUS
+  DUST_PURCHASE
+  EVENT
+}
+
+model Pack {
+  id       String     @id @default(cuid())
+  userId   String
+  type     PackType   @default(DAILY)
+  source   PackSource
+  openedAt DateTime   @default(now())
+
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rolls PackRoll[]
+
+  @@index([userId, openedAt])
+  @@index([source, openedAt])
+}
+
+model PackRoll {
+  id        String  @id @default(cuid())
+  packId    String
+  pokemonId Int
+  position  Int // 1, 2, or 3
+  isShiny   Boolean @default(false)
+  rarity    Rarity // snapshot at roll time
+
+  pack    Pack    @relation(fields: [packId], references: [id], onDelete: Cascade)
+  pokemon Pokemon @relation(fields: [pokemonId], references: [id])
+
+  @@unique([packId, position])
+  @@index([packId])
+}
+
+// =========================================================
+// Lists
+// =========================================================
+
+model List {
+  id          String  @id @default(cuid())
+  userId      String
+  title       String
+  slug        String
+  description String?
+  isPublic    Boolean @default(true)
+  isRanked    Boolean @default(true)
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     ListItem[]
+  comments  Comment[]  @relation("CommentsOnList")
+  listLikes ListLike[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, slug])
+  @@index([userId, createdAt])
+  @@index([isPublic, createdAt])
+}
+
+model ListItem {
+  id        String  @id @default(cuid())
+  listId    String
+  pokemonId Int
+  position  Int
+  note      String?
+
+  list    List    @relation(fields: [listId], references: [id], onDelete: Cascade)
+  pokemon Pokemon @relation(fields: [pokemonId], references: [id])
+
+  @@unique([listId, pokemonId])
+  @@unique([listId, position])
+  @@index([listId])
+}
+
+// =========================================================
+// Comments (polymorphic via two nullable FKs)
+// CHECK constraint via migration: exactly one of (reviewId, listId) must be set
+// =========================================================
+
+model Comment {
+  id     String @id @default(cuid())
+  userId String
+  body   String
+
+  // Polymorphic target
+  reviewId String? // -> UserPokemon.id
+  listId   String? // -> List.id
+  parentId String? // for threaded replies
+
+  user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  review   UserPokemon? @relation("CommentsOnReview", fields: [reviewId], references: [id], onDelete: Cascade)
+  list     List?        @relation("CommentsOnList", fields: [listId], references: [id], onDelete: Cascade)
+  parent   Comment?     @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  Comment[]    @relation("CommentReplies")
+  likes    CommentLike[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([reviewId, createdAt])
+  @@index([listId, createdAt])
+  @@index([parentId])
+  @@index([userId, createdAt])
+}
+
+// =========================================================
+// Likes (separate tables — cleaner than polymorphic in Postgres)
+// =========================================================
+
+model ReviewLike {
+  userId    String
+  reviewId  String
+  createdAt DateTime @default(now())
+
+  user   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  review UserPokemon @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@id([userId, reviewId])
+  @@index([reviewId])
+}
+
+model ListLike {
+  userId    String
+  listId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  list List @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  @@id([userId, listId])
+  @@index([listId])
+}
+
+model CommentLike {
+  userId    String
+  commentId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@id([userId, commentId])
+  @@index([commentId])
+}
+
+// =========================================================
+// Follow graph
+// =========================================================
+
+model Follow {
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("Followers", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
+// =========================================================
+// Feed events (activity stream)
+// =========================================================
+
+enum FeedEventType {
+  REVIEW_CREATED
+  LIST_CREATED
+  RARE_PULL
+  ULTRA_RARE_PULL
+  SHINY_PULL
+  POKEMON_FAVORITED
+  STREAK_MILESTONE
+  USER_FOLLOWED
+}
+
+model FeedEvent {
+  id       String        @id @default(cuid())
+  userId   String
+  type     FeedEventType
+  metadata Json // flexible payload — pokemonId, listId, packRollId, etc.
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([type, createdAt])
+}
+
+// =========================================================
+// Dust ledger (audit trail of currency)
+// =========================================================
+
+enum DustReason {
+  DUPLICATE_DISSOLVED
+  SHINY_DISSOLVED
+  PACK_PURCHASED
+  EVENT_REWARD
+  STREAK_BONUS
+}
+
+model DustTransaction {
+  id          String     @id @default(cuid())
+  userId      String
+  amount      Int // positive = earned, negative = spent
+  reason      DustReason
+  referenceId String? // pokemonId, packId, etc.
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
