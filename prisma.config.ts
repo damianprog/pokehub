@@ -5,6 +5,7 @@ export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
     path: "prisma/migrations",
+    seed: "tsx scripts/seed-pokemon.ts",
   },
   datasource: {
     // Use the direct (non-pooled) URL for migrations — bypasses PgBouncer
