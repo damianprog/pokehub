@@ -186,9 +186,12 @@
     radial-gradient(700px 400px at 50% 95%, rgba(110, 170, 255, 0.04), transparent);
 }
 
-/* App page background — matches Claude Design logged-in screens */
+/* App page background — matches Claude Design logged-in screens.
+   background-attachment: fixed pins gradient positions to the viewport
+   so they render correctly even though the div starts below the nav. */
 .app-bg {
   background-image:
     radial-gradient(1200px 600px at 80% -8%, rgba(196, 79, 224, 0.07), transparent),
     radial-gradient(900px 500px at 0% 0%, rgba(255, 122, 69, 0.05), transparent);
+  background-attachment: fixed;
 }
