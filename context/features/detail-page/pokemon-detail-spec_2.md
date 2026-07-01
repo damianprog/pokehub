@@ -32,46 +32,18 @@ later iteration — this spec stops at "the page has the data".
 
 ## 2. Route & async params (Next.js 16)
 
-In App Router 15/16 `params` is a **Promise** — it must be `await`ed:
-
-```ts
-import { notFound } from "next/navigation";
-import type { Metadata } from "next";
-import { getPokemon } from "@/lib/pokemon";
-
-export default async function PokemonPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
-  // ...
-}
-```
+In App Router 15/16, the page's `params` prop is a `Promise<{ slug: string }>`, not a plain
+object — the route handler must `await params` before reading `slug` out of it.
 
 ---
 
 ## 3. Data fetching
 
-A single query in the page resolves the record; a missing slug is a 404.
+A single query in the page resolves the record; a missing slug is a 404. The page calls
+`getPokemon(slug)` and, if it returns nothing, calls Next's `notFound()` helper immediately.
 
-```ts
-const pokemon = await getPokemon(slug);
-if (!pokemon) notFound();
-```
-
-`getPokemon` lives in `src/lib/pokemon.ts` and is wrapped in React `cache()` (see §4 for why).
-The query is a plain `findUnique`:
-
-```ts
-// src/lib/pokemon.ts
-import { cache } from "react";
-import { prisma } from "@/lib/prisma";
-
-export const getPokemon = cache((slug: string) =>
-  prisma.pokemon.findUnique({ where: { slug } }),
-);
-```
+`getPokemon` lives in `src/lib/pokemon.ts` and is wrapped in React's `cache()` (see §4 for why).
+It's a plain Prisma `findUnique` keyed on `slug`.
 
 This pulls the full `Pokemon` row — all scalar fields including `types` (`string[]`) and
 `baseStats` (`Json`). They're fetched and available; consuming them is the section components'
@@ -83,93 +55,37 @@ job in the next iteration.
 
 `generateMetadata` and the page component run separately, so a naive implementation hits the DB
 twice for the same Pokémon. Both call the same `cache()`-wrapped `getPokemon`, so within one
-request the query runs once:
-
-```ts
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}): Promise<Metadata> {
-  const { slug } = await params;
-  const pokemon = await getPokemon(slug);
-  return { title: pokemon ? `${pokemon.name} — PokeHub` : "Pokémon — PokeHub" };
-}
-```
-
-The page then calls `getPokemon(slug)` again → the second call hits the cache, not the DB.
+request the query runs once: `generateMetadata` awaits `params`, calls `getPokemon(slug)`, and
+returns a title of `"{name} — PokeHub"` (or a generic fallback title if the Pokémon doesn't
+exist). The page then calls `getPokemon(slug)` again — the second call hits the `cache()` memo,
+not the DB.
 
 ---
 
 ## 5. Temporary render (smoke test only)
 
 Until section components exist, the page renders a minimal placeholder purely to confirm the data
-arrived — e.g. the name, or raw JSON:
-
-```tsx
-return <pre>{JSON.stringify(pokemon, null, 2)}</pre>;
-```
-
-This is explicitly throwaway and gets replaced the moment the first section component lands.
+arrived — the raw `Pokemon` record dumped as preformatted JSON. This is explicitly throwaway and
+gets replaced the moment the first section component lands.
 
 ---
 
-## 6. Complete implementation reference
+## 6. Implementation reference
 
-### `src/lib/pokemon.ts`
+Two files carry this iteration:
 
-```ts
-import { cache } from "react";
-import { prisma } from "@/lib/prisma";
-
-export const getPokemon = cache((slug: string) =>
-  prisma.pokemon.findUnique({ where: { slug } }),
-);
-```
-
-### `src/app/p/[slug]/page.tsx`
-
-```tsx
-import { notFound } from "next/navigation";
-import type { Metadata } from "next";
-import { getPokemon } from "@/lib/pokemon";
-
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}): Promise<Metadata> {
-  const { slug } = await params;
-  const pokemon = await getPokemon(slug);
-  return { title: pokemon ? `${pokemon.name} — PokeHub` : "Pokémon — PokeHub" };
-}
-
-export default async function PokemonPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
-  const pokemon = await getPokemon(slug);
-  if (!pokemon) notFound();
-
-  return <pre>{JSON.stringify(pokemon, null, 2)}</pre>;
-}
-```
+- `src/lib/pokemon.ts` exports `getPokemon`, a `cache()`-wrapped Prisma `findUnique({ where: { slug } })`.
+- `src/app/p/[slug]/page.tsx` exports `generateMetadata` and the default page component, both of
+  which `await params`, call `getPokemon(slug)`, and (in the page component) call `notFound()` if
+  the result is null. The page component's body is the throwaway JSON dump from §5.
 
 ---
 
 ## 7. File structure
 
-```
-src/
-├─ app/
-│  └─ p/
-│     └─ [slug]/
-│        └─ page.tsx                 ← RSC: await params, getPokemon, notFound, generateMetadata
-└─ lib/
-   └─ pokemon.ts                     ← getPokemon (cache-wrapped findUnique)
-```
+Two new files: `src/app/p/[slug]/page.tsx` (the RSC — awaits `params`, calls `getPokemon`, calls
+`notFound`, exports `generateMetadata`) and `src/lib/pokemon.ts` (the `cache()`-wrapped
+`findUnique` query).
 
 ---
 
