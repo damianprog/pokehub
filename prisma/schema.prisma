@@ -126,9 +126,10 @@ model Pokemon {
   shinyArtworkUrl String?
 
   // Stats
-  height    Int // decimeters
-  weight    Int // hectograms
-  baseStats Json // { hp, attack, defense, spAttack, spDefense, speed }
+  height         Int // decimeters
+  weight         Int // hectograms
+  baseExperience Int? // null for a handful of non-standard PokeAPI forms
+  baseStats      Json // { hp, attack, defense, spAttack, spDefense, speed }
 
   flavorText String?
 

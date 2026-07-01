@@ -282,6 +282,7 @@ async function main() {
           shinyArtworkUrl: shinyArtworkUrl(id),
           height: pokemon.height, // decimeters
           weight: pokemon.weight, // hectograms
+          baseExperience: pokemon.base_experience ?? null,
           baseStats: mapBaseStats(pokemon.stats),
           flavorText: cleanFlavorText(species.flavor_text_entries),
         };
@@ -311,6 +312,26 @@ async function main() {
   }
 
   console.log(`Inserted ${inserted} new Pokémon (existing rows skipped).`);
+
+  // 4. Backfill baseExperience on existing rows — createMany({ skipDuplicates
+  //    }) never touches rows that already exist, so a field added after the
+  //    initial seed (like baseExperience) would otherwise stay NULL forever
+  //    on those rows. Only rows still NULL are touched, so this is a cheap
+  //    no-op once fully backfilled.
+  const stillMissing = await prisma.pokemon.findMany({
+    where: { baseExperience: null },
+    select: { id: true },
+  });
+  const byId = new Map(rows.map((r) => [r.id, r]));
+  let backfilled = 0;
+  await mapWithConcurrency(stillMissing, CONCURRENCY, async ({ id }) => {
+    const value = byId.get(id)?.baseExperience;
+    if (value == null) return; // PokeAPI itself returned null for this one
+    await prisma.pokemon.update({ where: { id }, data: { baseExperience: value } });
+    backfilled++;
+  });
+  console.log(`Backfilled baseExperience on ${backfilled} existing rows.`);
+
   if (failures.length) {
     console.warn(`${failures.length} failures:`, failures.slice(0, 20));
   }
