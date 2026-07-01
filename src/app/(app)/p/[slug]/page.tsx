@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { getPokemon } from "@/lib/pokemon";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { PokemonArtwork } from "@/components/pokemon/PokemonArtwork";
+import { PokemonActions } from "@/components/pokemon/PokemonActions";
 
 export async function generateMetadata({
   params,
@@ -45,6 +46,7 @@ export default async function PokemonPage({
             artworkUrl={pokemon.artworkUrl}
             types={pokemon.types}
           />
+          <PokemonActions />
         </div>
         <div>{/* info column — next iterations */}</div>
       </div>
