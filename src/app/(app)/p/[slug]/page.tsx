@@ -4,6 +4,7 @@ import { getPokemon } from "@/lib/pokemon";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { PokemonArtwork } from "@/components/pokemon/PokemonArtwork";
 import { PokemonActions } from "@/components/pokemon/PokemonActions";
+import { PokemonHeader } from "@/components/pokemon/PokemonHeader";
 
 export async function generateMetadata({
   params,
@@ -48,7 +49,10 @@ export default async function PokemonPage({
           />
           <PokemonActions />
         </div>
-        <div>{/* info column — next iterations */}</div>
+        <div>
+          <PokemonHeader id={pokemon.id} name={pokemon.name} types={pokemon.types} />
+          {/* remaining info column sections — next iterations */}
+        </div>
       </div>
     </div>
   );
