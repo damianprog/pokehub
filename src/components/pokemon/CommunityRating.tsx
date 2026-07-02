@@ -25,7 +25,7 @@ export function CommunityRating({
   const starFillPct = Math.min(100, Math.max(0, (average / 5) * 100));
 
   return (
-    <div className="mb-[14px] flex items-center gap-[30px] rounded-[16px] border border-white/[0.06] bg-[#15181e] p-[22px]">
+    <div className="mb-[14px] flex items-center gap-[30px] rounded-[16px] border border-white/[0.06] bg-[#15181e] p-[22px] leading-[normal]">
       <div className="flex-none text-center">
         <div className="font-heading text-[54px] leading-none font-bold text-[#e6b450]">
           {average.toFixed(1)}
