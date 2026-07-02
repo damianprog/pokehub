@@ -129,7 +129,14 @@ model Pokemon {
   height         Int // decimeters
   weight         Int // hectograms
   baseExperience Int? // null for a handful of non-standard PokeAPI forms
-  baseStats      Json // { hp, attack, defense, spAttack, spDefense, speed }
+
+  // Base stats
+  hp        Int
+  attack    Int
+  defense   Int
+  spAttack  Int
+  spDefense Int
+  speed     Int
 
   flavorText String?
 

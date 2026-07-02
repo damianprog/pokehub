@@ -283,7 +283,7 @@ async function main() {
           height: pokemon.height, // decimeters
           weight: pokemon.weight, // hectograms
           baseExperience: pokemon.base_experience ?? null,
-          baseStats: mapBaseStats(pokemon.stats),
+          ...mapBaseStats(pokemon.stats),
           flavorText: cleanFlavorText(species.flavor_text_entries),
         };
       } catch (err) {

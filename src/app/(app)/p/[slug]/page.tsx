@@ -8,6 +8,7 @@ import { PokemonHeader } from "@/components/pokemon/PokemonHeader";
 import { PokemonPhysicals } from "@/components/pokemon/PokemonPhysicals";
 import { CommunityRating } from "@/components/pokemon/CommunityRating";
 import { RateRow } from "@/components/pokemon/RateRow";
+import { BaseStats } from "@/components/pokemon/BaseStats";
 
 // Placeholder rating data — no rating/review feature exists yet, so
 // UserPokemon.rating has zero real rows. Replace with a real aggregation
@@ -95,6 +96,16 @@ export default async function PokemonPage({
             typeLabel={PLACEHOLDER_RATE_ROW.typeLabel}
             listCount={PLACEHOLDER_RATE_ROW.listCount}
             likeCount={PLACEHOLDER_RATE_ROW.likeCount}
+          />
+          <BaseStats
+            stats={{
+              hp: pokemon.hp,
+              attack: pokemon.attack,
+              defense: pokemon.defense,
+              spAttack: pokemon.spAttack,
+              spDefense: pokemon.spDefense,
+              speed: pokemon.speed,
+            }}
           />
           {/* remaining info column sections — next iterations */}
         </div>
