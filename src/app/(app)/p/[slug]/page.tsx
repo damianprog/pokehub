@@ -7,6 +7,7 @@ import { PokemonActions } from "@/components/pokemon/PokemonActions";
 import { PokemonHeader } from "@/components/pokemon/PokemonHeader";
 import { PokemonPhysicals } from "@/components/pokemon/PokemonPhysicals";
 import { CommunityRating } from "@/components/pokemon/CommunityRating";
+import { RateRow } from "@/components/pokemon/RateRow";
 
 // Placeholder rating data — no rating/review feature exists yet, so
 // UserPokemon.rating has zero real rows. Replace with a real aggregation
@@ -21,6 +22,17 @@ const PLACEHOLDER_RATING = {
     { stars: 2 as const, count: 421 },
     { stars: 1 as const, count: 248 },
   ],
+};
+
+// Placeholder rate-row stats — rank-within-type, list membership, and like
+// counts have no backing data yet (rating/review, Lists, and ReviewLike
+// features are all unbuilt). Replace with real values once those ship
+// (see rate-row-spec.md §4, §8).
+const PLACEHOLDER_RATE_ROW = {
+  rank: 3,
+  typeLabel: "Fire",
+  listCount: 1240,
+  likeCount: 6109,
 };
 
 export async function generateMetadata({
@@ -77,6 +89,12 @@ export default async function PokemonPage({
             average={PLACEHOLDER_RATING.average}
             totalRatings={PLACEHOLDER_RATING.totalRatings}
             distribution={PLACEHOLDER_RATING.distribution}
+          />
+          <RateRow
+            rank={PLACEHOLDER_RATE_ROW.rank}
+            typeLabel={PLACEHOLDER_RATE_ROW.typeLabel}
+            listCount={PLACEHOLDER_RATE_ROW.listCount}
+            likeCount={PLACEHOLDER_RATE_ROW.likeCount}
           />
           {/* remaining info column sections — next iterations */}
         </div>

@@ -16,7 +16,7 @@ export function PokemonPhysicals({
   ];
 
   return (
-    <div className="mb-[22px] flex overflow-hidden rounded-[14px] border border-white/[0.06] bg-[#15181e]">
+    <div className="mb-[22px] flex overflow-hidden rounded-[14px] border border-white/[0.06] bg-[#15181e] leading-[normal]">
       {stats.map((stat, i) => (
         <div
           key={stat.label}
