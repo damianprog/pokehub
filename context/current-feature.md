@@ -1,38 +1,18 @@
-# Current Feature: Auth Setup — NextAuth v5 + GitHub Provider
+# Current Feature
 
 <!-- Feature name and short description -->
-Set up NextAuth v5 with the Prisma adapter and GitHub OAuth, using database sessions. Test against NextAuth's default sign-in page. Username onboarding and the login modal wiring are out of scope (later specs).
 
 ## Status
 
 <!-- Not Started | In Progress | Completed -->
-In Progress
 
 ## Goals
 
 <!-- Goals and requirements -->
-- Install `next-auth@beta` (v5) and `@auth/prisma-adapter`
-- Configure a single `src/auth.ts` with `PrismaAdapter(prisma)` + GitHub provider, database session strategy (no `session.strategy` override)
-- Expose `session.user.id` and `session.user.username` via a `session` callback
-- Create `src/app/api/auth/[...nextauth]/route.ts` re-exporting `GET`/`POST` handlers
-- Create `src/proxy.ts` protecting `/settings/*` and `/packs/*`, redirecting unauthenticated users to sign-in
-- Create `src/types/next-auth.d.ts` extending `Session["user"]` with `id: string` and `username: string | null`
-- Reuse the existing Prisma singleton — no second `PrismaClient`
-- Verify: logged-out `/settings` redirects to sign-in; GitHub OAuth completes; exactly one `User`/`Account`/`Session` row created; `await auth()` works in a Server Component; sign-out deletes the `Session` row
 
 ## Notes
 
 <!-- Any extra notes -->
-- Use `next-auth@beta`, not `@latest` (still installs v4). Use `@auth/prisma-adapter` (the `@auth/*` scope, not `@next-auth/*`).
-- Do NOT set `session: { strategy: "jwt" }` — PokeHub deliberately uses database sessions (instant server-side logout, per-device session listing). Leave `session` unset.
-- No split-config workaround needed: Next.js 16 proxy runs on the Node.js runtime, so a database-session lookup inside `proxy.ts` is fine. Keep a single `auth.ts`.
-- Under the database strategy, the `session` callback receives `user` (the DB row), not `token` — populate `session.user.id`/`username` from `user`, casting/augmenting for the custom `username` field.
-- `proxy.ts` must use a named export `proxy` (Next.js 16 rejects the old `export { auth as middleware }` pattern).
-- Do not set a custom `pages.signIn` this iteration — use NextAuth's default sign-in page.
-- Protected routes are `/settings/*` and `/packs/*` (PokeHub routing), not `/dashboard`.
-- Env vars: `AUTH_SECRET`, `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET` (v5's `AUTH_*` prefix, supersedes older `NEXTAUTH_*` naming). `DATABASE_URL`/`DIRECT_URL` unchanged.
-- Out of scope: username onboarding (`/signup/username`, format validation, proxy gate for `username === null`), wiring the Zustand login modal to `signIn("github")`, Google provider / email magic link.
-- Use Context7 to verify current NextAuth v5 config conventions before implementing.
 
 ## History
 
@@ -64,3 +44,4 @@ In Progress
 - 2026-07-02 Built `BaseStats` component (`src/components/pokemon/BaseStats.tsx`): six-row HP/Attack/Defense/Sp.Atk/Sp.Def/Speed bar chart below "Rate it" on `/p/[slug]`, using real per-Pokémon data instead of placeholder data. Normalized `Pokemon.baseStats Json` into six real `Int` columns (migration backfills from the old JSON value, then drops it) instead of reading through an untyped cast — Prisma now returns the stats natively typed. Added `src/lib/stat-colors.ts` (per-stat colors, following the `type-gradients.ts`/`type-badge-colors.ts` pattern). Verified at `/p/charizard`, `/p/mew`, `/p/magikarp` — correct per-species values, `npm run build` passes.
 - 2026-07-03 Built `TopReviews` component (`src/components/pokemon/TopReviews.tsx`): "Top Reviews" heading + "View all" count, plus two mocked review cards (gradient avatar, username, follower count, two-layer partial-fill star rating, quote, helpful count) below Base Stats on `/p/[slug]`. Static placeholder data — no review-writing feature exists yet, and the design's sample review text is genuinely Charizard-specific but reused on every Pokémon page this iteration (see spec §4). Verified at `/p/charizard`, no console errors, `npm run build` passes.
 - 2026-07-03 Built `AppearsInLists` component (`src/components/pokemon/AppearsInLists.tsx`): "Appears in lists" heading + 3-column grid of list cards (3 per-Pokémon thumbnails, title, "by {username} · {count} Pokémon" line), the last section on `/p/[slug]`, wired directly below `<TopReviews />`. Static placeholder data (3 sample lists from the design) — no lists feature exists yet. Also moved all four detail-page placeholder datasets (rating, rate-row, top reviews, appears-in-lists) out of `page.tsx` into their own files under `src/lib/` (`placeholder-*.ts`), leaving `page.tsx` as just data-fetching + layout. Verified at `/p/charizard`, no console errors, `npm run build` passes.
+- 2026-07-08 Set up NextAuth v5 auth core (`src/auth.ts`, `src/proxy.ts`, `src/types/next-auth.d.ts`, `src/app/api/auth/[...nextauth]/route.ts`): `PrismaAdapter` + GitHub provider with database sessions, `session` callback exposing `user.id`/`user.username` (via an `AdapterUser` augmentation), named `proxy` export protecting `/settings/*` and `/packs/*`, reusing the existing Prisma singleton. Username onboarding, login-modal wiring, and Google/magic-link providers deferred. `npm run build` passes.
