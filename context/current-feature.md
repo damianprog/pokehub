@@ -1,19 +1,38 @@
-# Current Feature
+# Current Feature: Auth Setup — NextAuth v5 + GitHub Provider
 
 <!-- Feature name and short description -->
+Set up NextAuth v5 with the Prisma adapter and GitHub OAuth, using database sessions. Test against NextAuth's default sign-in page. Username onboarding and the login modal wiring are out of scope (later specs).
 
 ## Status
 
 <!-- Not Started | In Progress | Completed -->
-Not Started
+In Progress
 
 ## Goals
 
 <!-- Goals and requirements -->
+- Install `next-auth@beta` (v5) and `@auth/prisma-adapter`
+- Configure a single `src/auth.ts` with `PrismaAdapter(prisma)` + GitHub provider, database session strategy (no `session.strategy` override)
+- Expose `session.user.id` and `session.user.username` via a `session` callback
+- Create `src/app/api/auth/[...nextauth]/route.ts` re-exporting `GET`/`POST` handlers
+- Create `src/proxy.ts` protecting `/settings/*` and `/packs/*`, redirecting unauthenticated users to sign-in
+- Create `src/types/next-auth.d.ts` extending `Session["user"]` with `id: string` and `username: string | null`
+- Reuse the existing Prisma singleton — no second `PrismaClient`
+- Verify: logged-out `/settings` redirects to sign-in; GitHub OAuth completes; exactly one `User`/`Account`/`Session` row created; `await auth()` works in a Server Component; sign-out deletes the `Session` row
 
 ## Notes
 
 <!-- Any extra notes -->
+- Use `next-auth@beta`, not `@latest` (still installs v4). Use `@auth/prisma-adapter` (the `@auth/*` scope, not `@next-auth/*`).
+- Do NOT set `session: { strategy: "jwt" }` — PokeHub deliberately uses database sessions (instant server-side logout, per-device session listing). Leave `session` unset.
+- No split-config workaround needed: Next.js 16 proxy runs on the Node.js runtime, so a database-session lookup inside `proxy.ts` is fine. Keep a single `auth.ts`.
+- Under the database strategy, the `session` callback receives `user` (the DB row), not `token` — populate `session.user.id`/`username` from `user`, casting/augmenting for the custom `username` field.
+- `proxy.ts` must use a named export `proxy` (Next.js 16 rejects the old `export { auth as middleware }` pattern).
+- Do not set a custom `pages.signIn` this iteration — use NextAuth's default sign-in page.
+- Protected routes are `/settings/*` and `/packs/*` (PokeHub routing), not `/dashboard`.
+- Env vars: `AUTH_SECRET`, `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET` (v5's `AUTH_*` prefix, supersedes older `NEXTAUTH_*` naming). `DATABASE_URL`/`DIRECT_URL` unchanged.
+- Out of scope: username onboarding (`/signup/username`, format validation, proxy gate for `username === null`), wiring the Zustand login modal to `signIn("github")`, Google provider / email magic link.
+- Use Context7 to verify current NextAuth v5 config conventions before implementing.
 
 ## History
 
