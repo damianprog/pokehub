@@ -1,24 +1,18 @@
-# Current Feature: Auth Credentials — Email/Password Provider
+# Current Feature
+
+<!-- Feature name and short description -->
 
 ## Status
 
-In Progress
+<!-- Not Started | In Progress | Completed -->
 
 ## Goals
 
-- Add a Credentials provider for email/password authentication to the existing single `auth.ts` (no `auth.config.ts` split), with bcrypt-based `authorize` validation
-- Switch `session.strategy` to `"jwt"` for the whole app — Auth.js silently fails to create a session for Credentials sign-ins under database sessions, so this reverses the auth-01 database-session decision app-wide, not just for credentials users
-- Create a registration API route at `POST /api/auth/register` accepting name, email, password, confirmPassword — validates passwords match, checks for existing user, hashes with bcryptjs, creates the user, returns success/error
-- Confirm email/password sign-in works via the default NextAuth sign-in page, redirecting to `/` with an authenticated state
-- Verify GitHub OAuth still works alongside the new provider
+<!-- Goals and requirements -->
 
 ## Notes
 
-- `User.password` already exists in the schema and is already migrated in — no migration needed for this feature
-- Keep the single `auth.ts` pattern established in auth-01 (no split-config) — the Next.js 16 proxy runs on the Node.js runtime, so there's no edge-runtime reason to split
-- bcryptjs is already installed
-- Session Strategy Change: the `Session` table stays empty under JWT strategy (adapter still persists `User`/`Account`/`VerificationToken`); instant server-side logout and per-device session listing are no longer free without extra work. Verify sessions via the `authjs.session-token` cookie and `GET /api/auth/session`, not the `Session` table. Needs a `jwt` callback (carries `id`/`username` onto the token) alongside the existing `session` callback, plus a `next-auth/jwt` type augmentation in `src/types/next-auth.d.ts`.
-- Spec file: `context/features/auth/auth-02-email-password-credentials-spec.md`
+<!-- Any extra notes -->
 
 ## History
 
