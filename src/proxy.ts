@@ -7,7 +7,7 @@ export const proxy = auth((req) => {
     req.nextUrl.pathname.startsWith("/packs");
 
   if (isProtected && !req.auth) {
-    return NextResponse.redirect(new URL("/api/auth/signin", req.nextUrl.origin));
+    return NextResponse.redirect(new URL("/sign-in", req.nextUrl.origin));
   }
 });
 

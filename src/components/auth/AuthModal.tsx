@@ -1,6 +1,14 @@
 "use client";
 
 import { useAuthModal } from "@/store/auth-modal";
+import {
+  fieldLabelClass,
+  inputClass,
+  inputBorderClass,
+  submitBtnClass,
+  footerTextClass,
+  footerLinkClass,
+} from "@/components/auth/auth-form-styles";
 
 function LogoMark() {
   return (
@@ -15,14 +23,9 @@ function LogoMark() {
   );
 }
 
-const fieldLabelClass = "text-[12.5px] font-semibold text-muted-foreground";
-const inputClass =
-  "w-full h-[46px] bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-[11px] px-[14px] text-[14.5px] text-foreground outline-none";
-const submitBtnClass =
-  "w-full h-12 rounded-[12px] bg-gradient-to-br from-brand-from to-brand-to font-bold text-base text-white shadow-[0_6px_20px_rgba(196,79,224,0.32)] mb-[18px]";
-const footerTextClass = "text-center text-[13.5px] text-dim-foreground";
-const footerLinkClass =
-  "text-brand-to font-semibold bg-transparent border-0 p-0 text-[inherit] cursor-pointer";
+const modalInputClass = `${inputClass} ${inputBorderClass}`;
+const modalSubmitBtnClass = `${submitBtnClass} mb-[18px]`;
+const modalFooterLinkClass = `${footerLinkClass} bg-transparent border-0 p-0 text-[inherit] cursor-pointer`;
 
 function LoginView({ onSwitch }: { onSwitch: () => void }) {
   return (
@@ -36,7 +39,7 @@ function LoginView({ onSwitch }: { onSwitch: () => void }) {
 
       <div className="mb-[14px]">
         <div className={`${fieldLabelClass} mb-[7px]`}>Username or email</div>
-        <input type="text" placeholder="trainer@pokehub.gg" className={inputClass} />
+        <input type="text" placeholder="trainer@pokehub.gg" className={modalInputClass} />
       </div>
 
       <div className="mb-[22px]">
@@ -44,14 +47,14 @@ function LoginView({ onSwitch }: { onSwitch: () => void }) {
           <span className={fieldLabelClass}>Password</span>
           <span className="text-xs text-brand-to cursor-pointer">Forgot?</span>
         </div>
-        <input type="password" placeholder="••••••••" className={inputClass} />
+        <input type="password" placeholder="••••••••" className={modalInputClass} />
       </div>
 
-      <button className={submitBtnClass}>Log in</button>
+      <button className={modalSubmitBtnClass}>Log in</button>
 
       <div className={footerTextClass}>
         No account?{" "}
-        <button className={footerLinkClass} onClick={onSwitch}>
+        <button className={modalFooterLinkClass} onClick={onSwitch}>
           Sign up free
         </button>
       </div>
@@ -71,24 +74,24 @@ function SignupView({ onSwitch }: { onSwitch: () => void }) {
 
       <div className="mb-[14px]">
         <div className={`${fieldLabelClass} mb-[7px]`}>Username</div>
-        <input type="text" placeholder="ash_ketchum" className={inputClass} />
+        <input type="text" placeholder="ash_ketchum" className={modalInputClass} />
       </div>
 
       <div className="mb-[14px]">
         <div className={`${fieldLabelClass} mb-[7px]`}>Email</div>
-        <input type="email" placeholder="you@example.com" className={inputClass} />
+        <input type="email" placeholder="you@example.com" className={modalInputClass} />
       </div>
 
       <div className="mb-[22px]">
         <div className={`${fieldLabelClass} mb-[7px]`}>Password</div>
-        <input type="password" placeholder="••••••••" className={inputClass} />
+        <input type="password" placeholder="••••••••" className={modalInputClass} />
       </div>
 
-      <button className={submitBtnClass}>Create account</button>
+      <button className={modalSubmitBtnClass}>Create account</button>
 
       <div className={footerTextClass}>
         Already a trainer?{" "}
-        <button className={footerLinkClass} onClick={onSwitch}>
+        <button className={modalFooterLinkClass} onClick={onSwitch}>
           Log in
         </button>
       </div>

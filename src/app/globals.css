@@ -58,6 +58,8 @@
   --animate-shimmer: shimmer 2.8s linear infinite;
   --animate-scroll-left: scrollLeft 42s linear infinite;
   --animate-modal-in: modalIn 0.2s ease both;
+  --animate-fade-up: fadeUp 0.45s ease both;
+  --animate-shake: shake 0.4s ease;
 }
 
 @keyframes scrollLeft {
@@ -116,6 +118,36 @@
   to {
     opacity: 1;
     transform: none;
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-6px);
+  }
+  40% {
+    transform: translateX(6px);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(4px);
   }
 }
 
