@@ -1,18 +1,24 @@
-# Current Feature
-
-<!-- Feature name and short description -->
+# Current Feature: Auth Credentials — Email/Password Provider
 
 ## Status
 
-<!-- Not Started | In Progress | Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals and requirements -->
+- Add a Credentials provider for email/password authentication to the existing single `auth.ts` (no `auth.config.ts` split), with bcrypt-based `authorize` validation
+- Switch `session.strategy` to `"jwt"` for the whole app — Auth.js silently fails to create a session for Credentials sign-ins under database sessions, so this reverses the auth-01 database-session decision app-wide, not just for credentials users
+- Create a registration API route at `POST /api/auth/register` accepting name, email, password, confirmPassword — validates passwords match, checks for existing user, hashes with bcryptjs, creates the user, returns success/error
+- Confirm email/password sign-in works via the default NextAuth sign-in page, redirecting to `/` with an authenticated state
+- Verify GitHub OAuth still works alongside the new provider
 
 ## Notes
 
-<!-- Any extra notes -->
+- `User.password` already exists in the schema and is already migrated in — no migration needed for this feature
+- Keep the single `auth.ts` pattern established in auth-01 (no split-config) — the Next.js 16 proxy runs on the Node.js runtime, so there's no edge-runtime reason to split
+- bcryptjs is already installed
+- Session Strategy Change: the `Session` table stays empty under JWT strategy (adapter still persists `User`/`Account`/`VerificationToken`); instant server-side logout and per-device session listing are no longer free without extra work. Verify sessions via the `authjs.session-token` cookie and `GET /api/auth/session`, not the `Session` table. Needs a `jwt` callback (carries `id`/`username` onto the token) alongside the existing `session` callback, plus a `next-auth/jwt` type augmentation in `src/types/next-auth.d.ts`.
+- Spec file: `context/features/auth/auth-02-email-password-credentials-spec.md`
 
 ## History
 
@@ -45,3 +51,4 @@
 - 2026-07-03 Built `TopReviews` component (`src/components/pokemon/TopReviews.tsx`): "Top Reviews" heading + "View all" count, plus two mocked review cards (gradient avatar, username, follower count, two-layer partial-fill star rating, quote, helpful count) below Base Stats on `/p/[slug]`. Static placeholder data — no review-writing feature exists yet, and the design's sample review text is genuinely Charizard-specific but reused on every Pokémon page this iteration (see spec §4). Verified at `/p/charizard`, no console errors, `npm run build` passes.
 - 2026-07-03 Built `AppearsInLists` component (`src/components/pokemon/AppearsInLists.tsx`): "Appears in lists" heading + 3-column grid of list cards (3 per-Pokémon thumbnails, title, "by {username} · {count} Pokémon" line), the last section on `/p/[slug]`, wired directly below `<TopReviews />`. Static placeholder data (3 sample lists from the design) — no lists feature exists yet. Also moved all four detail-page placeholder datasets (rating, rate-row, top reviews, appears-in-lists) out of `page.tsx` into their own files under `src/lib/` (`placeholder-*.ts`), leaving `page.tsx` as just data-fetching + layout. Verified at `/p/charizard`, no console errors, `npm run build` passes.
 - 2026-07-08 Set up NextAuth v5 auth core (`src/auth.ts`, `src/proxy.ts`, `src/types/next-auth.d.ts`, `src/app/api/auth/[...nextauth]/route.ts`): `PrismaAdapter` + GitHub provider with database sessions, `session` callback exposing `user.id`/`user.username` (via an `AdapterUser` augmentation), named `proxy` export protecting `/settings/*` and `/packs/*`, reusing the existing Prisma singleton. Username onboarding, login-modal wiring, and Google/magic-link providers deferred. `npm run build` passes.
+- 2026-07-09 Added Credentials (email/password) provider to `src/auth.ts` with a bcrypt `authorize` check, and switched `session.strategy` to `"jwt"` app-wide since Credentials sign-ins silently fail to create a session under database sessions — added a `jwt` callback plus a `next-auth/jwt` type augmentation in `src/types/next-auth.d.ts`. Built `POST /api/auth/register` (`src/app/api/auth/register/route.ts`) validating name/email/password/confirmPassword with Zod, hashing with bcryptjs, and creating the user. Both routes normalize email to lowercase before lookup/insert to keep `User.email` uniqueness and cross-provider account linking correct, and `authorize` strips the password hash off the object it returns. Verified live: credentials registration + sign-in produces an authenticated session (`authjs.session-token` cookie, `GET /api/auth/session`), duplicate registration with different email casing correctly 409s, and GitHub OAuth still redirects correctly under the new JWT strategy. `npm run build` passes.
