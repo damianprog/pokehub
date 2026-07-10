@@ -23,7 +23,7 @@ export function LoginView({
 
       <LoginForm onSuccess={onSuccess} />
 
-      <div className={footerTextClass}>
+      <div className={`${footerTextClass} mt-[22px]`}>
         No account?{" "}
         <button className={modalFooterLinkClass} onClick={onSwitch}>
           Sign up free
