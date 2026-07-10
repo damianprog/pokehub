@@ -6,7 +6,7 @@ export function FinalCta() {
   const { open } = useAuthModal();
   return (
     <section
-      className="px-[26px] py-[90px] text-center"
+      className="px-4 py-[90px] text-center sm:px-[26px]"
       style={{
         borderTop: "1px solid rgba(255,255,255,0.06)",
         background:

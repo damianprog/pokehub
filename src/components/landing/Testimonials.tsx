@@ -134,7 +134,7 @@ function ReviewCard({
 
 export function Testimonials() {
   return (
-    <section className="mx-auto max-w-[1180px] px-[26px] pb-[90px]">
+    <section className="mx-auto max-w-[1180px] px-4 pb-[90px] sm:px-[26px]">
       <h2 className="font-heading m-0 mb-6 text-[26px] font-bold tracking-[-0.02em]">
         What trainers are saying
       </h2>

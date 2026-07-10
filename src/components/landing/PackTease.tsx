@@ -118,7 +118,7 @@ function MiniPackCard({
 
 export function PackTease() {
   return (
-    <section className="mx-auto max-w-[1180px] px-[26px] pb-[90px]">
+    <section className="mx-auto max-w-[1180px] px-4 pb-[90px] sm:px-[26px]">
       {/* Inner promotional card */}
       <div
         className="relative grid grid-cols-1 gap-12 overflow-hidden rounded-[22px] p-8 md:grid-cols-[1fr_460px] md:gap-12 md:p-[48px_52px]"

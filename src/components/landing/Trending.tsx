@@ -47,7 +47,7 @@ function TrendingCard({
 
 export function Trending() {
   return (
-    <section className="mx-auto max-w-[1180px] px-[26px] pb-[90px]">
+    <section className="mx-auto max-w-[1180px] px-4 pb-[90px] sm:px-[26px]">
       <div className="mb-6 flex items-baseline justify-between">
         <h2 className="font-heading m-0 text-[26px] font-bold tracking-[-0.02em]">
           Trending this week

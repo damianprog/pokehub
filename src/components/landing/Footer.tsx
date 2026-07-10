@@ -4,7 +4,7 @@ export function Footer() {
   return (
     <footer style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
       <div
-        className="mx-auto flex max-w-[1180px] items-center justify-between px-[26px] pt-[28px] pb-[28px]"
+        className="mx-auto flex max-w-[1180px] items-center justify-between px-4 pt-[28px] pb-[28px] sm:px-[26px]"
       >
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <div

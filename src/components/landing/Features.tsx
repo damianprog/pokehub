@@ -57,7 +57,7 @@ function FeatureCard({
 
 export function Features() {
   return (
-    <section className="mx-auto max-w-[1180px] px-[26px] pt-[90px]">
+    <section className="mx-auto max-w-[1180px] px-4 pt-[90px] sm:px-[26px]">
       <div className="mb-[50px] text-center">
         <h2 className="font-heading mb-3 text-[36px] font-bold tracking-[-0.025em]">
           Everything for the Pokémon enthusiast
