@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import {
@@ -18,14 +18,24 @@ import {
 
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+const oauthErrorMessages: Record<string, string> = {
+  OAuthAccountNotLinked:
+    "To confirm your identity, sign in with the same account you used originally.",
+};
+
 export function SignInForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
-  const [formError, setFormError] = useState("");
-  const [shake, setShake] = useState(false);
+  const [formError, setFormError] = useState(() => {
+    const error = searchParams.get("error");
+    if (!error) return "";
+    return oauthErrorMessages[error] ?? "Something went wrong signing you in. Please try again.";
+  });
+  const [shake, setShake] = useState(() => searchParams.get("error") != null);
   const [submitting, setSubmitting] = useState(false);
 
   function triggerShake() {
@@ -149,7 +159,7 @@ export function SignInForm() {
 
         <button
           type="button"
-          onClick={() => signIn("github")}
+          onClick={() => signIn("github", { callbackUrl: "/" })}
           className="w-full h-12 rounded-[12px] border border-[rgba(255,255,255,0.12)] bg-[rgba(255,255,255,0.05)] font-semibold text-[14.5px] text-foreground flex items-center justify-center gap-[10px]"
         >
           <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
