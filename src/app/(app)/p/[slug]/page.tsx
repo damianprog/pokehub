@@ -43,8 +43,9 @@ export default async function PokemonPage({
 
   return (
     <div>
-      <div className="-mx-4 -mt-[30px] mb-[18px] sm:-mx-[26px] md:hidden">
-        <PokemonMobileTopBar name={pokemon.name} />
+      <PokemonMobileTopBar name={pokemon.name} />
+
+      <div className="-mx-4 mb-[18px] sm:-mx-[26px] md:hidden">
         <PokemonMobileHero
           id={pokemon.id}
           name={pokemon.name}
