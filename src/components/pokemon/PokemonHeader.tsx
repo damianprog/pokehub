@@ -11,10 +11,10 @@ export function PokemonHeader({ id, name, types }: PokemonHeaderProps) {
 
   return (
     <>
-      <div className="font-heading text-[14px] leading-[normal] tracking-[0.05em] text-[#7b818c]">
+      <div className="font-heading text-[13px] leading-[normal] tracking-[0.05em] text-[#7b818c] md:text-[14px]">
         {dexNumber}
       </div>
-      <h1 className="font-heading mt-[2px] mb-[12px] text-[52px] leading-none font-bold tracking-[-0.03em]">
+      <h1 className="font-heading mt-[2px] mb-[12px] text-[32px] leading-[1.05] font-bold tracking-[-0.025em] md:text-[52px] md:leading-none md:tracking-[-0.03em]">
         {name}
       </h1>
       <div className="mb-[18px] flex gap-[8px]">

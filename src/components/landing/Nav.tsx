@@ -1,9 +1,17 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { NavAuthButtons } from "@/components/auth/NavAuthButtons";
 
 export function Nav() {
+  const pathname = usePathname();
+  const hasMobileChrome = pathname.startsWith("/p/");
+
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur-lg">
+    <header
+      className={`${hasMobileChrome ? "hidden md:block " : ""}sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur-lg`}
+    >
       <div className="mx-auto flex h-16 max-w-[1180px] items-center gap-2 px-4 sm:gap-[22px] sm:px-[26px]">
         <Link href="/" className="flex items-center gap-[11px]">
           <span className="flex size-7 shrink-0 items-center justify-center rounded-[9px] bg-[linear-gradient(135deg,var(--brand-from),var(--brand-to))] font-heading text-[15px] font-extrabold text-white shadow-[0_4px_14px_rgba(196,79,224,0.4)]">

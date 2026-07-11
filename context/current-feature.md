@@ -1,18 +1,64 @@
-# Current Feature
+# Current Feature: Pokémon Detail Page — Mobile Layout
 
 <!-- Feature name and short description -->
+Make `/p/[slug]` work well at phone widths. Reuses the existing desktop section components
+wherever their visual content matches, and introduces new mobile-only components only for the
+chrome that has no desktop equivalent (top bar, hero, bottom action bar).
 
 ## Status
 
 <!-- Not Started | In Progress | Completed -->
+In Progress
 
 ## Goals
 
 <!-- Goals and requirements -->
 
+- Render both desktop and mobile chrome in the same page markup, toggled by the existing
+  responsive breakpoint (no separate route, no client-side viewport check) — the page stays a
+  plain server component.
+- Build `PokemonMobileTopBar`: sticky, backdrop-blurred header replacing the breadcrumb — round
+  back button, centered/truncated Pokémon name, round overflow button.
+- Build `PokemonMobileHero`: replaces `PokemonArtwork` on mobile as its own component (not a
+  variant prop) — full-bleed, non-rounded banner at the top of the page, top-left watermark
+  (vs. centered on desktop), circular favorite button overlaid on the image itself.
+- Build `PokemonMobileActionBar`: sticky bottom bar with "add to list" and "Write review" only —
+  no favorite button, since that now lives on the hero overlay.
+- Reuse `PokemonHeader`, `PokemonPhysicals`, `CommunityRating`, `RateRow`, `BaseStats` unchanged
+  in structure/props — responsive sizing adjustments only (name heading shrinks noticeably,
+  CommunityRating's score/spacing gets more compact, minor reductions elsewhere).
+- Modify `TopReviews` to support omitting the follower-count line on mobile (username + rating
+  only).
+- Modify `AppearsInLists` to become a horizontally-scrolling, edge-bleeding strip of fixed-width
+  cards on mobile, instead of the desktop 3-column grid — card content itself is unchanged.
+- No breadcrumb on mobile; single-column stack in document order (hero, header, physicals,
+  rating, rate row, base stats, top reviews, appears-in-lists); page gets bottom padding so the
+  last section clears the sticky bottom bar.
+
 ## Notes
 
 <!-- Any extra notes -->
+Source: Claude Design project, `PokeHub-PokemonDetail-Mobile.dc.html` (dedicated mobile screen
+file, separate from the main `PokeHub.dc.html` desktop screens). Full spec at
+`context/features/detail-page/detail-page-mobile-spec.md`.
+
+No real interactivity this iteration (favorite toggle, overflow menu, star input, back
+navigation, review composer, list-add flow) — matches the presentational-only pattern every
+desktop section has followed so far. Still consumes the same real `Pokemon` record and the same
+placeholder datasets (rating, rate-row, top reviews, appears-in-lists) already wired into the
+desktop page — no new data/aggregation. No tablet-specific intermediate layout, only
+desktop/mobile at the existing breakpoint. Back-button behavior (history back vs. fixed link) is
+left as an implementation detail — flag in review if it ends up wired to something real.
+
+Confirmed via discussion: the alternative mobile top bar (not the regular `Nav`) is intentional —
+a detail page needs contextual chrome (back + title), not global nav/branding, matching the same
+reasoning that already replaces `Nav`-adjacent content with a breadcrumb on desktop.
+
+Testing plan: `/p/charizard` at phone width (sticky top bar pinned, hero full-bleed with
+favorite overlay, single-column stack, sticky bottom bar pinned, last section not obscured) and
+at desktop width (existing layout untouched); single-type (`/p/magikarp`) vs. two-type
+(`/p/charizard`) header at mobile width; `TopReviews` follower line present/absent by breakpoint;
+`AppearsInLists` scroll-strip vs. grid by breakpoint.
 
 ## History
 

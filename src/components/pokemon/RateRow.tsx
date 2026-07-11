@@ -12,16 +12,15 @@ export function RateRow({
   likeCount,
 }: RateRowProps) {
   return (
-    <div className="mb-[22px] flex items-center gap-[14px] rounded-[14px] border border-white/[0.06] bg-[#13161b] px-[20px] py-[16px] leading-[normal]">
+    <div className="mb-[22px] flex items-center gap-[14px] rounded-[14px] border border-white/[0.06] bg-[#13161b] px-[16px] py-[14px] leading-[normal] md:px-[20px] md:py-[16px]">
       <span className="text-[13px] font-semibold text-[#9aa0ab]">Rate it</span>
       <span
-        className="cursor-pointer text-[24px] text-[#4a4f5a]"
-        style={{ letterSpacing: "5px", fontFamily: "Arial" }}
+        className="ml-auto cursor-pointer text-[22px] tracking-[4px] text-[#4a4f5a] md:ml-0 md:text-[24px] md:tracking-[5px]"
+        style={{ fontFamily: "Arial" }}
       >
         ★★★★★
       </span>
-      <div className="flex-1" />
-      <div className="flex gap-[24px] text-[12.5px] text-[#7b818c]">
+      <div className="hidden gap-[24px] text-[12.5px] text-[#7b818c] md:ml-auto md:flex">
         <span>
           Ranked <span className="font-bold text-[#ff9a6b]">#{rank}</span> of{" "}
           {typeLabel}

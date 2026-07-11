@@ -4,6 +4,9 @@ import { getPokemon } from "@/lib/pokemon";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { PokemonArtwork } from "@/components/pokemon/PokemonArtwork";
 import { PokemonActions } from "@/components/pokemon/PokemonActions";
+import { PokemonMobileTopBar } from "@/components/pokemon/PokemonMobileTopBar";
+import { PokemonMobileHero } from "@/components/pokemon/PokemonMobileHero";
+import { PokemonMobileActionBar } from "@/components/pokemon/PokemonMobileActionBar";
 import { PokemonHeader } from "@/components/pokemon/PokemonHeader";
 import { PokemonPhysicals } from "@/components/pokemon/PokemonPhysicals";
 import { CommunityRating } from "@/components/pokemon/CommunityRating";
@@ -40,7 +43,17 @@ export default async function PokemonPage({
 
   return (
     <div>
-      <div className="mb-[18px]">
+      <div className="-mx-4 -mt-[30px] mb-[18px] sm:-mx-[26px] md:hidden">
+        <PokemonMobileTopBar name={pokemon.name} />
+        <PokemonMobileHero
+          id={pokemon.id}
+          name={pokemon.name}
+          artworkUrl={pokemon.artworkUrl}
+          types={pokemon.types}
+        />
+      </div>
+
+      <div className="mb-[18px] hidden md:block">
         <Breadcrumb
           items={[
             { label: "Browse", href: "/discover" },
@@ -49,8 +62,9 @@ export default async function PokemonPage({
           ]}
         />
       </div>
-      <div className="grid gap-[34px] items-start" style={{ gridTemplateColumns: "392px 1fr" }}>
-        <div className="sticky top-[90px]">
+
+      <div className="grid items-start gap-[34px] md:grid-cols-[392px_1fr]">
+        <div className="sticky top-[90px] hidden md:block">
           <PokemonArtwork
             id={pokemon.id}
             name={pokemon.name}
@@ -59,7 +73,7 @@ export default async function PokemonPage({
           />
           <PokemonActions />
         </div>
-        <div>
+        <div className="min-w-0 pb-[90px] md:pb-0">
           <PokemonHeader id={pokemon.id} name={pokemon.name} types={pokemon.types} />
           <PokemonPhysicals
             height={pokemon.height}
@@ -93,6 +107,10 @@ export default async function PokemonPage({
           />
           <AppearsInLists lists={PLACEHOLDER_APPEARS_IN_LISTS.lists} />
         </div>
+      </div>
+
+      <div className="md:hidden">
+        <PokemonMobileActionBar />
       </div>
     </div>
   );

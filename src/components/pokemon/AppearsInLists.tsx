@@ -24,14 +24,16 @@ interface AppearsInListsProps {
 export function AppearsInLists({ lists }: AppearsInListsProps) {
   return (
     <div className="leading-[normal]">
-      <h2 className="font-heading mt-[28px] mb-[14px] text-[19px] font-bold">Appears in lists</h2>
-      <div className="grid grid-cols-3 gap-[13px]">
+      <h2 className="font-heading mt-[14px] mb-[13px] text-[17px] font-bold md:mt-[28px] md:mb-[14px] md:text-[19px]">
+        Appears in lists
+      </h2>
+      <div className="-mx-4 flex gap-[11px] overflow-x-auto px-4 pb-[6px] sm:-mx-[26px] sm:px-[26px] md:mx-0 md:grid md:grid-cols-3 md:gap-[13px] md:overflow-visible md:px-0 md:pb-0">
         {lists.map((list) => (
           <div
             key={list.id}
-            className="cursor-pointer rounded-[14px] border border-white/[0.06] bg-[#15181e] p-[14px]"
+            className="w-[168px] flex-none cursor-pointer rounded-[14px] border border-white/[0.06] bg-[#15181e] p-[12px] md:w-auto md:p-[14px]"
           >
-            <div className="mb-[10px] flex gap-[4px]">
+            <div className="mb-[9px] flex gap-[4px] md:mb-[10px]">
               {list.thumbnails.map((thumbnail) => (
                 <div
                   key={thumbnail.pokemonId}
@@ -48,8 +50,8 @@ export function AppearsInLists({ lists }: AppearsInListsProps) {
                 </div>
               ))}
             </div>
-            <div className="text-[14px] font-bold">{list.title}</div>
-            <div className="mt-[3px] text-[12px] text-[#7b818c]">
+            <div className="text-[13px] font-bold md:text-[14px]">{list.title}</div>
+            <div className="mt-[2px] text-[11px] text-[#7b818c] md:mt-[3px] md:text-[12px]">
               by {list.username} · {list.pokemonCount} Pokémon
             </div>
           </div>
