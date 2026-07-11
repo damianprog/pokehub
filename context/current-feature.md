@@ -1,36 +1,18 @@
-# Current Feature: Signed-In Nav
+# Current Feature
 
 <!-- Feature name and short description -->
-
-Signed-in variant of the top navigation bar (`context/features/landing-page/nav-signed-spec.md`), shown at `/` and site-wide once a user is authenticated, replacing the logged-out nav's "Log in" / "Sign up free" buttons with authenticated navigation and an account menu.
 
 ## Status
 
 <!-- Not Started | In Progress | Completed -->
 
-In Progress
-
 ## Goals
 
 <!-- Goals and requirements -->
 
-- Signed-in users see this nav instead of the logged-out "Log in" / "Sign up free" nav, on `/` and anywhere else the shared nav renders
-- Logo + wordmark, "Feed" / "Browse" / "Packs" nav links, search box, pack currency pill, and avatar render per the design (`PokeHub.dc.html` sticky header)
-- "Feed", "Browse", and "Packs" links all navigate to `/` for now (their real destinations don't exist yet)
-- Avatar is a circular badge showing a single uppercase letter derived from the signed-in user's username
-- Clicking the avatar opens a dropdown with a single "Sign out" item that actually signs the user out (redirecting to `/`)
-- Mobile view collapses to just the logo/wordmark on the left and the avatar (with working dropdown) on the right — nav links, search box, and currency pill are hidden entirely
-- No layout break from 375px to 1920px
-
 ## Notes
 
 <!-- Any extra notes -->
-
-- Full spec: `context/features/landing-page/nav-signed-spec.md`
-- Search box and pack currency pill are presentational only this iteration — no real search, no real dust balance
-- No active-tab highlighting for Feed/Browse/Packs since they all resolve to the same route right now
-- Out of scope: real search, real dust/pack balance, account-menu items beyond "Sign out", building out `/discover` or `/packs`
-- Existing `Nav.tsx` / `NavAuthButtons.tsx` currently always render the logged-out state regardless of session — this feature needs to add the session check that switches between the two
 
 ## History
 
@@ -71,3 +53,4 @@ In Progress
 - 2026-07-10 Split `AuthModal.tsx` into one component per file, per Damian's request going forward for this project: `LoginView` → `src/components/auth/LoginView.tsx`, `SignupView` → `src/components/auth/SignupView.tsx`, and the inline `LogoMark` → `src/components/auth/LogoMark.tsx`. `AuthModal.tsx` is now just the dialog/overlay shell that imports and switches between the two views. `npm run build` passes; verified live that both modal views still render.
 - 2026-07-11 Completed: AuthModal wired with real authentication end-to-end (LoginView/SignupView on shared LoginForm/SignupForm, credentials + GitHub sign-in, email label fix, signup success panel). Verified live via Playwright across all four auth surfaces; `npm run build` passes.
 - 2026-07-11 Completed: mobile layout for `/p/[slug]` (`PokemonMobileTopBar`, `PokemonMobileHero`, `PokemonMobileActionBar`, responsive resizing on the reused info-column components), toggled by the existing `md` breakpoint alongside the untouched desktop chrome. `Nav` now hides itself on this route at mobile widths so the new top bar is the only header, resolved after flagging two design/spec mismatches with Damian (`CommunityRating` stays desktop-identical rather than gaining rank text; `RateRow` drops its trailing stats on mobile per the design). Caught and fixed a CSS Grid `min-width: auto` overflow bug where `AppearsInLists`' horizontal scroll strip was inflating the info column's implicit grid track. Verified via Playwright screenshots at `/p/charizard` and `/p/magikarp`, mobile and desktop widths; `npm run build` passes.
+- 2026-07-11 Completed: signed-in nav (`context/features/landing-page/nav-signed-spec.md`) — `layout.tsx` now fetches the session server-side via `auth()` and passes it to `Nav`, which renders the new `SignedInNav` (Feed/Browse/Packs links all pointing to `/`, static search box + pack currency pill, and `NavAvatarMenu`) instead of the logged-out buttons once a session exists. Avatar shows the first letter of `username`, falling back to `name` since OAuth/newly-registered users don't have a username yet. `NavAvatarMenu` initially hand-rolled outside-click/Escape handling, then swapped to shadcn's `DropdownMenu` (`@base-ui/react/menu`) per Damian's request for a more idiomatic solution — it also handles focus and modal scroll-lock for free. Mobile collapses to just logo + avatar. Verified live via Playwright: correct avatar letter, dropdown open/close (click, outside-click, Escape), working sign-out, mobile collapse, and no regressions to the logged-out nav; `npm run build` passes.
