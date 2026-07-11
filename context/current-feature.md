@@ -5,22 +5,14 @@
 ## Status
 
 <!-- Not Started | In Progress | Completed -->
-In Progress
 
 ## Goals
 
 <!-- Goals and requirements -->
-Wire real authentication into `AuthModal.tsx` — currently `LoginView`/`SignupView` are static markup with no state, validation, or submit handlers (`modal-spec.md` was design-only; auth logic was explicitly out of scope at the time).
-
-- LoginView: email + password fields, same validation/error pattern as `SignInForm.tsx`, calls `signIn("credentials", …)`. On success, close the modal and land on an authenticated `/`.
-- SignupView: align fields with what `/api/auth/register` actually accepts (Name, Email, Password, Confirm password) instead of the mockup's "Username" field — same validation/error pattern as `RegisterForm.tsx`, then auto sign-in like the register page. On success, show a brief in-modal success state (checkmark, "Account created", "Signing you in…", auto-close after a delay), matching the `/register` page's UX.
-- Fix the LoginView "Username or email" label to just "Email" — there is no username-based credentials lookup, only email.
-- LoginView also gets a "Sign in with GitHub" button (matching `SignInForm.tsx`), added after Damian asked for it — SignupView stays credentials-only, matching `RegisterForm.tsx` not having one either.
 
 ## Notes
 
 <!-- Any extra notes -->
-Initially duplicated the validation/submit logic into the modal views (matching the modal's existing pattern of its own duplicated style constants). Later extracted into shared `LoginForm.tsx`/`SignupForm.tsx` components (see history) after Damian asked for the modal and the `/sign-in`/`/register` pages to use the same form — the page/modal chrome (heading, card wrapper, footer link vs. switch-button) stays separate per call site since that structure genuinely differs between a full page and a dialog.
 
 ## History
 
@@ -59,3 +51,4 @@ Initially duplicated the validation/submit logic into the modal views (matching 
 - 2026-07-10 Wired real auth into `AuthModal.tsx` (`src/components/auth/AuthModal.tsx`) — previously pure static markup. `LoginView` now validates and calls `signIn("credentials", …)`, matching `SignInForm.tsx`'s error/shake pattern; the "Username or email" label/field was fixed to "Email" since credentials login is email-only. `SignupView`'s fields were changed from the mockup's single "Username" field to Name/Email/Password/Confirm password to match what `/api/auth/register` actually accepts, then auto signs the new user in like `RegisterForm.tsx`, showing a brief in-modal success panel ("Account created" / "Signing you in…") before closing the modal and redirecting to `/`; a fallback "manual" success state switches back to the login view if auto sign-in fails. `LoginView` also got a "Sign in with GitHub" button (`signIn("github", { callbackUrl: "/" })`), matching `SignInForm.tsx`; `SignupView` stays credentials-only, matching `RegisterForm.tsx` not having one either. Verified live via Playwright: empty-field validation, wrong-credentials error, full signup → success panel → authenticated session on `/`, and the GitHub button rendering only in the login view. `npm run build` passes.
 - 2026-07-10 Deduplicated the login/signup forms: extracted `src/components/auth/LoginForm.tsx` and `src/components/auth/SignupForm.tsx` — the fields, validation, submit handlers, GitHub button, and (for signup) the success panel now live in exactly one place instead of being duplicated across `SignInForm.tsx`/`RegisterForm.tsx` (pages) and `AuthModal.tsx` (modal). `SignInForm.tsx`/`RegisterForm.tsx`/`AuthModal.tsx` now just supply the surrounding chrome (heading, card wrapper, footer link vs. switch-button) and pass callbacks (`onSuccess`, `onSignedIn`/`onManualFallback`) for what should happen after a successful submit — the page redirects via `router.push`, the modal closes then redirects. `SignupForm` reports its phase (`"form" | "success"`) back to the caller via an `onPhaseChange` callback so the page/modal can hide their heading and footer while the success panel is showing, since that state otherwise lives entirely inside the shared component. One side effect: the modal's signup view now also gets the Terms/Privacy footnote that only the `/register` page had before, since that markup moved into the shared component too. Verified live via Playwright across all four surfaces (`/sign-in` with an OAuth error param, `/register` full signup, modal login, modal signup) plus visual screenshots. `npm run build` passes.
 - 2026-07-10 Split `AuthModal.tsx` into one component per file, per Damian's request going forward for this project: `LoginView` → `src/components/auth/LoginView.tsx`, `SignupView` → `src/components/auth/SignupView.tsx`, and the inline `LogoMark` → `src/components/auth/LogoMark.tsx`. `AuthModal.tsx` is now just the dialog/overlay shell that imports and switches between the two views. `npm run build` passes; verified live that both modal views still render.
+- 2026-07-11 Completed: AuthModal wired with real authentication end-to-end (LoginView/SignupView on shared LoginForm/SignupForm, credentials + GitHub sign-in, email label fix, signup success panel). Verified live via Playwright across all four auth surfaces; `npm run build` passes.
