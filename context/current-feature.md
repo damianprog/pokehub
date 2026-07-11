@@ -1,18 +1,36 @@
-# Current Feature
+# Current Feature: Signed-In Nav
 
 <!-- Feature name and short description -->
+
+Signed-in variant of the top navigation bar (`context/features/landing-page/nav-signed-spec.md`), shown at `/` and site-wide once a user is authenticated, replacing the logged-out nav's "Log in" / "Sign up free" buttons with authenticated navigation and an account menu.
 
 ## Status
 
 <!-- Not Started | In Progress | Completed -->
 
+In Progress
+
 ## Goals
 
 <!-- Goals and requirements -->
 
+- Signed-in users see this nav instead of the logged-out "Log in" / "Sign up free" nav, on `/` and anywhere else the shared nav renders
+- Logo + wordmark, "Feed" / "Browse" / "Packs" nav links, search box, pack currency pill, and avatar render per the design (`PokeHub.dc.html` sticky header)
+- "Feed", "Browse", and "Packs" links all navigate to `/` for now (their real destinations don't exist yet)
+- Avatar is a circular badge showing a single uppercase letter derived from the signed-in user's username
+- Clicking the avatar opens a dropdown with a single "Sign out" item that actually signs the user out (redirecting to `/`)
+- Mobile view collapses to just the logo/wordmark on the left and the avatar (with working dropdown) on the right — nav links, search box, and currency pill are hidden entirely
+- No layout break from 375px to 1920px
+
 ## Notes
 
 <!-- Any extra notes -->
+
+- Full spec: `context/features/landing-page/nav-signed-spec.md`
+- Search box and pack currency pill are presentational only this iteration — no real search, no real dust balance
+- No active-tab highlighting for Feed/Browse/Packs since they all resolve to the same route right now
+- Out of scope: real search, real dust/pack balance, account-menu items beyond "Sign out", building out `/discover` or `/packs`
+- Existing `Nav.tsx` / `NavAuthButtons.tsx` currently always render the logged-out state regardless of session — this feature needs to add the session check that switches between the two
 
 ## History
 

@@ -2,9 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type { Session } from "next-auth";
 import { NavAuthButtons } from "@/components/auth/NavAuthButtons";
+import { SignedInNav } from "@/components/landing/SignedInNav";
 
-export function Nav() {
+interface NavProps {
+  session: Session | null;
+}
+
+export function Nav({ session }: NavProps) {
   const pathname = usePathname();
   const hasMobileChrome = pathname.startsWith("/p/");
 
@@ -22,16 +28,22 @@ export function Nav() {
           </span>
         </Link>
 
-        <div className="flex-1" />
+        {session?.user ? (
+          <SignedInNav user={session.user} />
+        ) : (
+          <>
+            <div className="flex-1" />
 
-        <Link
-          href="/discover"
-          className="hidden px-1 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground sm:block"
-        >
-          Browse Pokedex
-        </Link>
+            <Link
+              href="/discover"
+              className="hidden px-1 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground sm:block"
+            >
+              Browse Pokedex
+            </Link>
 
-        <NavAuthButtons />
+            <NavAuthButtons />
+          </>
+        )}
       </div>
     </header>
   );

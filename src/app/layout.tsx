@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Space_Grotesk, Hanken_Grotesk } from "next/font/google";
 import "./globals.css";
 import { Nav } from "@/components/landing/Nav";
+import { auth } from "@/auth";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -18,18 +19,20 @@ export const metadata: Metadata = {
   description: "Rate, review, and collect every Pokémon.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
+
   return (
     <html
       lang="en"
       className={`dark ${spaceGrotesk.variable} ${hankenGrotesk.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-          <Nav />
+          <Nav session={session} />
           {children}
         </body>
     </html>
