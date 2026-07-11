@@ -1,64 +1,18 @@
-# Current Feature: Pokémon Detail Page — Mobile Layout
+# Current Feature
 
 <!-- Feature name and short description -->
-Make `/p/[slug]` work well at phone widths. Reuses the existing desktop section components
-wherever their visual content matches, and introduces new mobile-only components only for the
-chrome that has no desktop equivalent (top bar, hero, bottom action bar).
 
 ## Status
 
 <!-- Not Started | In Progress | Completed -->
-In Progress
 
 ## Goals
 
 <!-- Goals and requirements -->
 
-- Render both desktop and mobile chrome in the same page markup, toggled by the existing
-  responsive breakpoint (no separate route, no client-side viewport check) — the page stays a
-  plain server component.
-- Build `PokemonMobileTopBar`: sticky, backdrop-blurred header replacing the breadcrumb — round
-  back button, centered/truncated Pokémon name, round overflow button.
-- Build `PokemonMobileHero`: replaces `PokemonArtwork` on mobile as its own component (not a
-  variant prop) — full-bleed, non-rounded banner at the top of the page, top-left watermark
-  (vs. centered on desktop), circular favorite button overlaid on the image itself.
-- Build `PokemonMobileActionBar`: sticky bottom bar with "add to list" and "Write review" only —
-  no favorite button, since that now lives on the hero overlay.
-- Reuse `PokemonHeader`, `PokemonPhysicals`, `CommunityRating`, `RateRow`, `BaseStats` unchanged
-  in structure/props — responsive sizing adjustments only (name heading shrinks noticeably,
-  CommunityRating's score/spacing gets more compact, minor reductions elsewhere).
-- Modify `TopReviews` to support omitting the follower-count line on mobile (username + rating
-  only).
-- Modify `AppearsInLists` to become a horizontally-scrolling, edge-bleeding strip of fixed-width
-  cards on mobile, instead of the desktop 3-column grid — card content itself is unchanged.
-- No breadcrumb on mobile; single-column stack in document order (hero, header, physicals,
-  rating, rate row, base stats, top reviews, appears-in-lists); page gets bottom padding so the
-  last section clears the sticky bottom bar.
-
 ## Notes
 
 <!-- Any extra notes -->
-Source: Claude Design project, `PokeHub-PokemonDetail-Mobile.dc.html` (dedicated mobile screen
-file, separate from the main `PokeHub.dc.html` desktop screens). Full spec at
-`context/features/detail-page/detail-page-mobile-spec.md`.
-
-No real interactivity this iteration (favorite toggle, overflow menu, star input, back
-navigation, review composer, list-add flow) — matches the presentational-only pattern every
-desktop section has followed so far. Still consumes the same real `Pokemon` record and the same
-placeholder datasets (rating, rate-row, top reviews, appears-in-lists) already wired into the
-desktop page — no new data/aggregation. No tablet-specific intermediate layout, only
-desktop/mobile at the existing breakpoint. Back-button behavior (history back vs. fixed link) is
-left as an implementation detail — flag in review if it ends up wired to something real.
-
-Confirmed via discussion: the alternative mobile top bar (not the regular `Nav`) is intentional —
-a detail page needs contextual chrome (back + title), not global nav/branding, matching the same
-reasoning that already replaces `Nav`-adjacent content with a breadcrumb on desktop.
-
-Testing plan: `/p/charizard` at phone width (sticky top bar pinned, hero full-bleed with
-favorite overlay, single-column stack, sticky bottom bar pinned, last section not obscured) and
-at desktop width (existing layout untouched); single-type (`/p/magikarp`) vs. two-type
-(`/p/charizard`) header at mobile width; `TopReviews` follower line present/absent by breakpoint;
-`AppearsInLists` scroll-strip vs. grid by breakpoint.
 
 ## History
 
@@ -98,3 +52,4 @@ at desktop width (existing layout untouched); single-type (`/p/magikarp`) vs. tw
 - 2026-07-10 Deduplicated the login/signup forms: extracted `src/components/auth/LoginForm.tsx` and `src/components/auth/SignupForm.tsx` — the fields, validation, submit handlers, GitHub button, and (for signup) the success panel now live in exactly one place instead of being duplicated across `SignInForm.tsx`/`RegisterForm.tsx` (pages) and `AuthModal.tsx` (modal). `SignInForm.tsx`/`RegisterForm.tsx`/`AuthModal.tsx` now just supply the surrounding chrome (heading, card wrapper, footer link vs. switch-button) and pass callbacks (`onSuccess`, `onSignedIn`/`onManualFallback`) for what should happen after a successful submit — the page redirects via `router.push`, the modal closes then redirects. `SignupForm` reports its phase (`"form" | "success"`) back to the caller via an `onPhaseChange` callback so the page/modal can hide their heading and footer while the success panel is showing, since that state otherwise lives entirely inside the shared component. One side effect: the modal's signup view now also gets the Terms/Privacy footnote that only the `/register` page had before, since that markup moved into the shared component too. Verified live via Playwright across all four surfaces (`/sign-in` with an OAuth error param, `/register` full signup, modal login, modal signup) plus visual screenshots. `npm run build` passes.
 - 2026-07-10 Split `AuthModal.tsx` into one component per file, per Damian's request going forward for this project: `LoginView` → `src/components/auth/LoginView.tsx`, `SignupView` → `src/components/auth/SignupView.tsx`, and the inline `LogoMark` → `src/components/auth/LogoMark.tsx`. `AuthModal.tsx` is now just the dialog/overlay shell that imports and switches between the two views. `npm run build` passes; verified live that both modal views still render.
 - 2026-07-11 Completed: AuthModal wired with real authentication end-to-end (LoginView/SignupView on shared LoginForm/SignupForm, credentials + GitHub sign-in, email label fix, signup success panel). Verified live via Playwright across all four auth surfaces; `npm run build` passes.
+- 2026-07-11 Completed: mobile layout for `/p/[slug]` (`PokemonMobileTopBar`, `PokemonMobileHero`, `PokemonMobileActionBar`, responsive resizing on the reused info-column components), toggled by the existing `md` breakpoint alongside the untouched desktop chrome. `Nav` now hides itself on this route at mobile widths so the new top bar is the only header, resolved after flagging two design/spec mismatches with Damian (`CommunityRating` stays desktop-identical rather than gaining rank text; `RateRow` drops its trailing stats on mobile per the design). Caught and fixed a CSS Grid `min-width: auto` overflow bug where `AppearsInLists`' horizontal scroll strip was inflating the info column's implicit grid track. Verified via Playwright screenshots at `/p/charizard` and `/p/magikarp`, mobile and desktop widths; `npm run build` passes.
