@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Space_Grotesk, Hanken_Grotesk } from "next/font/google";
 import "./globals.css";
 import { Nav } from "@/components/landing/Nav";
+import { Toaster } from "@/components/ui/sonner";
 import { auth } from "@/auth";
 
 const spaceGrotesk = Space_Grotesk({
@@ -34,6 +35,7 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col">
           <Nav session={session} />
           {children}
+          <Toaster />
         </body>
     </html>
   );

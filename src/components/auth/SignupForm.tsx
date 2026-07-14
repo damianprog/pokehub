@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { signIn } from "next-auth/react";
+import { useState } from "react";
+import { toast } from "sonner";
 import {
   fieldLabelClass,
   inputClass,
@@ -13,38 +13,12 @@ import {
 } from "@/components/auth/auth-form-styles";
 
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const REDIRECT_DELAY_MS = 2000;
-
-type SuccessMode = "signed-in" | "manual" | null;
-export type SignupPhase = "form" | "success";
 
 interface SignupFormProps {
-  onSignedIn: () => void;
-  onManualFallback: () => void;
-  onPhaseChange?: (phase: SignupPhase) => void;
+  onRegistered: () => void;
 }
 
-function SuccessPanel({ isSignedIn, onCta }: { isSignedIn: boolean; onCta: () => void }) {
-  return (
-    <div className="text-center py-5 px-1">
-      <div className="size-[52px] rounded-full bg-[rgba(92,184,92,0.14)] border border-[rgba(92,184,92,0.35)] flex items-center justify-center text-2xl text-[#5cb85c] mx-auto mb-[18px]">
-        ✓
-      </div>
-      <h3 className="mt-0 mb-2 font-heading font-bold text-[19px]">Account created</h3>
-      <p className="mt-0 mb-5 text-sm text-muted-foreground">
-        {isSignedIn ? "Signing you in…" : "Redirecting you to log in…"}
-      </p>
-      <button
-        onClick={onCta}
-        className="inline-flex h-11 px-6 rounded-[11px] bg-gradient-to-br from-brand-from to-brand-to text-white font-bold text-[14.5px] items-center cursor-pointer"
-      >
-        {isSignedIn ? "Continue →" : "Go to sign in →"}
-      </button>
-    </div>
-  );
-}
-
-export function SignupForm({ onSignedIn, onManualFallback, onPhaseChange }: SignupFormProps) {
+export function SignupForm({ onRegistered }: SignupFormProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -56,21 +30,11 @@ export function SignupForm({ onSignedIn, onManualFallback, onPhaseChange }: Sign
   const [formError, setFormError] = useState("");
   const [shake, setShake] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [successMode, setSuccessMode] = useState<SuccessMode>(null);
 
   function triggerShake() {
     setShake(true);
     setTimeout(() => setShake(false), 400);
   }
-
-  useEffect(() => {
-    if (!successMode) return;
-    const timeout = setTimeout(() => {
-      if (successMode === "signed-in") onSignedIn();
-      else onManualFallback();
-    }, REDIRECT_DELAY_MS);
-    return () => clearTimeout(timeout);
-  }, [successMode, onSignedIn, onManualFallback]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -119,25 +83,9 @@ export function SignupForm({ onSignedIn, onManualFallback, onPhaseChange }: Sign
       return;
     }
 
-    const signInResult = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
-
     setSubmitting(false);
-    setSuccessMode(signInResult?.error ? "manual" : "signed-in");
-    onPhaseChange?.("success");
-  }
-
-  if (successMode) {
-    const isSignedIn = successMode === "signed-in";
-    return (
-      <SuccessPanel
-        isSignedIn={isSignedIn}
-        onCta={isSignedIn ? onSignedIn : onManualFallback}
-      />
-    );
+    toast.success("Account created — you can now log in.");
+    onRegistered();
   }
 
   return (
