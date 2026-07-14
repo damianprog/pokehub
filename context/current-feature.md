@@ -2,28 +2,17 @@
 
 <!-- Feature name and short description -->
 
-Register success toast — after registering, show a toast telling the user they can now log in, instead of auto signing them in.
-
 ## Status
 
 <!-- Not Started | In Progress | Completed -->
-
-In Progress
 
 ## Goals
 
 <!-- Goals and requirements -->
 
-- On successful registration (`/register` page, and the signup modal), stop calling `signIn("credentials", …)` automatically.
-- Instead, show a toast confirming the account was created and the user can log in now: the `/register` page redirects to `/sign-in`, the signup modal switches itself to its login view (same modal stays open).
-- Keep existing client-side + server-side validation and error handling on the registration form untouched.
-
 ## Notes
 
 <!-- Any extra notes -->
-
-- No toast library existed in the project yet — added `sonner` plus a thin `src/components/ui/sonner.tsx` wrapper (hardcoded `theme="dark"`, no `next-themes`, since the app has no light-mode/theme toggle) mounted once in the root layout.
-- Toaster configured with `position="bottom-left"`, `richColors` (green success styling), and `duration={8000}` per Damian's request after first review.
 
 ## History
 
@@ -66,4 +55,4 @@ In Progress
 - 2026-07-11 Completed: mobile layout for `/p/[slug]` (`PokemonMobileTopBar`, `PokemonMobileHero`, `PokemonMobileActionBar`, responsive resizing on the reused info-column components), toggled by the existing `md` breakpoint alongside the untouched desktop chrome. `Nav` now hides itself on this route at mobile widths so the new top bar is the only header, resolved after flagging two design/spec mismatches with Damian (`CommunityRating` stays desktop-identical rather than gaining rank text; `RateRow` drops its trailing stats on mobile per the design). Caught and fixed a CSS Grid `min-width: auto` overflow bug where `AppearsInLists`' horizontal scroll strip was inflating the info column's implicit grid track. Verified via Playwright screenshots at `/p/charizard` and `/p/magikarp`, mobile and desktop widths; `npm run build` passes.
 - 2026-07-11 Completed: signed-in nav (`context/features/landing-page/nav-signed-spec.md`) — `layout.tsx` now fetches the session server-side via `auth()` and passes it to `Nav`, which renders the new `SignedInNav` (Feed/Browse/Packs links all pointing to `/`, static search box + pack currency pill, and `NavAvatarMenu`) instead of the logged-out buttons once a session exists. Avatar shows the first letter of `username`, falling back to `name` since OAuth/newly-registered users don't have a username yet. `NavAvatarMenu` initially hand-rolled outside-click/Escape handling, then swapped to shadcn's `DropdownMenu` (`@base-ui/react/menu`) per Damian's request for a more idiomatic solution — it also handles focus and modal scroll-lock for free. Mobile collapses to just logo + avatar. Verified live via Playwright: correct avatar letter, dropdown open/close (click, outside-click, Escape), working sign-out, mobile collapse, and no regressions to the logged-out nav; `npm run build` passes.
 - 2026-07-14 Completed: GitHub avatar in nav avatar menu — `NavAvatarMenu` now renders the signed-in user's `session.user.image` (via `next/image`) instead of the letter badge when it's set, falling back to the letter otherwise; added `avatars.githubusercontent.com` to `next.config.ts` remote patterns. Verified live by crafting signed session JWTs for a real GitHub-linked user (avatar renders, dropdown still opens/signs out) and a Credentials user with no `image` (letter badge unchanged) — no console errors, `npm run build` passes.
-- 2026-07-14 Completed: register success toast — removed the post-register auto sign-in from `SignupForm.tsx` (dropped the `signIn("credentials", …)` call, the `successMode`/`SignupPhase` state machine, and the in-place success panel) in favor of a single `onRegistered` callback fired right after the `/api/auth/register` call succeeds, alongside `toast.success("Account created — you can now log in.")`. `RegisterForm.tsx` (`/register` page) now redirects to `/sign-in` on `onRegistered`; `SignupView.tsx` (auth modal) switches the modal to its login view instead, keeping the modal open. Added `sonner` as the project's first toast library plus `src/components/ui/sonner.tsx` (hardcoded `theme="dark"`, no `next-themes` — the app has no light-mode toggle) mounted once in `layout.tsx`. Verified live via Playwright on both surfaces: registering hits `/api/auth/register`, shows the toast, and `GET /api/auth/session` confirms no session is created; the `/register` page redirects to `/sign-in`, the modal switches to the login view in place. `npm run build` passes.
+- 2026-07-14 Completed: register success toast — removed the post-register auto sign-in from `SignupForm.tsx` (dropped the `signIn("credentials", …)` call, the `successMode`/`SignupPhase` state machine, and the in-place success panel) in favor of a single `onRegistered` callback fired right after the `/api/auth/register` call succeeds, alongside `toast.success("Account created — you can now log in.")`. `RegisterForm.tsx` (`/register` page) now redirects to `/sign-in` on `onRegistered`; `SignupView.tsx` (auth modal) switches the modal to its login view instead, keeping the modal open. Added `sonner` as the project's first toast library plus `src/components/ui/sonner.tsx` (hardcoded `theme="dark"`, no `next-themes` — the app has no light-mode toggle, `position="bottom-left"`, `richColors` for green success styling, `duration={8000}`) mounted once in `layout.tsx`. Verified live via Playwright on both surfaces: registering hits `/api/auth/register`, shows the green bottom-left toast, and `GET /api/auth/session` confirms no session is created; the `/register` page redirects to `/sign-in`, the modal switches to the login view in place. `npm run build` passes.
