@@ -2,33 +2,21 @@
 
 <!-- Feature name and short description -->
 
-GitHub avatar in nav avatar menu — show the signed-in user's real GitHub profile picture in `NavAvatarMenu` instead of the letter placeholder, when it's available.
-
 ## Status
 
 <!-- Not Started | In Progress | Completed -->
-
-In Progress
 
 ## Goals
 
 <!-- Goals and requirements -->
 
-- When a user is signed in via GitHub and has a GitHub profile image, `NavAvatarMenu` shows that image instead of the initial-letter badge.
-- When a user is signed in via email/password (Credentials) and has no `image` set, the initial-letter badge keeps rendering exactly as it does today.
-- Image must be allowed through `next/image` (GitHub avatar host added to remote patterns).
-
 ## Notes
 
 <!-- Any extra notes -->
 
-- `Session.user.image` already flows from `User.image` in the DB (populated by the GitHub adapter on OAuth sign-in); Credentials users have `image: null` since there's no avatar-upload feature yet.
-
 ## History
 
 <!-- Keep this updated. Earliest to latest -->
-
-- 2026-07-14 `NavAvatarMenu` now renders the signed-in user's `session.user.image` (via `next/image`) instead of the letter badge when it's set, falling back to the letter otherwise; added `avatars.githubusercontent.com` to `next.config.ts` remote patterns. Verified live by crafting signed session JWTs for the real GitHub-linked test user (avatar image renders, dropdown still opens/signs out) and a Credentials test user with no `image` (letter badge unchanged) — no console errors. `npm run build` passes.
 
 - 2026-06-22 Initial Next.js project setup (Create Next App) with Tailwind CSS configured.
 - 2026-06-23 Added dark-theme `@theme` color tokens, brand fonts (Space Grotesk + Hanken Grotesk), and shadcn/ui setup.
@@ -66,3 +54,4 @@ In Progress
 - 2026-07-11 Completed: AuthModal wired with real authentication end-to-end (LoginView/SignupView on shared LoginForm/SignupForm, credentials + GitHub sign-in, email label fix, signup success panel). Verified live via Playwright across all four auth surfaces; `npm run build` passes.
 - 2026-07-11 Completed: mobile layout for `/p/[slug]` (`PokemonMobileTopBar`, `PokemonMobileHero`, `PokemonMobileActionBar`, responsive resizing on the reused info-column components), toggled by the existing `md` breakpoint alongside the untouched desktop chrome. `Nav` now hides itself on this route at mobile widths so the new top bar is the only header, resolved after flagging two design/spec mismatches with Damian (`CommunityRating` stays desktop-identical rather than gaining rank text; `RateRow` drops its trailing stats on mobile per the design). Caught and fixed a CSS Grid `min-width: auto` overflow bug where `AppearsInLists`' horizontal scroll strip was inflating the info column's implicit grid track. Verified via Playwright screenshots at `/p/charizard` and `/p/magikarp`, mobile and desktop widths; `npm run build` passes.
 - 2026-07-11 Completed: signed-in nav (`context/features/landing-page/nav-signed-spec.md`) — `layout.tsx` now fetches the session server-side via `auth()` and passes it to `Nav`, which renders the new `SignedInNav` (Feed/Browse/Packs links all pointing to `/`, static search box + pack currency pill, and `NavAvatarMenu`) instead of the logged-out buttons once a session exists. Avatar shows the first letter of `username`, falling back to `name` since OAuth/newly-registered users don't have a username yet. `NavAvatarMenu` initially hand-rolled outside-click/Escape handling, then swapped to shadcn's `DropdownMenu` (`@base-ui/react/menu`) per Damian's request for a more idiomatic solution — it also handles focus and modal scroll-lock for free. Mobile collapses to just logo + avatar. Verified live via Playwright: correct avatar letter, dropdown open/close (click, outside-click, Escape), working sign-out, mobile collapse, and no regressions to the logged-out nav; `npm run build` passes.
+- 2026-07-14 Completed: GitHub avatar in nav avatar menu — `NavAvatarMenu` now renders the signed-in user's `session.user.image` (via `next/image`) instead of the letter badge when it's set, falling back to the letter otherwise; added `avatars.githubusercontent.com` to `next.config.ts` remote patterns. Verified live by crafting signed session JWTs for a real GitHub-linked user (avatar renders, dropdown still opens/signs out) and a Credentials user with no `image` (letter badge unchanged) — no console errors, `npm run build` passes.
