@@ -5,6 +5,7 @@ interface SignedInNavProps {
   user: {
     username: string | null;
     name?: string | null;
+    image?: string | null;
   };
 }
 
@@ -49,7 +50,7 @@ export function SignedInNav({ user }: SignedInNavProps) {
         <span className="font-heading text-[13px] font-bold text-[#bcd6ff]">2,450</span>
       </div>
 
-      <NavAvatarMenu letter={letter} />
+      <NavAvatarMenu letter={letter} image={user.image} />
     </>
   );
 }

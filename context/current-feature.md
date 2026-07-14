@@ -2,21 +2,33 @@
 
 <!-- Feature name and short description -->
 
+GitHub avatar in nav avatar menu — show the signed-in user's real GitHub profile picture in `NavAvatarMenu` instead of the letter placeholder, when it's available.
+
 ## Status
 
 <!-- Not Started | In Progress | Completed -->
+
+In Progress
 
 ## Goals
 
 <!-- Goals and requirements -->
 
+- When a user is signed in via GitHub and has a GitHub profile image, `NavAvatarMenu` shows that image instead of the initial-letter badge.
+- When a user is signed in via email/password (Credentials) and has no `image` set, the initial-letter badge keeps rendering exactly as it does today.
+- Image must be allowed through `next/image` (GitHub avatar host added to remote patterns).
+
 ## Notes
 
 <!-- Any extra notes -->
 
+- `Session.user.image` already flows from `User.image` in the DB (populated by the GitHub adapter on OAuth sign-in); Credentials users have `image: null` since there's no avatar-upload feature yet.
+
 ## History
 
 <!-- Keep this updated. Earliest to latest -->
+
+- 2026-07-14 `NavAvatarMenu` now renders the signed-in user's `session.user.image` (via `next/image`) instead of the letter badge when it's set, falling back to the letter otherwise; added `avatars.githubusercontent.com` to `next.config.ts` remote patterns. Verified live by crafting signed session JWTs for the real GitHub-linked test user (avatar image renders, dropdown still opens/signs out) and a Credentials test user with no `image` (letter badge unchanged) — no console errors. `npm run build` passes.
 
 - 2026-06-22 Initial Next.js project setup (Create Next App) with Tailwind CSS configured.
 - 2026-06-23 Added dark-theme `@theme` color tokens, brand fonts (Space Grotesk + Hanken Grotesk), and shadcn/ui setup.
