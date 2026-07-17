@@ -1,31 +1,18 @@
-# Current Feature: Forgot Password
+# Current Feature
 
 <!-- Feature name and short description -->
 
-Let credentials users reset a forgotten password via an emailed link, reusing the existing `VerificationToken` model as the reset-token store.
-
 ## Status
 
-In Progress
+<!-- Not Started | In Progress | Completed -->
 
 ## Goals
 
-- A "Forgot password?" entry point on the sign-in surfaces starts a reset flow (`LoginForm.tsx` already has a static, non-interactive "Forgot?" span next to the password field — wire this up rather than adding a new link).
-- User submits their email on a "forgot password" page/step; app generates a reset token and emails a reset link, following the same request → token → email pattern as `createVerificationToken` / `sendVerificationEmail`.
-- The response to the email-submission step must not reveal whether that email has an account (avoid user enumeration) — same success message either way.
-- Reset link lands on a "set new password" page where the user enters a new password (+ confirm), matching the register form's password rules (min 8 chars, confirm-match).
-- Submitting a valid, unexpired token updates `User.password` (bcrypt-hashed, matching `register`'s hashing) and consumes the token so it can't be reused.
-- Expired/invalid/already-used tokens show a clear error state, matching the pattern already used on `/verify-email`.
-- GitHub OAuth-only users (no `password` set) requesting a reset should not end up with a usable password-reset link for an account that can't sign in with credentials — decide whether to silently no-op (still show the generic "check your email" response) or handle differently.
+<!-- Goals and requirements -->
 
 ## Notes
 
 <!-- Any extra notes -->
-
-- `VerificationToken` (`identifier`, `token`, `expires`) is currently used only for email verification, keyed by `identifier = email`. Reusing it for password reset means a user with both an unconsumed email-verification token and a password-reset request could collide, since `createVerificationToken` deletes all existing tokens for that `identifier` before creating a new one. Worth a deliberate decision (e.g. prefixing the identifier per purpose, like `reset:{email}`, vs. accepting the collision) rather than reusing `createVerificationToken` as-is.
-- Follow the existing best-effort email-send pattern: log and don't throw on a Resend failure (see `register/route.ts`), so a Resend outage doesn't surface as a hard error to the user.
-- Existing reference points: `src/lib/verification-token.ts` (token create/consume), `src/lib/verification-email.ts` + `src/lib/resend.ts` (email send), `src/app/api/auth/verify-email/route.ts` + `src/app/(app)`-style page for the success/failure/expired UI pattern, `src/components/auth/auth-form-styles.ts` for shared form styling.
-- Password hashing/validation should mirror `src/app/api/auth/register/route.ts` (`bcrypt.hash(password, 12)`, Zod `z.string().min(8)`).
 
 ## History
 
@@ -71,3 +58,4 @@ In Progress
 - 2026-07-14 Completed: register success toast — removed the post-register auto sign-in from `SignupForm.tsx` (dropped the `signIn("credentials", …)` call, the `successMode`/`SignupPhase` state machine, and the in-place success panel) in favor of a single `onRegistered` callback fired right after the `/api/auth/register` call succeeds, alongside `toast.success("Account created — you can now log in.")`. `RegisterForm.tsx` (`/register` page) now redirects to `/sign-in` on `onRegistered`; `SignupView.tsx` (auth modal) switches the modal to its login view instead, keeping the modal open. Added `sonner` as the project's first toast library plus `src/components/ui/sonner.tsx` (hardcoded `theme="dark"`, no `next-themes` — the app has no light-mode toggle, `position="bottom-left"`, `richColors` for green success styling, `duration={8000}`) mounted once in `layout.tsx`. Verified live via Playwright on both surfaces: registering hits `/api/auth/register`, shows the green bottom-left toast, and `GET /api/auth/session` confirms no session is created; the `/register` page redirects to `/sign-in`, the modal switches to the login view in place. `npm run build` passes.
 - 2026-07-17 Completed: email verification on register. `/api/auth/register` now generates a `VerificationToken` (reused from the NextAuth adapter's magic-link model) and sends a verification email via Resend (`src/lib/resend.ts`, `src/lib/verification-email.ts`, `src/lib/verification-token.ts`); the send is best-effort (logged, not thrown) so a Resend outage doesn't fail registration. `GET /api/auth/verify-email` consumes the token, sets `User.emailVerified`, and `/verify-email` shows success/failure/expired states. `authorize` in `src/auth.ts` now throws a custom `EmailNotVerifiedError` (`CredentialsSignin` subclass) when `emailVerified` is null, and `LoginForm.tsx` surfaces a "check your inbox" message with a `ResendVerificationForm.tsx` entry point hitting the new `POST /api/auth/resend-verification` route. GitHub OAuth is untouched. `npm run build` passes.
 - 2026-07-17 Completed: email verification toggle flag. Added `EMAIL_VERIFICATION_REQUIRED` (`src/lib/email-verification.ts`, reads `REQUIRE_EMAIL_VERIFICATION` env var, default-on) so the whole verification requirement can be switched off until a domain is verified in Resend. `/api/auth/register` skips token creation/email send and marks the new user verified immediately when disabled; `authorize` in `src/auth.ts` skips the `EmailNotVerifiedError` check. Default/unset behavior and GitHub OAuth are unchanged. `resend-verification` route needed no changes — it already no-ops for verified users. Verified live: registering with the flag off signs the user in immediately with no email sent. `npm run build` passes.
+- 2026-07-17 Completed: forgot password flow, reusing `VerificationToken` for reset tokens (`src/lib/reset-token.ts`, `src/lib/reset-password-email.ts`, `/api/auth/forgot-password`, `/api/auth/reset-password`, `/forgot-password`, `/reset-password`). Reset tokens use a `reset:{email}` identifier prefix to avoid colliding with pending email-verification tokens for the same address. `/api/auth/forgot-password` always returns a generic response and only sends an email for credentials users (`User.password` set), so it doesn't leak account existence or send unusable links to OAuth-only accounts. Wired the previously-static "Forgot?" text in `LoginForm.tsx` into a real link. Verified live end-to-end via Playwright + direct DB token lookup (request → token → reset → old password rejected → new password signs in → reused/missing token shows the invalid state); `npm run build` passes.
