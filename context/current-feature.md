@@ -1,8 +1,10 @@
-# Current Feature
+# Current Feature: Email Verification Toggle Flag
 
 <!-- Feature name and short description -->
 
 ## Status
+
+In Progress
 
 <!-- Not Started | In Progress | Completed -->
 
@@ -10,9 +12,20 @@
 
 <!-- Goals and requirements -->
 
+- Add a flag that can disable the email-verification requirement end to end, so registration + sign-in work fully without a Resend-verified domain.
+- When disabled: `POST /api/auth/register` skips generating a `VerificationToken` and sending the verification email, and the new user is immediately able to sign in (treated as verified on creation).
+- When disabled: the Credentials `authorize` check in `src/auth.ts` no longer throws `EmailNotVerifiedError` for unverified accounts.
+- When enabled (default/unset): current behavior is unchanged — verification email required before credentials sign-in.
+- GitHub OAuth sign-in is untouched either way (it was never gated by email verification).
+
 ## Notes
 
 <!-- Any extra notes -->
+
+- Root cause: no domain is verified in Resend yet, so `RESEND_FROM_EMAIL` falls back to Resend's shared test domain (`onboarding@resend.dev`), which can only deliver to the Resend account's own email — every other registrant's real inbox never receives the message.
+- Proposed mechanism: a single env var (e.g. `REQUIRE_EMAIL_VERIFICATION`, default-on when unset so production stays safe by default). Damian is open to alternatives to a plain env var — confirm naming/shape before implementing.
+- Decide whether `POST /api/auth/resend-verification` and `/verify-email` should short-circuit gracefully when the flag is off, rather than erroring or 404ing.
+- Follows the `DEV_UNLOCK_ALL` feature-flag pattern already documented in `context/project-overview_8.md` §10.2 (hard-coded off in production, single source-of-truth helper).
 
 ## History
 
