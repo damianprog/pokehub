@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
+import Link from "next/link";
 import { toast } from "sonner";
 import {
   fieldLabelClass,
@@ -133,7 +134,9 @@ export function LoginForm({ onSuccess, initialError }: LoginFormProps) {
         <div className="mb-[22px]">
           <div className="flex justify-between items-baseline mb-[7px]">
             <span className={fieldLabelClass}>Password</span>
-            <span className="text-xs text-brand-to cursor-pointer">Forgot?</span>
+            <Link href="/forgot-password" className="text-xs text-brand-to">
+              Forgot?
+            </Link>
           </div>
           <input
             type="password"

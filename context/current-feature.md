@@ -1,18 +1,31 @@
-# Current Feature
+# Current Feature: Forgot Password
 
 <!-- Feature name and short description -->
 
+Let credentials users reset a forgotten password via an emailed link, reusing the existing `VerificationToken` model as the reset-token store.
+
 ## Status
 
-<!-- Not Started | In Progress | Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals and requirements -->
+- A "Forgot password?" entry point on the sign-in surfaces starts a reset flow (`LoginForm.tsx` already has a static, non-interactive "Forgot?" span next to the password field — wire this up rather than adding a new link).
+- User submits their email on a "forgot password" page/step; app generates a reset token and emails a reset link, following the same request → token → email pattern as `createVerificationToken` / `sendVerificationEmail`.
+- The response to the email-submission step must not reveal whether that email has an account (avoid user enumeration) — same success message either way.
+- Reset link lands on a "set new password" page where the user enters a new password (+ confirm), matching the register form's password rules (min 8 chars, confirm-match).
+- Submitting a valid, unexpired token updates `User.password` (bcrypt-hashed, matching `register`'s hashing) and consumes the token so it can't be reused.
+- Expired/invalid/already-used tokens show a clear error state, matching the pattern already used on `/verify-email`.
+- GitHub OAuth-only users (no `password` set) requesting a reset should not end up with a usable password-reset link for an account that can't sign in with credentials — decide whether to silently no-op (still show the generic "check your email" response) or handle differently.
 
 ## Notes
 
 <!-- Any extra notes -->
+
+- `VerificationToken` (`identifier`, `token`, `expires`) is currently used only for email verification, keyed by `identifier = email`. Reusing it for password reset means a user with both an unconsumed email-verification token and a password-reset request could collide, since `createVerificationToken` deletes all existing tokens for that `identifier` before creating a new one. Worth a deliberate decision (e.g. prefixing the identifier per purpose, like `reset:{email}`, vs. accepting the collision) rather than reusing `createVerificationToken` as-is.
+- Follow the existing best-effort email-send pattern: log and don't throw on a Resend failure (see `register/route.ts`), so a Resend outage doesn't surface as a hard error to the user.
+- Existing reference points: `src/lib/verification-token.ts` (token create/consume), `src/lib/verification-email.ts` + `src/lib/resend.ts` (email send), `src/app/api/auth/verify-email/route.ts` + `src/app/(app)`-style page for the success/failure/expired UI pattern, `src/components/auth/auth-form-styles.ts` for shared form styling.
+- Password hashing/validation should mirror `src/app/api/auth/register/route.ts` (`bcrypt.hash(password, 12)`, Zod `z.string().min(8)`).
 
 ## History
 
