@@ -1,37 +1,18 @@
-# Current Feature: Email Verification on Register
+# Current Feature
 
 <!-- Feature name and short description -->
-
-Require new credentials (email/password) users to verify their email address by clicking a link sent via Resend before they can sign in.
 
 ## Status
 
 <!-- Not Started | In Progress | Completed -->
 
-In Progress
-
 ## Goals
 
 <!-- Goals and requirements -->
 
-- After a successful `/api/auth/register` call, send a verification email to the new user via Resend containing a unique, expiring verification link.
-- Clicking the link marks the user's email as verified (`User.emailVerified`) and shows a clear success result, then leads into sign-in.
-- Credentials sign-in is blocked for users whose email isn't verified yet, with a clear error message telling them to check their inbox.
-- A user who lost or let their verification link expire can request a new verification email (resend flow).
-- GitHub OAuth users continue to be treated as verified automatically (the provider already vouches for their email) — this feature only changes the credentials path.
-
 ## Notes
 
 <!-- Any extra notes -->
-
-- `RESEND_API_KEY` is already present in `.env`. The `resend` package is not yet installed.
-- `User.emailVerified` (nullable `DateTime`) already exists in the schema and is currently unused — this feature starts populating it.
-- The `VerificationToken` model (`identifier`, `token`, `expires`) already exists for the NextAuth adapter's magic-link flow (no Email provider is configured yet, so it's currently unused) — reuse it for verification tokens rather than adding a new model, unless it proves to be a poor fit.
-- Registration (`src/app/api/auth/register/route.ts`) currently creates the user and returns immediately; it needs to also generate a token and trigger the Resend send.
-- The `authorize` callback in `src/auth.ts` needs to check `emailVerified` before allowing a credentials sign-in to succeed.
-- Needs a verification endpoint/page (e.g. `/verify-email?token=...`) that consumes the token, sets `emailVerified`, and shows success/failure/expired states.
-- Needs a resend-verification entry point (e.g. surfaced from the blocked-sign-in error state) that issues a fresh token and re-sends the email.
-- Open question to resolve during implementation: which sender address/domain to send from via Resend (Resend requires a verified sending domain in production; their shared test domain may be usable for dev/local).
 
 ## History
 
@@ -75,3 +56,4 @@ In Progress
 - 2026-07-11 Completed: signed-in nav (`context/features/landing-page/nav-signed-spec.md`) — `layout.tsx` now fetches the session server-side via `auth()` and passes it to `Nav`, which renders the new `SignedInNav` (Feed/Browse/Packs links all pointing to `/`, static search box + pack currency pill, and `NavAvatarMenu`) instead of the logged-out buttons once a session exists. Avatar shows the first letter of `username`, falling back to `name` since OAuth/newly-registered users don't have a username yet. `NavAvatarMenu` initially hand-rolled outside-click/Escape handling, then swapped to shadcn's `DropdownMenu` (`@base-ui/react/menu`) per Damian's request for a more idiomatic solution — it also handles focus and modal scroll-lock for free. Mobile collapses to just logo + avatar. Verified live via Playwright: correct avatar letter, dropdown open/close (click, outside-click, Escape), working sign-out, mobile collapse, and no regressions to the logged-out nav; `npm run build` passes.
 - 2026-07-14 Completed: GitHub avatar in nav avatar menu — `NavAvatarMenu` now renders the signed-in user's `session.user.image` (via `next/image`) instead of the letter badge when it's set, falling back to the letter otherwise; added `avatars.githubusercontent.com` to `next.config.ts` remote patterns. Verified live by crafting signed session JWTs for a real GitHub-linked user (avatar renders, dropdown still opens/signs out) and a Credentials user with no `image` (letter badge unchanged) — no console errors, `npm run build` passes.
 - 2026-07-14 Completed: register success toast — removed the post-register auto sign-in from `SignupForm.tsx` (dropped the `signIn("credentials", …)` call, the `successMode`/`SignupPhase` state machine, and the in-place success panel) in favor of a single `onRegistered` callback fired right after the `/api/auth/register` call succeeds, alongside `toast.success("Account created — you can now log in.")`. `RegisterForm.tsx` (`/register` page) now redirects to `/sign-in` on `onRegistered`; `SignupView.tsx` (auth modal) switches the modal to its login view instead, keeping the modal open. Added `sonner` as the project's first toast library plus `src/components/ui/sonner.tsx` (hardcoded `theme="dark"`, no `next-themes` — the app has no light-mode toggle, `position="bottom-left"`, `richColors` for green success styling, `duration={8000}`) mounted once in `layout.tsx`. Verified live via Playwright on both surfaces: registering hits `/api/auth/register`, shows the green bottom-left toast, and `GET /api/auth/session` confirms no session is created; the `/register` page redirects to `/sign-in`, the modal switches to the login view in place. `npm run build` passes.
+- 2026-07-17 Completed: email verification on register. `/api/auth/register` now generates a `VerificationToken` (reused from the NextAuth adapter's magic-link model) and sends a verification email via Resend (`src/lib/resend.ts`, `src/lib/verification-email.ts`, `src/lib/verification-token.ts`); the send is best-effort (logged, not thrown) so a Resend outage doesn't fail registration. `GET /api/auth/verify-email` consumes the token, sets `User.emailVerified`, and `/verify-email` shows success/failure/expired states. `authorize` in `src/auth.ts` now throws a custom `EmailNotVerifiedError` (`CredentialsSignin` subclass) when `emailVerified` is null, and `LoginForm.tsx` surfaces a "check your inbox" message with a `ResendVerificationForm.tsx` entry point hitting the new `POST /api/auth/resend-verification` route. GitHub OAuth is untouched. `npm run build` passes.
