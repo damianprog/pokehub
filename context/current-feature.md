@@ -1,10 +1,8 @@
-# Current Feature: Email Verification Toggle Flag
+# Current Feature
 
 <!-- Feature name and short description -->
 
 ## Status
-
-In Progress
 
 <!-- Not Started | In Progress | Completed -->
 
@@ -12,20 +10,9 @@ In Progress
 
 <!-- Goals and requirements -->
 
-- Add a flag that can disable the email-verification requirement end to end, so registration + sign-in work fully without a Resend-verified domain.
-- When disabled: `POST /api/auth/register` skips generating a `VerificationToken` and sending the verification email, and the new user is immediately able to sign in (treated as verified on creation).
-- When disabled: the Credentials `authorize` check in `src/auth.ts` no longer throws `EmailNotVerifiedError` for unverified accounts.
-- When enabled (default/unset): current behavior is unchanged — verification email required before credentials sign-in.
-- GitHub OAuth sign-in is untouched either way (it was never gated by email verification).
-
 ## Notes
 
 <!-- Any extra notes -->
-
-- Root cause: no domain is verified in Resend yet, so `RESEND_FROM_EMAIL` falls back to Resend's shared test domain (`onboarding@resend.dev`), which can only deliver to the Resend account's own email — every other registrant's real inbox never receives the message.
-- Proposed mechanism: a single env var (e.g. `REQUIRE_EMAIL_VERIFICATION`, default-on when unset so production stays safe by default). Damian is open to alternatives to a plain env var — confirm naming/shape before implementing.
-- Decide whether `POST /api/auth/resend-verification` and `/verify-email` should short-circuit gracefully when the flag is off, rather than erroring or 404ing.
-- Follows the `DEV_UNLOCK_ALL` feature-flag pattern already documented in `context/project-overview_8.md` §10.2 (hard-coded off in production, single source-of-truth helper).
 
 ## History
 
@@ -70,3 +57,4 @@ In Progress
 - 2026-07-14 Completed: GitHub avatar in nav avatar menu — `NavAvatarMenu` now renders the signed-in user's `session.user.image` (via `next/image`) instead of the letter badge when it's set, falling back to the letter otherwise; added `avatars.githubusercontent.com` to `next.config.ts` remote patterns. Verified live by crafting signed session JWTs for a real GitHub-linked user (avatar renders, dropdown still opens/signs out) and a Credentials user with no `image` (letter badge unchanged) — no console errors, `npm run build` passes.
 - 2026-07-14 Completed: register success toast — removed the post-register auto sign-in from `SignupForm.tsx` (dropped the `signIn("credentials", …)` call, the `successMode`/`SignupPhase` state machine, and the in-place success panel) in favor of a single `onRegistered` callback fired right after the `/api/auth/register` call succeeds, alongside `toast.success("Account created — you can now log in.")`. `RegisterForm.tsx` (`/register` page) now redirects to `/sign-in` on `onRegistered`; `SignupView.tsx` (auth modal) switches the modal to its login view instead, keeping the modal open. Added `sonner` as the project's first toast library plus `src/components/ui/sonner.tsx` (hardcoded `theme="dark"`, no `next-themes` — the app has no light-mode toggle, `position="bottom-left"`, `richColors` for green success styling, `duration={8000}`) mounted once in `layout.tsx`. Verified live via Playwright on both surfaces: registering hits `/api/auth/register`, shows the green bottom-left toast, and `GET /api/auth/session` confirms no session is created; the `/register` page redirects to `/sign-in`, the modal switches to the login view in place. `npm run build` passes.
 - 2026-07-17 Completed: email verification on register. `/api/auth/register` now generates a `VerificationToken` (reused from the NextAuth adapter's magic-link model) and sends a verification email via Resend (`src/lib/resend.ts`, `src/lib/verification-email.ts`, `src/lib/verification-token.ts`); the send is best-effort (logged, not thrown) so a Resend outage doesn't fail registration. `GET /api/auth/verify-email` consumes the token, sets `User.emailVerified`, and `/verify-email` shows success/failure/expired states. `authorize` in `src/auth.ts` now throws a custom `EmailNotVerifiedError` (`CredentialsSignin` subclass) when `emailVerified` is null, and `LoginForm.tsx` surfaces a "check your inbox" message with a `ResendVerificationForm.tsx` entry point hitting the new `POST /api/auth/resend-verification` route. GitHub OAuth is untouched. `npm run build` passes.
+- 2026-07-17 Completed: email verification toggle flag. Added `EMAIL_VERIFICATION_REQUIRED` (`src/lib/email-verification.ts`, reads `REQUIRE_EMAIL_VERIFICATION` env var, default-on) so the whole verification requirement can be switched off until a domain is verified in Resend. `/api/auth/register` skips token creation/email send and marks the new user verified immediately when disabled; `authorize` in `src/auth.ts` skips the `EmailNotVerifiedError` check. Default/unset behavior and GitHub OAuth are unchanged. `resend-verification` route needed no changes — it already no-ops for verified users. Verified live: registering with the flag off signs the user in immediately with no email sent. `npm run build` passes.
