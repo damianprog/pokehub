@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "sonner";
 import {
   fieldLabelClass,
   inputClass,
@@ -14,11 +13,14 @@ import {
 
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+export type SignupPhase = "form" | "success";
+
 interface SignupFormProps {
-  onRegistered: () => void;
+  onDone: () => void;
+  onPhaseChange?: (phase: SignupPhase) => void;
 }
 
-export function SignupForm({ onRegistered }: SignupFormProps) {
+export function SignupForm({ onDone, onPhaseChange }: SignupFormProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -30,6 +32,10 @@ export function SignupForm({ onRegistered }: SignupFormProps) {
   const [formError, setFormError] = useState("");
   const [shake, setShake] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [phase, setPhase] = useState<SignupPhase>("form");
+  const [registeredEmail, setRegisteredEmail] = useState("");
+  const [resending, setResending] = useState(false);
+  const [resent, setResent] = useState(false);
 
   function triggerShake() {
     setShake(true);
@@ -84,8 +90,49 @@ export function SignupForm({ onRegistered }: SignupFormProps) {
     }
 
     setSubmitting(false);
-    toast.success("Account created — you can now log in.");
-    onRegistered();
+    setRegisteredEmail(email);
+    setPhase("success");
+    onPhaseChange?.("success");
+  }
+
+  async function handleResend() {
+    setResending(true);
+    await fetch("/api/auth/resend-verification", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: registeredEmail }),
+    });
+    setResending(false);
+    setResent(true);
+  }
+
+  if (phase === "success") {
+    return (
+      <div className="text-center">
+        <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-[rgba(196,79,224,0.12)] text-2xl">
+          ✉️
+        </div>
+        <h3 className="mt-0 mb-2 font-heading font-bold text-[19px]">Check your email</h3>
+        <p className="mt-0 mb-6 text-[14.5px] text-dim-foreground leading-relaxed">
+          We sent a verification link to{" "}
+          <span className="font-semibold text-foreground">{registeredEmail}</span>. Verify your
+          email, then log in below.
+        </p>
+
+        <button type="button" onClick={onDone} className={submitBtnClass}>
+          Go to log in
+        </button>
+
+        <button
+          type="button"
+          onClick={handleResend}
+          disabled={resending || resent}
+          className="mt-4 w-full text-[13px] font-semibold text-brand-to disabled:opacity-60"
+        >
+          {resent ? "Verification email sent" : resending ? "Sending…" : "Resend verification email"}
+        </button>
+      </div>
+    );
   }
 
   return (

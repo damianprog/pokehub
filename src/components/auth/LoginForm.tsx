@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
+import { toast } from "sonner";
 import {
   fieldLabelClass,
   inputClass,
@@ -27,6 +28,20 @@ export function LoginForm({ onSuccess, initialError }: LoginFormProps) {
   const [formError, setFormError] = useState(initialError ?? "");
   const [shake, setShake] = useState(() => Boolean(initialError));
   const [submitting, setSubmitting] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
+  const [resending, setResending] = useState(false);
+
+  async function handleResend() {
+    if (!unverifiedEmail) return;
+    setResending(true);
+    await fetch("/api/auth/resend-verification", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: unverifiedEmail }),
+    });
+    setResending(false);
+    toast.success("If that account needs verification, we've sent a new link.");
+  }
 
   function triggerShake() {
     setShake(true);
@@ -53,6 +68,7 @@ export function LoginForm({ onSuccess, initialError }: LoginFormProps) {
     setEmailError("");
     setPasswordError("");
     setFormError("");
+    setUnverifiedEmail(null);
     setSubmitting(true);
 
     const result = await signIn("credentials", {
@@ -64,7 +80,12 @@ export function LoginForm({ onSuccess, initialError }: LoginFormProps) {
     setSubmitting(false);
 
     if (result?.error) {
-      setFormError("Invalid email or password.");
+      if (result.code === "email_not_verified") {
+        setFormError("Please verify your email before logging in.");
+        setUnverifiedEmail(email);
+      } else {
+        setFormError("Invalid email or password.");
+      }
       triggerShake();
       return;
     }
@@ -80,6 +101,17 @@ export function LoginForm({ onSuccess, initialError }: LoginFormProps) {
             <span className="text-[#f07a7a] text-[15px] shrink-0">⚠</span>
             <span>{formError}</span>
           </div>
+        )}
+
+        {unverifiedEmail && (
+          <button
+            type="button"
+            onClick={handleResend}
+            disabled={resending}
+            className="block mb-[18px] text-[13px] font-semibold text-brand-to disabled:opacity-60"
+          >
+            {resending ? "Sending…" : "Resend verification email"}
+          </button>
         )}
 
         <div className="mb-[14px]">

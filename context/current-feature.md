@@ -1,18 +1,37 @@
-# Current Feature
+# Current Feature: Email Verification on Register
 
 <!-- Feature name and short description -->
+
+Require new credentials (email/password) users to verify their email address by clicking a link sent via Resend before they can sign in.
 
 ## Status
 
 <!-- Not Started | In Progress | Completed -->
 
+In Progress
+
 ## Goals
 
 <!-- Goals and requirements -->
 
+- After a successful `/api/auth/register` call, send a verification email to the new user via Resend containing a unique, expiring verification link.
+- Clicking the link marks the user's email as verified (`User.emailVerified`) and shows a clear success result, then leads into sign-in.
+- Credentials sign-in is blocked for users whose email isn't verified yet, with a clear error message telling them to check their inbox.
+- A user who lost or let their verification link expire can request a new verification email (resend flow).
+- GitHub OAuth users continue to be treated as verified automatically (the provider already vouches for their email) — this feature only changes the credentials path.
+
 ## Notes
 
 <!-- Any extra notes -->
+
+- `RESEND_API_KEY` is already present in `.env`. The `resend` package is not yet installed.
+- `User.emailVerified` (nullable `DateTime`) already exists in the schema and is currently unused — this feature starts populating it.
+- The `VerificationToken` model (`identifier`, `token`, `expires`) already exists for the NextAuth adapter's magic-link flow (no Email provider is configured yet, so it's currently unused) — reuse it for verification tokens rather than adding a new model, unless it proves to be a poor fit.
+- Registration (`src/app/api/auth/register/route.ts`) currently creates the user and returns immediately; it needs to also generate a token and trigger the Resend send.
+- The `authorize` callback in `src/auth.ts` needs to check `emailVerified` before allowing a credentials sign-in to succeed.
+- Needs a verification endpoint/page (e.g. `/verify-email?token=...`) that consumes the token, sets `emailVerified`, and shows success/failure/expired states.
+- Needs a resend-verification entry point (e.g. surfaced from the blocked-sign-in error state) that issues a fresh token and re-sends the email.
+- Open question to resolve during implementation: which sender address/domain to send from via Resend (Resend requires a verified sending domain in production; their shared test domain may be usable for dev/local).
 
 ## History
 

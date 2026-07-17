@@ -39,7 +39,7 @@ export function AuthModal() {
         {mode === "login" ? (
           <LoginView onSwitch={() => open("signup")} onSuccess={handleAuthSuccess} />
         ) : (
-          <SignupView onSwitch={() => open("login")} onRegistered={() => open("login")} />
+          <SignupView onSwitch={() => open("login")} onDone={() => open("login")} />
         )}
       </div>
     </div>
