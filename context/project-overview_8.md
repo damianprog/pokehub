@@ -640,7 +640,7 @@ model DustTransaction {
 ```
 /                          Landing (logged out) | Feed (logged in)
 /login                     OAuth providers + email/password
-/signup                    Username selection step
+/signup/username           Username selection step
 
 /u/[username]              User profile (signature team, stats, recent activity)
 /u/[username]/collection   Collection grid (caught / missing)
@@ -1054,7 +1054,7 @@ Without a cap, content-spam (low-effort reviews, trash lists) is incentivized. W
 `/u/[username]` is the canonical profile URL. Critical for shareability ("check out @damian's Top 10"). Locked at signup, changeable once per 90 days (v2).
 
 **Username field is nullable in schema, required at app level.**
-OAuth flow creates a User _before_ the user picks a handle (NextAuth populates email/name/image from the provider, but providers don't supply a username we want). Forcing `username` to be NOT NULL would require either auto-generating an ugly fallback (e.g. `damian-x9k2`) or making OAuth login a two-step DB transaction. Cleaner: schema allows null, post-login middleware redirects users with `username === null` to `/signup/username` before they can do anything else. After they pick one, app-level validation enforces format (3–20 chars, `[a-z0-9_-]+`) and uniqueness. The email/password registration route collects username, email, and password together, so credentials users get a handle at creation; OAuth and magic-link users still fall through to `/signup/username`.
+OAuth flow creates a User _before_ the user picks a handle (NextAuth populates email/name/image from the provider, but providers don't supply a username we want). Forcing `username` to be NOT NULL would require either auto-generating an ugly fallback (e.g. `damian-x9k2`) or making OAuth login a two-step DB transaction. Cleaner: schema allows null, post-login middleware redirects users with `username === null` to `/signup/username` before they can do anything else. After they pick one, app-level validation enforces format (3–20 chars, `[a-z0-9_-]+`) and uniqueness. This gate is the single path for every sign-in method — credentials, OAuth, and magic link alike — rather than a field on the registration form, since OAuth/magic-link users always arrive with `username === null` and a second implementation on the registration route would duplicate format validation, uniqueness checking, and unique-constraint race handling.
 
 **No `@@index([username])` declaration.**
 `@unique` on `username` already creates a B-tree index in Postgres, so an explicit `@@index` would be redundant. Same applies to `email` and any other `@unique` fields — the unique index covers equality lookups.

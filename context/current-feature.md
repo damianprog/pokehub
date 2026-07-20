@@ -2,17 +2,76 @@
 
 <!-- Feature name and short description -->
 
+**Username onboarding gate** — force every signed-in user without a `username` to pick one before they can use the app. One shared step for all sign-in paths (credentials and OAuth), not a field on the registration form.
+
 ## Status
 
 <!-- Not Started | In Progress | Completed -->
+
+In Progress
 
 ## Goals
 
 <!-- Goals and requirements -->
 
+### Why a gate and not a registration field
+
+The gate has to exist regardless: GitHub/Google never supply a handle we'd want to use, so OAuth users always arrive with `username === null`. Adding the field to `/api/auth/register` as well would mean two implementations of format validation, uniqueness checking, and race handling on the `@unique` constraint — and two places to touch when profile-level username editing arrives. One path instead.
+
+Two secondary reasons: with email verification on, a username chosen at registration is reserved by an account that may never be confirmed; and the registration form stays short, keeping the one field users actually stop and think about out of the pre-conversion flow.
+
+### Scope
+
+- A username selection page, reachable only when signed in.
+- A server-side mutation that validates and persists the chosen username.
+- A redirect gate that sends signed-in users with no username to that page from anywhere else in the app.
+- A server-side guard helper for mutations, so the gate can't be skipped by calling APIs directly.
+- Refreshing the JWT after the username is set, so the gate stops firing.
+
+Out of scope: changing an existing username (spec §14 puts that at once per 90 days in v2), username availability check as the user types, and reserved-name blocklists beyond what's needed to keep app routes safe.
+
+### Route
+
+Project overview is inconsistent here — the §6 routing table lists `/signup` as the username step, §14 says `/signup/username`. Pick one and correct the other in `project-overview_8.md` as part of this feature. The page must be a signed-in-only route: an unauthenticated visit goes to `/sign-in`, and a signed-in user who already has a username gets redirected away (to `/`) rather than being allowed to re-pick.
+
+### Validation rules
+
+Per project overview §14: 3–20 characters, lowercase letters, digits, underscore and hyphen only. Enforced with Zod on the server; the client mirrors the same rules for inline feedback, matching the existing auth-form validation pattern.
+
+Beyond format:
+
+- Uniqueness is case-insensitive — store and compare lowercased, so `Damian` and `damian` can't both exist.
+- Reject values that would collide with existing top-level app routes (`sign-in`, `register`, `settings`, `packs`, `discover`, `search`, `api`, `p`, `u`, `list`, `review`) so a profile URL can never shadow real navigation.
+- The unique constraint is the real arbiter: two users submitting the same handle at once must produce a clean "already taken" error on the loser, not an unhandled Prisma error. Catch the unique-violation and surface it as a normal form error.
+
+### The gate
+
+Applies to every signed-in user whose `username` is null, on every route except: the username page itself, `/api/auth/*` (sign-out and session must keep working), and static assets. Signed-out users are unaffected — they still land on the landing page.
+
+`proxy.ts` currently matches only `/settings` and `/packs`; its matcher has to widen for this, while keeping the existing unauthenticated-redirect behaviour for those two prefixes intact.
+
+Middleware is navigation UX, not enforcement. Every mutation that creates user-visible content (reviews, lists, follows, comments — none exist yet, but the helper should land with this feature) must independently verify the session has a username. Without that, a direct API call creates rows pointing at a profile with no reachable URL.
+
+### Session refresh
+
+Sessions are JWT, and `username` is baked into the token by the `jwt` callback in `src/auth.ts` at sign-in time. Writing the username to the database is therefore not enough — the token still carries null and the gate keeps firing, producing a redirect loop. The `jwt` callback needs a path to re-read the user on update, and the client needs to trigger it after a successful submit.
+
+### Acceptance
+
+- A new credentials user, after verifying and signing in, lands on the username step and cannot navigate away from it until they submit.
+- A new GitHub user hits the same step on first sign-in.
+- After submitting, they are redirected into the app and the gate does not fire again on subsequent navigations or a fresh sign-in.
+- An invalid or taken username shows a form error and leaves the user on the step.
+- Signing out from the username step works.
+- A signed-in user who already has a username never sees the step.
+
 ## Notes
 
 <!-- Any extra notes -->
+
+- `NavAvatarMenu` already falls back from `username` to `name` for the avatar letter. Once the gate ships, every signed-in user has a username, so that fallback becomes dead — worth revisiting, but not required for this feature to work.
+- `project-overview_8.md` §14 currently states that the registration route collects username, email and password together. That paragraph needs updating to reflect the gate approach, alongside the §6/§14 route inconsistency noted above.
+- Consider what happens to a user who abandons the step: they have a `User` row, a valid session, and no handle. That's the intended resting state — the gate simply fires again next visit. No cleanup job needed.
 
 ## History
 
@@ -59,3 +118,4 @@
 - 2026-07-17 Completed: email verification on register. `/api/auth/register` now generates a `VerificationToken` (reused from the NextAuth adapter's magic-link model) and sends a verification email via Resend (`src/lib/resend.ts`, `src/lib/verification-email.ts`, `src/lib/verification-token.ts`); the send is best-effort (logged, not thrown) so a Resend outage doesn't fail registration. `GET /api/auth/verify-email` consumes the token, sets `User.emailVerified`, and `/verify-email` shows success/failure/expired states. `authorize` in `src/auth.ts` now throws a custom `EmailNotVerifiedError` (`CredentialsSignin` subclass) when `emailVerified` is null, and `LoginForm.tsx` surfaces a "check your inbox" message with a `ResendVerificationForm.tsx` entry point hitting the new `POST /api/auth/resend-verification` route. GitHub OAuth is untouched. `npm run build` passes.
 - 2026-07-17 Completed: email verification toggle flag. Added `EMAIL_VERIFICATION_REQUIRED` (`src/lib/email-verification.ts`, reads `REQUIRE_EMAIL_VERIFICATION` env var, default-on) so the whole verification requirement can be switched off until a domain is verified in Resend. `/api/auth/register` skips token creation/email send and marks the new user verified immediately when disabled; `authorize` in `src/auth.ts` skips the `EmailNotVerifiedError` check. Default/unset behavior and GitHub OAuth are unchanged. `resend-verification` route needed no changes — it already no-ops for verified users. Verified live: registering with the flag off signs the user in immediately with no email sent. `npm run build` passes.
 - 2026-07-17 Completed: forgot password flow, reusing `VerificationToken` for reset tokens (`src/lib/reset-token.ts`, `src/lib/reset-password-email.ts`, `/api/auth/forgot-password`, `/api/auth/reset-password`, `/forgot-password`, `/reset-password`). Reset tokens use a `reset:{email}` identifier prefix to avoid colliding with pending email-verification tokens for the same address. `/api/auth/forgot-password` always returns a generic response and only sends an email for credentials users (`User.password` set), so it doesn't leak account existence or send unusable links to OAuth-only accounts. Wired the previously-static "Forgot?" text in `LoginForm.tsx` into a real link. Verified live end-to-end via Playwright + direct DB token lookup (request → token → reset → old password rejected → new password signs in → reused/missing token shows the invalid state); `npm run build` passes.
+- 2026-07-20 Completed: username onboarding gate. Added `POST /api/auth/username` (Zod format + reserved-word validation, case-insensitive uniqueness via `updateMany({ where: { id, username: null } })`, catches a concurrent unique-constraint race as a 409), `/signup/username` (signed-in-only page with `UsernameForm.tsx`), `src/lib/require-username.ts` (server-side guard for future mutation routes), and widened `proxy.ts`'s matcher so any signed-in user with `username === null` is redirected there from anywhere except the page itself, `/api/auth/*`, and static assets. `src/auth.ts`'s `jwt` callback now re-reads `username` from the DB on `trigger === "update"`. Corrected the `project-overview_8.md` §6/§14 route inconsistency to `/signup/username` and updated the §14 paragraph to describe the gate (not a registration-form field). Playwright verification caught two real bugs before landing: `useSession().update()` called with no argument sends a GET instead of a POST, so next-auth never set `trigger: "update"` server-side (fixed: `update({})`); and the post-submit `router.push("/")` + `router.refresh()` left users stuck on the username page because Next.js 16's client Router Cache served a stale pre-gate response for `/` (fixed: hard navigation via `window.location.href = "/"`). Full re-verification (invalid format, reserved word, taken-username race, valid submit landing on `/` and staying there, sign-out from the step, already-onboarded and signed-out visitors) all passed; `npm run build` passes. Follow-up cleanup: `Nav.tsx` no longer takes a `session` prop — it reads `useSession()` now that it's inside the `SessionProvider` added to `layout.tsx`, removing the duplicate session data flowing through both a prop and the provider. Verified live: no flash of the wrong nav state, no hydration warnings, sign-out still works.

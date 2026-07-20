@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Hanken_Grotesk } from "next/font/google";
+import { SessionProvider } from "next-auth/react";
 import "./globals.css";
 import { Nav } from "@/components/landing/Nav";
 import { Toaster } from "@/components/ui/sonner";
@@ -33,9 +34,11 @@ export default async function RootLayout({
       className={`dark ${spaceGrotesk.variable} ${hankenGrotesk.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-          <Nav session={session} />
-          {children}
-          <Toaster />
+          <SessionProvider session={session}>
+            <Nav />
+            {children}
+            <Toaster />
+          </SessionProvider>
         </body>
     </html>
   );

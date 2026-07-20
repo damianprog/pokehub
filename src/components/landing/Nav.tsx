@@ -2,15 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { Session } from "next-auth";
+import { useSession } from "next-auth/react";
 import { NavAuthButtons } from "@/components/auth/NavAuthButtons";
 import { SignedInNav } from "@/components/landing/SignedInNav";
 
-interface NavProps {
-  session: Session | null;
-}
-
-export function Nav({ session }: NavProps) {
+export function Nav() {
+  const { data: session } = useSession();
   const pathname = usePathname();
   const hasMobileChrome = pathname.startsWith("/p/");
 
