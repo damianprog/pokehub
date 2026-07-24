@@ -1,23 +1,18 @@
-# Current Feature: User Profile Page (Empty Shell)
+# Current Feature
 
 <!-- Feature name and short description -->
 
-Create the profile page route at its proper URL, currently just an empty shell (nav + default app background, no content yet).
-
 ## Status
 
-In Progress
+<!-- Not Started | In Progress | Completed -->
 
 ## Goals
 
-- Create the profile page at `/u/[username]` per the routing convention in project-overview_8.md §6.
-- Page renders inside the existing `(app)` route group so it gets the shared Nav + `.app-bg` background automatically — no new layout needed.
-- No profile content yet — just prove the route resolves for a given username.
+<!-- Goals and requirements -->
 
 ## Notes
 
-- This is a shell only: no data fetching, no `getUserByUsername` lookup, no 404 handling for unknown usernames yet — those come with the real profile-content feature later.
-- Follows the same pattern `/p/[slug]` used initially (`src/lib/pokemon.ts` + throwaway render) before content was built out incrementally.
+<!-- Any extra notes -->
 
 ## History
 
@@ -65,3 +60,4 @@ In Progress
 - 2026-07-17 Completed: email verification toggle flag. Added `EMAIL_VERIFICATION_REQUIRED` (`src/lib/email-verification.ts`, reads `REQUIRE_EMAIL_VERIFICATION` env var, default-on) so the whole verification requirement can be switched off until a domain is verified in Resend. `/api/auth/register` skips token creation/email send and marks the new user verified immediately when disabled; `authorize` in `src/auth.ts` skips the `EmailNotVerifiedError` check. Default/unset behavior and GitHub OAuth are unchanged. `resend-verification` route needed no changes — it already no-ops for verified users. Verified live: registering with the flag off signs the user in immediately with no email sent. `npm run build` passes.
 - 2026-07-17 Completed: forgot password flow, reusing `VerificationToken` for reset tokens (`src/lib/reset-token.ts`, `src/lib/reset-password-email.ts`, `/api/auth/forgot-password`, `/api/auth/reset-password`, `/forgot-password`, `/reset-password`). Reset tokens use a `reset:{email}` identifier prefix to avoid colliding with pending email-verification tokens for the same address. `/api/auth/forgot-password` always returns a generic response and only sends an email for credentials users (`User.password` set), so it doesn't leak account existence or send unusable links to OAuth-only accounts. Wired the previously-static "Forgot?" text in `LoginForm.tsx` into a real link. Verified live end-to-end via Playwright + direct DB token lookup (request → token → reset → old password rejected → new password signs in → reused/missing token shows the invalid state); `npm run build` passes.
 - 2026-07-20 Completed: username onboarding gate. Added `POST /api/auth/username` (Zod format + reserved-word validation, case-insensitive uniqueness via `updateMany({ where: { id, username: null } })`, catches a concurrent unique-constraint race as a 409), `/signup/username` (signed-in-only page with `UsernameForm.tsx`), `src/lib/require-username.ts` (server-side guard for future mutation routes), and widened `proxy.ts`'s matcher so any signed-in user with `username === null` is redirected there from anywhere except the page itself, `/api/auth/*`, and static assets. `src/auth.ts`'s `jwt` callback now re-reads `username` from the DB on `trigger === "update"`. Corrected the `project-overview_8.md` §6/§14 route inconsistency to `/signup/username` and updated the §14 paragraph to describe the gate (not a registration-form field). Playwright verification caught two real bugs before landing: `useSession().update()` called with no argument sends a GET instead of a POST, so next-auth never set `trigger: "update"` server-side (fixed: `update({})`); and the post-submit `router.push("/")` + `router.refresh()` left users stuck on the username page because Next.js 16's client Router Cache served a stale pre-gate response for `/` (fixed: hard navigation via `window.location.href = "/"`). Full re-verification (invalid format, reserved word, taken-username race, valid submit landing on `/` and staying there, sign-out from the step, already-onboarded and signed-out visitors) all passed; `npm run build` passes. Follow-up cleanup: `Nav.tsx` no longer takes a `session` prop — it reads `useSession()` now that it's inside the `SessionProvider` added to `layout.tsx`, removing the duplicate session data flowing through both a prop and the provider. Verified live: no flash of the wrong nav state, no hydration warnings, sign-out still works.
+- 2026-07-24 Completed: empty profile page shell at `/u/[username]` (`src/app/(app)/u/[username]/page.tsx`), per the routing convention in project-overview_8.md §6. Renders inside the existing `(app)` route group so it inherits Nav + the `.app-bg` background with zero new layout code; no data fetching or content yet. Verified live via Playwright screenshot; `npm run build` passes.
