@@ -1,38 +1,18 @@
-# Current Feature: Profile Page — Header Section
+# Current Feature
 
 <!-- Feature name and short description -->
 
-Cover/background banner, avatar, display name, username, and joined date at the top of
-`/u/[username]`. Spec: `context/features/profile-page/header-spec.md`.
-
 ## Status
 
-In Progress
+<!-- Not Started | In Progress | Completed -->
 
 ## Goals
 
 <!-- Goals and requirements -->
 
-- Render a decorative cover/background banner above the identity block (static, same for every
-  profile — no schema field or upload path for a per-user cover image).
-- Render the profile owner's avatar, overlapping the bottom edge of the banner: real `User.image`
-  when set (same pattern as the nav avatar), otherwise a gradient letter badge from the first
-  letter of their username.
-- Show display name (`User.name`, falling back to `User.username` if null), `@username`, and a
-  joined date derived from `User.createdAt` (month + year, e.g. "joined Mar 2023").
-- Fetch the profile owner's `User` row by the `username` route param in a server component — no
-  client interactivity needed.
-- No layout break from 375px to 1920px.
-
 ## Notes
 
 <!-- Any extra notes -->
-
-- Full spec: `context/features/profile-page/header-spec.md`.
-- Design reference: `PokeHub.dc.html`, `SCREEN 2 · PROFILE` — banner + avatar + name block only.
-- Out of scope this iteration: bio paragraph, Follow/⋯ buttons, stats row (Reviews/Lists/
-  Followers/Following), Signature Team grid, Recent Activity feed, stats sidebar, `location`
-  field, "PRO" badge, cover/avatar upload or editing, own-profile vs. other-profile differences.
 
 ## History
 
@@ -81,3 +61,4 @@ In Progress
 - 2026-07-17 Completed: forgot password flow, reusing `VerificationToken` for reset tokens (`src/lib/reset-token.ts`, `src/lib/reset-password-email.ts`, `/api/auth/forgot-password`, `/api/auth/reset-password`, `/forgot-password`, `/reset-password`). Reset tokens use a `reset:{email}` identifier prefix to avoid colliding with pending email-verification tokens for the same address. `/api/auth/forgot-password` always returns a generic response and only sends an email for credentials users (`User.password` set), so it doesn't leak account existence or send unusable links to OAuth-only accounts. Wired the previously-static "Forgot?" text in `LoginForm.tsx` into a real link. Verified live end-to-end via Playwright + direct DB token lookup (request → token → reset → old password rejected → new password signs in → reused/missing token shows the invalid state); `npm run build` passes.
 - 2026-07-20 Completed: username onboarding gate. Added `POST /api/auth/username` (Zod format + reserved-word validation, case-insensitive uniqueness via `updateMany({ where: { id, username: null } })`, catches a concurrent unique-constraint race as a 409), `/signup/username` (signed-in-only page with `UsernameForm.tsx`), `src/lib/require-username.ts` (server-side guard for future mutation routes), and widened `proxy.ts`'s matcher so any signed-in user with `username === null` is redirected there from anywhere except the page itself, `/api/auth/*`, and static assets. `src/auth.ts`'s `jwt` callback now re-reads `username` from the DB on `trigger === "update"`. Corrected the `project-overview_8.md` §6/§14 route inconsistency to `/signup/username` and updated the §14 paragraph to describe the gate (not a registration-form field). Playwright verification caught two real bugs before landing: `useSession().update()` called with no argument sends a GET instead of a POST, so next-auth never set `trigger: "update"` server-side (fixed: `update({})`); and the post-submit `router.push("/")` + `router.refresh()` left users stuck on the username page because Next.js 16's client Router Cache served a stale pre-gate response for `/` (fixed: hard navigation via `window.location.href = "/"`). Full re-verification (invalid format, reserved word, taken-username race, valid submit landing on `/` and staying there, sign-out from the step, already-onboarded and signed-out visitors) all passed; `npm run build` passes. Follow-up cleanup: `Nav.tsx` no longer takes a `session` prop — it reads `useSession()` now that it's inside the `SessionProvider` added to `layout.tsx`, removing the duplicate session data flowing through both a prop and the provider. Verified live: no flash of the wrong nav state, no hydration warnings, sign-out still works.
 - 2026-07-24 Completed: empty profile page shell at `/u/[username]` (`src/app/(app)/u/[username]/page.tsx`), per the routing convention in project-overview_8.md §6. Renders inside the existing `(app)` route group so it inherits Nav + the `.app-bg` background with zero new layout code; no data fetching or content yet. Verified live via Playwright screenshot; `npm run build` passes.
+- 2026-07-24 Completed: profile page header section (`context/features/profile-page/header-spec.md`) — `ProfileHeader` component (cover banner with radial + crosshatch overlay, avatar overlapping the banner's bottom edge with real `User.image` or a letter-badge fallback matching the nav avatar pattern, display name falling back to username, `@username · joined {Mon YYYY}`) wired into `/u/[username]` via a new `getUserByUsername` data helper. Added left/right padding to the avatar/name row so it's inset from the banner edges rather than flush, leaving room for the future Follow/⋯ buttons. Verified live via Playwright screenshots at 375px and 1440px against a real user, no console errors; `npm run build` passes.
