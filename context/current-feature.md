@@ -1,18 +1,23 @@
-# Current Feature
+# Current Feature: User Profile Page (Empty Shell)
 
 <!-- Feature name and short description -->
 
+Create the profile page route at its proper URL, currently just an empty shell (nav + default app background, no content yet).
+
 ## Status
 
-<!-- Not Started | In Progress | Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals and requirements -->
+- Create the profile page at `/u/[username]` per the routing convention in project-overview_8.md §6.
+- Page renders inside the existing `(app)` route group so it gets the shared Nav + `.app-bg` background automatically — no new layout needed.
+- No profile content yet — just prove the route resolves for a given username.
 
 ## Notes
 
-<!-- Any extra notes -->
+- This is a shell only: no data fetching, no `getUserByUsername` lookup, no 404 handling for unknown usernames yet — those come with the real profile-content feature later.
+- Follows the same pattern `/p/[slug]` used initially (`src/lib/pokemon.ts` + throwaway render) before content was built out incrementally.
 
 ## History
 
