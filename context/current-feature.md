@@ -1,41 +1,18 @@
-# Current Feature: Profile Page — Bio & Stats Section
+# Current Feature
 
 <!-- Feature name and short description -->
 
-Bio paragraph and the Reviews/Lists/Followers/Following stats row on `/u/[username]`, directly
-below the header block. Spec: `context/features/profile-page/bio-and-stats-spec.md`.
-
 ## Status
 
-In Progress
+<!-- Not Started | In Progress | Completed -->
 
 ## Goals
 
 <!-- Goals and requirements -->
 
-- Render the profile owner's bio (`User.bio`) as a paragraph below the identity block; omit it
-  entirely (no placeholder, no empty gap) when it's `null`.
-- Render a stats row of four items — Reviews, Lists, Followers, Following — each a bold count plus
-  a muted label, in that order.
-- Since no review, list, or follow feature exists yet, all four stat counts are mock/placeholder
-  data (plausible varied numbers, not all zero) rather than a live query — same "visual layer
-  first" pattern already used for `CommunityRating`/`RateRow`/`TopReviews`/`AppearsInLists` on the
-  Pokémon detail page.
-- Bio comes from the same `User` row the header already fetches (`getUserByUsername`) — no new
-  data fetch needed.
-- No client interactivity — fully static/presentational, same as the header section.
-- No layout break from 375px to 1920px.
-
 ## Notes
 
 <!-- Any extra notes -->
-
-- Full spec: `context/features/profile-page/bio-and-stats-spec.md`.
-- Design reference: `PokeHub.dc.html`, `SCREEN 2 · PROFILE` — bio paragraph + stats row only,
-  directly beneath the name/username/joined-date block and the (still unbuilt) Follow/⋯ buttons.
-- Out of scope this iteration: Follow/⋯ buttons (deferred from header-spec.md), editing the bio or
-  any "add a bio" prompt, real aggregation for any of the four stats, making the stats
-  clickable/navigable, Signature Team, Recent Activity, and the stats sidebar.
 
 ## History
 
@@ -85,3 +62,4 @@ In Progress
 - 2026-07-20 Completed: username onboarding gate. Added `POST /api/auth/username` (Zod format + reserved-word validation, case-insensitive uniqueness via `updateMany({ where: { id, username: null } })`, catches a concurrent unique-constraint race as a 409), `/signup/username` (signed-in-only page with `UsernameForm.tsx`), `src/lib/require-username.ts` (server-side guard for future mutation routes), and widened `proxy.ts`'s matcher so any signed-in user with `username === null` is redirected there from anywhere except the page itself, `/api/auth/*`, and static assets. `src/auth.ts`'s `jwt` callback now re-reads `username` from the DB on `trigger === "update"`. Corrected the `project-overview_8.md` §6/§14 route inconsistency to `/signup/username` and updated the §14 paragraph to describe the gate (not a registration-form field). Playwright verification caught two real bugs before landing: `useSession().update()` called with no argument sends a GET instead of a POST, so next-auth never set `trigger: "update"` server-side (fixed: `update({})`); and the post-submit `router.push("/")` + `router.refresh()` left users stuck on the username page because Next.js 16's client Router Cache served a stale pre-gate response for `/` (fixed: hard navigation via `window.location.href = "/"`). Full re-verification (invalid format, reserved word, taken-username race, valid submit landing on `/` and staying there, sign-out from the step, already-onboarded and signed-out visitors) all passed; `npm run build` passes. Follow-up cleanup: `Nav.tsx` no longer takes a `session` prop — it reads `useSession()` now that it's inside the `SessionProvider` added to `layout.tsx`, removing the duplicate session data flowing through both a prop and the provider. Verified live: no flash of the wrong nav state, no hydration warnings, sign-out still works.
 - 2026-07-24 Completed: empty profile page shell at `/u/[username]` (`src/app/(app)/u/[username]/page.tsx`), per the routing convention in project-overview_8.md §6. Renders inside the existing `(app)` route group so it inherits Nav + the `.app-bg` background with zero new layout code; no data fetching or content yet. Verified live via Playwright screenshot; `npm run build` passes.
 - 2026-07-24 Completed: profile page header section (`context/features/profile-page/header-spec.md`) — `ProfileHeader` component (cover banner with radial + crosshatch overlay, avatar overlapping the banner's bottom edge with real `User.image` or a letter-badge fallback matching the nav avatar pattern, display name falling back to username, `@username · joined {Mon YYYY}`) wired into `/u/[username]` via a new `getUserByUsername` data helper. Added left/right padding to the avatar/name row so it's inset from the banner edges rather than flush, leaving room for the future Follow/⋯ buttons. Verified live via Playwright screenshots at 375px and 1440px against a real user, no console errors; `npm run build` passes.
+- 2026-07-24 Completed: profile page bio and stats section (`context/features/profile-page/bio-and-stats-spec.md`) — `ProfileBioStats` component renders the profile owner's real `User.bio` (omitted entirely when null) and a Reviews/Lists/Followers/Following stats row using mock placeholder counts, since no review/list/follow feature exists yet. Wired into `/u/[username]` directly below `ProfileHeader`. Verified live via Playwright screenshots at 375px and 1440px with the bio both set and null (temporarily toggled on the real test user, then restored), no console errors; `npm run build` passes.
