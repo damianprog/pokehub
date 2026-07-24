@@ -1,18 +1,41 @@
-# Current Feature
+# Current Feature: Profile Page — Bio & Stats Section
 
 <!-- Feature name and short description -->
 
+Bio paragraph and the Reviews/Lists/Followers/Following stats row on `/u/[username]`, directly
+below the header block. Spec: `context/features/profile-page/bio-and-stats-spec.md`.
+
 ## Status
 
-<!-- Not Started | In Progress | Completed -->
+In Progress
 
 ## Goals
 
 <!-- Goals and requirements -->
 
+- Render the profile owner's bio (`User.bio`) as a paragraph below the identity block; omit it
+  entirely (no placeholder, no empty gap) when it's `null`.
+- Render a stats row of four items — Reviews, Lists, Followers, Following — each a bold count plus
+  a muted label, in that order.
+- Since no review, list, or follow feature exists yet, all four stat counts are mock/placeholder
+  data (plausible varied numbers, not all zero) rather than a live query — same "visual layer
+  first" pattern already used for `CommunityRating`/`RateRow`/`TopReviews`/`AppearsInLists` on the
+  Pokémon detail page.
+- Bio comes from the same `User` row the header already fetches (`getUserByUsername`) — no new
+  data fetch needed.
+- No client interactivity — fully static/presentational, same as the header section.
+- No layout break from 375px to 1920px.
+
 ## Notes
 
 <!-- Any extra notes -->
+
+- Full spec: `context/features/profile-page/bio-and-stats-spec.md`.
+- Design reference: `PokeHub.dc.html`, `SCREEN 2 · PROFILE` — bio paragraph + stats row only,
+  directly beneath the name/username/joined-date block and the (still unbuilt) Follow/⋯ buttons.
+- Out of scope this iteration: Follow/⋯ buttons (deferred from header-spec.md), editing the bio or
+  any "add a bio" prompt, real aggregation for any of the four stats, making the stats
+  clickable/navigable, Signature Team, Recent Activity, and the stats sidebar.
 
 ## History
 
