@@ -1,18 +1,38 @@
-# Current Feature
+# Current Feature: Profile Page — Header Section
 
 <!-- Feature name and short description -->
 
+Cover/background banner, avatar, display name, username, and joined date at the top of
+`/u/[username]`. Spec: `context/features/profile-page/header-spec.md`.
+
 ## Status
 
-<!-- Not Started | In Progress | Completed -->
+In Progress
 
 ## Goals
 
 <!-- Goals and requirements -->
 
+- Render a decorative cover/background banner above the identity block (static, same for every
+  profile — no schema field or upload path for a per-user cover image).
+- Render the profile owner's avatar, overlapping the bottom edge of the banner: real `User.image`
+  when set (same pattern as the nav avatar), otherwise a gradient letter badge from the first
+  letter of their username.
+- Show display name (`User.name`, falling back to `User.username` if null), `@username`, and a
+  joined date derived from `User.createdAt` (month + year, e.g. "joined Mar 2023").
+- Fetch the profile owner's `User` row by the `username` route param in a server component — no
+  client interactivity needed.
+- No layout break from 375px to 1920px.
+
 ## Notes
 
 <!-- Any extra notes -->
+
+- Full spec: `context/features/profile-page/header-spec.md`.
+- Design reference: `PokeHub.dc.html`, `SCREEN 2 · PROFILE` — banner + avatar + name block only.
+- Out of scope this iteration: bio paragraph, Follow/⋯ buttons, stats row (Reviews/Lists/
+  Followers/Following), Signature Team grid, Recent Activity feed, stats sidebar, `location`
+  field, "PRO" badge, cover/avatar upload or editing, own-profile vs. other-profile differences.
 
 ## History
 
