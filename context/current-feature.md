@@ -1,41 +1,18 @@
-# Current Feature: Profile Header — Follow & "…" Buttons
+# Current Feature
 
 <!-- Feature name and short description -->
 
-Static "Follow" and "⋯" buttons on the right side of the profile header identity row on
-`/u/[username]`, matching the Claude Design profile screen. Non-functional this iteration — no
-click handlers, no state.
-
 ## Status
 
-In Progress
+<!-- Not Started | In Progress | Completed -->
 
 ## Goals
 
 <!-- Goals and requirements -->
 
-- Add a gradient "Follow" button and an icon-only "⋯" button to `ProfileHeader`, on the right side
-  of the same row as the display name/username/joined-date block (per the design).
-- Both buttons are inert this iteration — no `onClick`, no auth gating, no dropdown behind "⋯".
-  Give the "⋯" button an `aria-label` since it has no visible text.
-- Match the design's styling: "Follow" as a filled brand-gradient pill matching the CTA style
-  already used elsewhere (e.g. `PokemonActions`' "Write review" button); "⋯" as a smaller square
-  icon button with a translucent background/border, same family as other icon-only buttons already
-  in the codebase.
-- No layout break from 375px to 1920px — the identity row already wraps/scales at mobile widths
-  from the header section; the new buttons need to fit without breaking that.
-
 ## Notes
 
 <!-- Any extra notes -->
-
-- Design reference: `PokeHub.dc.html`, `SCREEN 2 · PROFILE` — the two-button group at the right end
-  of the name/username row, immediately after the identity block and before the bio paragraph.
-- This was explicitly deferred as out-of-scope in `context/features/profile-page/header-spec.md`
-  (which reserved the right-side padding in the identity row specifically for this).
-- Out of scope this iteration: actual follow/unfollow logic (no `Follow` table writes), the "⋯"
-  dropdown menu and its contents, and any own-profile-vs-other-profile distinction (e.g. hiding
-  "Follow" on your own profile) — all future work.
 
 ## History
 
@@ -86,3 +63,4 @@ In Progress
 - 2026-07-24 Completed: empty profile page shell at `/u/[username]` (`src/app/(app)/u/[username]/page.tsx`), per the routing convention in project-overview_8.md §6. Renders inside the existing `(app)` route group so it inherits Nav + the `.app-bg` background with zero new layout code; no data fetching or content yet. Verified live via Playwright screenshot; `npm run build` passes.
 - 2026-07-24 Completed: profile page header section (`context/features/profile-page/header-spec.md`) — `ProfileHeader` component (cover banner with radial + crosshatch overlay, avatar overlapping the banner's bottom edge with real `User.image` or a letter-badge fallback matching the nav avatar pattern, display name falling back to username, `@username · joined {Mon YYYY}`) wired into `/u/[username]` via a new `getUserByUsername` data helper. Added left/right padding to the avatar/name row so it's inset from the banner edges rather than flush, leaving room for the future Follow/⋯ buttons. Verified live via Playwright screenshots at 375px and 1440px against a real user, no console errors; `npm run build` passes.
 - 2026-07-24 Completed: profile page bio and stats section (`context/features/profile-page/bio-and-stats-spec.md`) — `ProfileBioStats` component renders the profile owner's real `User.bio` (omitted entirely when null) and a Reviews/Lists/Followers/Following stats row using mock placeholder counts, since no review/list/follow feature exists yet. Wired into `/u/[username]` directly below `ProfileHeader`. Verified live via Playwright screenshots at 375px and 1440px with the bio both set and null (temporarily toggled on the real test user, then restored), no console errors; `npm run build` passes.
+- 2026-07-24 Completed: static Follow and "⋯" buttons on the profile header identity row (`ProfileHeader.tsx`) — gradient "Follow" pill and icon-only "⋯" button, both inert (no handlers, no dropdown), reusing the existing `--brand-from`/`--brand-to` gradient tokens. First pass squeezed the buttons into the same row as the name at 375px, truncating the display name and wrapping the username/joined-date line awkwardly; fixed by making the identity row `flex-wrap` with the button group full-width and right-aligned on mobile (wraps to its own row below the name) while staying inline on desktop. Verified live via Playwright screenshots at 375px and 1440px, no console errors; `npm run build` passes.
