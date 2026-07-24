@@ -1,18 +1,41 @@
-# Current Feature
+# Current Feature: Profile Header — Follow & "…" Buttons
 
 <!-- Feature name and short description -->
 
+Static "Follow" and "⋯" buttons on the right side of the profile header identity row on
+`/u/[username]`, matching the Claude Design profile screen. Non-functional this iteration — no
+click handlers, no state.
+
 ## Status
 
-<!-- Not Started | In Progress | Completed -->
+In Progress
 
 ## Goals
 
 <!-- Goals and requirements -->
 
+- Add a gradient "Follow" button and an icon-only "⋯" button to `ProfileHeader`, on the right side
+  of the same row as the display name/username/joined-date block (per the design).
+- Both buttons are inert this iteration — no `onClick`, no auth gating, no dropdown behind "⋯".
+  Give the "⋯" button an `aria-label` since it has no visible text.
+- Match the design's styling: "Follow" as a filled brand-gradient pill matching the CTA style
+  already used elsewhere (e.g. `PokemonActions`' "Write review" button); "⋯" as a smaller square
+  icon button with a translucent background/border, same family as other icon-only buttons already
+  in the codebase.
+- No layout break from 375px to 1920px — the identity row already wraps/scales at mobile widths
+  from the header section; the new buttons need to fit without breaking that.
+
 ## Notes
 
 <!-- Any extra notes -->
+
+- Design reference: `PokeHub.dc.html`, `SCREEN 2 · PROFILE` — the two-button group at the right end
+  of the name/username row, immediately after the identity block and before the bio paragraph.
+- This was explicitly deferred as out-of-scope in `context/features/profile-page/header-spec.md`
+  (which reserved the right-side padding in the identity row specifically for this).
+- Out of scope this iteration: actual follow/unfollow logic (no `Follow` table writes), the "⋯"
+  dropdown menu and its contents, and any own-profile-vs-other-profile distinction (e.g. hiding
+  "Follow" on your own profile) — all future work.
 
 ## History
 
