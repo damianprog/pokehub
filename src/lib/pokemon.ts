@@ -10,3 +10,16 @@ export const getPokemonsByIds = cache(async (ids: number[]) => {
   const byId = new Map(pokemons.map((pokemon) => [pokemon.id, pokemon]));
   return ids.map((id) => byId.get(id)).filter((pokemon) => pokemon !== undefined);
 });
+
+// Not wrapped in React `cache()` — each call should roll a fresh random pick,
+// not be memoized/deduped within a request like the helpers above.
+export async function getRandomPokemon() {
+  const count = await prisma.pokemon.count();
+  if (count === 0) return null;
+  const [pokemon] = await prisma.pokemon.findMany({
+    take: 1,
+    skip: Math.floor(Math.random() * count),
+    select: { slug: true },
+  });
+  return pokemon ?? null;
+}
