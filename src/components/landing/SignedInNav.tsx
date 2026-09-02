@@ -50,7 +50,7 @@ export function SignedInNav({ user }: SignedInNavProps) {
         <span className="font-heading text-[13px] font-bold text-[#bcd6ff]">2,450</span>
       </div>
 
-      <NavAvatarMenu letter={letter} image={user.image} />
+      <NavAvatarMenu letter={letter} image={user.image} username={user.username} />
     </>
   );
 }

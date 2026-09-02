@@ -5,8 +5,10 @@ import { getPokemonsByIds } from "@/lib/pokemon";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { ProfileBioStats } from "@/components/profile/ProfileBioStats";
 import { SignatureTeam } from "@/components/profile/SignatureTeam";
+import { RecentActivity } from "@/components/profile/RecentActivity";
 import { PLACEHOLDER_PROFILE_STATS } from "@/lib/placeholder-profile-stats";
 import { PLACEHOLDER_SIGNATURE_TEAM } from "@/lib/placeholder-signature-team";
+import { PLACEHOLDER_RECENT_ACTIVITY } from "@/lib/placeholder-recent-activity";
 
 export async function generateMetadata({
   params,
@@ -44,6 +46,23 @@ export default async function ProfilePage({
     };
   });
 
+  const recentActivityPokemons = await getPokemonsByIds(
+    PLACEHOLDER_RECENT_ACTIVITY.map((item) => item.pokemonId),
+  );
+  const recentActivity = PLACEHOLDER_RECENT_ACTIVITY.map((item) => {
+    const pokemon = recentActivityPokemons.find((p) => p.id === item.pokemonId)!;
+    return {
+      id: pokemon.id,
+      slug: pokemon.slug,
+      name: pokemon.name,
+      types: pokemon.types,
+      artworkUrl: pokemon.artworkUrl,
+      timeLabel: item.timeLabel,
+      rating: item.rating,
+      quote: item.quote,
+    };
+  });
+
   return (
     <div>
       <ProfileHeader
@@ -54,6 +73,7 @@ export default async function ProfilePage({
       />
       <ProfileBioStats bio={user.bio} stats={PLACEHOLDER_PROFILE_STATS} />
       <SignatureTeam team={signatureTeam} />
+      <RecentActivity activity={recentActivity} />
     </div>
   );
 }
