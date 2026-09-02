@@ -6,9 +6,11 @@ import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { ProfileBioStats } from "@/components/profile/ProfileBioStats";
 import { SignatureTeam } from "@/components/profile/SignatureTeam";
 import { RecentActivity } from "@/components/profile/RecentActivity";
+import { FavoriteTypes } from "@/components/profile/FavoriteTypes";
 import { PLACEHOLDER_PROFILE_STATS } from "@/lib/placeholder-profile-stats";
 import { PLACEHOLDER_SIGNATURE_TEAM } from "@/lib/placeholder-signature-team";
 import { PLACEHOLDER_RECENT_ACTIVITY } from "@/lib/placeholder-recent-activity";
+import { PLACEHOLDER_FAVORITE_TYPES } from "@/lib/placeholder-favorite-types";
 
 export async function generateMetadata({
   params,
@@ -73,7 +75,15 @@ export default async function ProfilePage({
       />
       <ProfileBioStats bio={user.bio} stats={PLACEHOLDER_PROFILE_STATS} />
       <SignatureTeam team={signatureTeam} />
-      <RecentActivity activity={recentActivity} />
+      <div className="mt-[34px] grid grid-cols-1 gap-[20px] px-[16px] md:px-[26px] lg:grid-cols-[1fr_320px] lg:items-start lg:gap-[28px]">
+        <RecentActivity activity={recentActivity} />
+        <FavoriteTypes
+          types={PLACEHOLDER_FAVORITE_TYPES.types}
+          avgRating={PLACEHOLDER_FAVORITE_TYPES.avgRating}
+          collectionCaught={PLACEHOLDER_FAVORITE_TYPES.collectionCaught}
+          collectionTotal={PLACEHOLDER_FAVORITE_TYPES.collectionTotal}
+        />
+      </div>
     </div>
   );
 }

@@ -20,7 +20,7 @@ interface RecentActivityProps {
 
 export function RecentActivity({ activity }: RecentActivityProps) {
   return (
-    <div className="mt-[34px] px-[16px] md:px-[26px]">
+    <div>
       <h2 className="font-heading m-0 mb-[16px] text-[18px] font-bold">Recent activity</h2>
       <div className="flex flex-col gap-[14px]">
         {activity.map((item) => {
