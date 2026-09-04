@@ -175,7 +175,7 @@ model UserPokemon {
   isWishlist Boolean @default(false)
 
   // Review (rating + optional text)
-  rating     Int?      // 1-5, validated app-side
+  rating     Int?      // half-star units: 1-10 (1 = 0.5★, 10 = 5.0★), validated app-side
   reviewText String?
   reviewedAt DateTime?
 

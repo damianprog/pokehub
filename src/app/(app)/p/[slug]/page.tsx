@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { auth } from "@/auth";
 import { getPokemon } from "@/lib/pokemon";
+import { getUserRating } from "@/lib/user-pokemon";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { PokemonArtwork } from "@/components/pokemon/PokemonArtwork";
 import { PokemonActions } from "@/components/pokemon/PokemonActions";
@@ -37,6 +39,10 @@ export default async function PokemonPage({
   const { slug } = await params;
   const pokemon = await getPokemon(slug);
   if (!pokemon) notFound();
+
+  const session = await auth();
+  const userId = session?.user?.id;
+  const initialRating = userId ? await getUserRating(userId, pokemon.id) : null;
 
   const primaryType = pokemon.types[0];
   const typeLabel = primaryType.charAt(0).toUpperCase() + primaryType.slice(1);
@@ -87,6 +93,11 @@ export default async function PokemonPage({
             distribution={PLACEHOLDER_RATING.distribution}
           />
           <RateRow
+            pokemonId={pokemon.id}
+            slug={pokemon.slug}
+            pokemonName={pokemon.name}
+            isAuthenticated={Boolean(userId)}
+            initialRating={initialRating}
             rank={PLACEHOLDER_RATE_ROW.rank}
             typeLabel={PLACEHOLDER_RATE_ROW.typeLabel}
             listCount={PLACEHOLDER_RATE_ROW.listCount}

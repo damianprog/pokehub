@@ -46,7 +46,7 @@ PokeHub has **two independent axes** of user activity. They share a profile and 
 
 Available to every user on signup, for every Pokémon, with no unlocks required.
 
-- **Rate** any Pokémon 1–5 stars
+- **Rate** any Pokémon 0.5–5 stars, in half-star steps
 - **Review** with optional long-form text
 - **Favorite** (heart) any Pokémon — unlimited
 - **Wishlist** up to 3 Pokémon (also influences pack drops; see §4.5)
@@ -363,7 +363,7 @@ model UserPokemon {
   isWishlist Boolean @default(false)
 
   // Review (rating + optional text)
-  rating     Int?      // 1-5, validated app-side
+  rating     Int?      // half-star units: 1-10 (1 = 0.5★, 10 = 5.0★), validated app-side
   reviewText String?
   reviewedAt DateTime?
 
@@ -669,23 +669,47 @@ model DustTransaction {
 /settings/signature-team   Configure pinned 6
 /settings/billing          Pro subscription (cosmetic-only)
 
-/api/auth/*                NextAuth
-/api/packs/open            POST — open a pack
-/api/packs/dissolve        POST — dissolve duplicates → dust
-/api/pokemon/[id]/rate     PUT — set rating + review
-/api/pokemon/[id]/status   PUT — set favorite/wishlist
-/api/lists                 GET (own), POST
-/api/lists/[id]            GET, PUT, DELETE
-/api/lists/[id]/items      POST, PUT (reorder), DELETE
-/api/comments              POST
-/api/comments/[id]         DELETE
-/api/likes/review          POST, DELETE
-/api/likes/list            POST, DELETE
-/api/likes/comment         POST, DELETE
-/api/follows               POST, DELETE
-/api/feed                  GET — paginated personal feed
-/api/discover/trending     GET — public discovery
+/api/auth/*                NextAuth + the credentials flows (register, verify-email,
+                           resend-verification, forgot-password, reset-password, username)
+/api/pokemon/random        GET — redirects to a random /p/[slug]
+/api/stripe/webhook        POST — Stripe subscription events
+/api/avatar                POST — avatar upload to R2
+/api/cron/*                Vercel Cron targets (daily reset, streak rollover, digest, prune)
 ```
+
+### 6.1 Mutations: server actions, not REST routes
+
+Everything else that changes state is a **server action**, not an API route — per
+`context/coding-standards.md`, which reserves API routes for webhooks, file uploads, long-running
+operations, specific HTTP semantics, and endpoints meant for external clients. An earlier draft of
+this document listed the whole mutation surface as a REST table (`PUT /api/pokemon/[id]/rate`,
+`POST /api/likes/review`, and so on); that predates the standards file and predates any mutation
+existing in the codebase. The table above keeps only the entries that genuinely need to be HTTP
+endpoints.
+
+| Concern | Where it lives |
+|---|---|
+| Set / clear a rating, write a review | Server action |
+| Favorite / wishlist toggles | Server action |
+| Create, edit, delete, reorder lists | Server action |
+| Comments, likes on reviews / lists / comments | Server action |
+| Follow / unfollow | Server action |
+| Open a pack, dissolve duplicates | Server action |
+| Personal feed, discovery, search, profile data | No endpoint at all — server components read Prisma directly |
+
+**Layering rule.** The business logic does not live in the server action. It lives in a plain,
+transport-agnostic function under `src/lib/` (or `src/server/`), and the action is a thin wrapper
+that reads the session, validates input with Zod, calls that function, and revalidates the affected
+path. Two reasons:
+
+1. If a mobile app or CLI ever lands (§12 lists mobile as a v2 candidate), the REST endpoint that
+   this document originally imagined becomes a handful of lines wrapping the same function — no
+   duplicated validation, no duplicated write path, no logic migrating between layers.
+2. The domain logic stays unit-testable without a request.
+
+**Server actions are not private.** Each one compiles to a publicly reachable POST endpoint. Being
+import-callable from a component changes nothing about that: every action does its own `auth()`
+check and its own Zod validation, and never trusts a user id sent from the client.
 
 ---
 
@@ -793,7 +817,7 @@ Hard-coded production check prevents accidental deploy.
 ### 10.3 Pack opening flow
 
 ```ts
-// Pseudocode for /api/packs/open
+// Pseudocode for the pack-open domain function (called by the open-pack server action — see §6.1)
 async function openPack(userId: string, source: PackSource) {
   return prisma.$transaction(async (tx) => {
     // 1. Validate source (cooldowns, caps)
@@ -1025,6 +1049,9 @@ User's dust balance = `SUM(amount)` over their transactions. Append-only ledger 
 **`FeedEvent.metadata` as `Json` instead of typed columns.**
 Different event types carry different payloads (rare pull → pokemonId; list created → listId). Json + a TypeScript discriminated union for shape validation gives flexibility without per-event-type schema churn. Trade-off: weaker DB-level type safety, mitigated by Zod validation at write time.
 
+**`UserPokemon.rating` as an `Int` of half-star units, not a decimal.**
+Ratings are half-star (0.5–5.0), so the column holds 1–10 where 1 = 0.5★. `Decimal` was rejected because Prisma returns a `Decimal` object that isn't serializable across the RSC → client component boundary without converting at every call site; `Float` was rejected because equality and `GROUP BY` on floats is a trap, and the community-rating distribution is exactly a `GROUP BY`. Integers keep aggregation exact and needed no migration — only the unit changed. The cost is that a raw `rating: 7` doesn't explain itself, so one lib module owns the unit and nothing else divides by two inline.
+
 ### Mechanics
 
 **Two decoupled axes (opinion + collection), not coupled.**
@@ -1049,6 +1076,9 @@ Soft targeting that respects randomness. Doesn't break rarity tiers (a wishliste
 Without a cap, content-spam (low-effort reviews, trash lists) is incentivized. With it, the floor (1 daily) and ceiling (1 + 5 earned + dust purchases) are predictable, and content quality matters more than quantity.
 
 ### Routing & auth
+
+**Mutations are server actions; the logic lives outside them.**
+§6.1 has the full split. The short version: an API route buys HTTP semantics, cacheable GETs, and external clients — none of which our own UI needs to change a rating or toggle a follow, while it does need optimistic updates and `revalidatePath`, which actions integrate with directly. The non-obvious half of the decision is the layering: the domain function is transport-agnostic and the action is a thin session-check + Zod + call + revalidate wrapper. That way the REST surface this document originally specified is never *wrong*, just not built yet — a mobile client gets it back for a few lines per endpoint. The rejected alternative was writing REST routes up front for a mobile app that is a v2 "candidate" at best, paying `fetch` boilerplate and hand-written response types on every mutation in the meantime.
 
 **Username required at signup, used in URLs.**
 `/u/[username]` is the canonical profile URL. Critical for shareability ("check out @damian's Top 10"). Locked at signup, changeable once per 90 days (v2).

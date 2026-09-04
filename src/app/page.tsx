@@ -1,4 +1,3 @@
-import { AuthModal } from "@/components/auth/AuthModal";
 import { Features } from "@/components/landing/Features";
 import { FinalCta } from "@/components/landing/FinalCta";
 import { Footer } from "@/components/landing/Footer";
@@ -19,7 +18,6 @@ export default function Home() {
       <PackTease />
       <FinalCta />
       <Footer />
-      <AuthModal />
     </div>
   );
 }

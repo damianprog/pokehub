@@ -4,6 +4,7 @@ import { SessionProvider } from "next-auth/react";
 import "./globals.css";
 import { Nav } from "@/components/landing/Nav";
 import { Toaster } from "@/components/ui/sonner";
+import { AuthModal } from "@/components/auth/AuthModal";
 import { auth } from "@/auth";
 
 const spaceGrotesk = Space_Grotesk({
@@ -38,6 +39,7 @@ export default async function RootLayout({
             <Nav />
             {children}
             <Toaster />
+            <AuthModal />
           </SessionProvider>
         </body>
     </html>
