@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { auth } from "@/auth";
 import { getPokemon } from "@/lib/pokemon";
-import { getUserRating } from "@/lib/user-pokemon";
+import { getUserRating, getPokemonRatingStats } from "@/lib/user-pokemon";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { PokemonArtwork } from "@/components/pokemon/PokemonArtwork";
 import { PokemonActions } from "@/components/pokemon/PokemonActions";
@@ -16,7 +16,6 @@ import { RateRow } from "@/components/pokemon/RateRow";
 import { BaseStats } from "@/components/pokemon/BaseStats";
 import { TopReviews } from "@/components/pokemon/TopReviews";
 import { AppearsInLists } from "@/components/pokemon/AppearsInLists";
-import { PLACEHOLDER_RATING } from "@/lib/placeholder-rating";
 import { PLACEHOLDER_RATE_ROW } from "@/lib/placeholder-rate-row";
 import { PLACEHOLDER_TOP_REVIEWS } from "@/lib/placeholder-top-reviews";
 import { PLACEHOLDER_APPEARS_IN_LISTS } from "@/lib/placeholder-appears-in-lists";
@@ -43,6 +42,7 @@ export default async function PokemonPage({
   const session = await auth();
   const userId = session?.user?.id;
   const initialRating = userId ? await getUserRating(userId, pokemon.id) : null;
+  const ratingStats = await getPokemonRatingStats(pokemon.id);
 
   const primaryType = pokemon.types[0];
   const typeLabel = primaryType.charAt(0).toUpperCase() + primaryType.slice(1);
@@ -88,9 +88,9 @@ export default async function PokemonPage({
             baseExperience={pokemon.baseExperience}
           />
           <CommunityRating
-            average={PLACEHOLDER_RATING.average}
-            totalRatings={PLACEHOLDER_RATING.totalRatings}
-            distribution={PLACEHOLDER_RATING.distribution}
+            average={ratingStats.average}
+            totalRatings={ratingStats.totalRatings}
+            distribution={ratingStats.distribution}
           />
           <RateRow
             pokemonId={pokemon.id}
