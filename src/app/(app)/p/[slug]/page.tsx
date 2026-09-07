@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { auth } from "@/auth";
 import { getPokemon } from "@/lib/pokemon";
-import { getUserRating, getPokemonRatingStats } from "@/lib/user-pokemon";
+import { getUserPokemonReview, getPokemonRatingStats } from "@/lib/user-pokemon";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { PokemonArtwork } from "@/components/pokemon/PokemonArtwork";
 import { PokemonActions } from "@/components/pokemon/PokemonActions";
@@ -16,6 +16,7 @@ import { RateRow } from "@/components/pokemon/RateRow";
 import { BaseStats } from "@/components/pokemon/BaseStats";
 import { TopReviews } from "@/components/pokemon/TopReviews";
 import { AppearsInLists } from "@/components/pokemon/AppearsInLists";
+import { ReviewComposer } from "@/components/pokemon/ReviewComposer";
 import { PLACEHOLDER_RATE_ROW } from "@/lib/placeholder-rate-row";
 import { PLACEHOLDER_TOP_REVIEWS } from "@/lib/placeholder-top-reviews";
 import { PLACEHOLDER_APPEARS_IN_LISTS } from "@/lib/placeholder-appears-in-lists";
@@ -41,8 +42,13 @@ export default async function PokemonPage({
 
   const session = await auth();
   const userId = session?.user?.id;
-  const initialRating = userId ? await getUserRating(userId, pokemon.id) : null;
+  const isAuthenticated = Boolean(userId);
+  const userReview = userId
+    ? await getUserPokemonReview(userId, pokemon.id)
+    : { rating: null, reviewText: null };
+  const { rating: initialRating, reviewText: initialReviewText } = userReview;
   const ratingStats = await getPokemonRatingStats(pokemon.id);
+  const username = session?.user?.username ?? session?.user?.name ?? "you";
 
   const primaryType = pokemon.types[0];
   const typeLabel = primaryType.charAt(0).toUpperCase() + primaryType.slice(1);
@@ -78,7 +84,7 @@ export default async function PokemonPage({
             artworkUrl={pokemon.artworkUrl}
             types={pokemon.types}
           />
-          <PokemonActions />
+          <PokemonActions isAuthenticated={isAuthenticated} />
         </div>
         <div className="min-w-0 pb-[90px] md:pb-0">
           <PokemonHeader id={pokemon.id} name={pokemon.name} types={pokemon.types} />
@@ -96,7 +102,7 @@ export default async function PokemonPage({
             pokemonId={pokemon.id}
             slug={pokemon.slug}
             pokemonName={pokemon.name}
-            isAuthenticated={Boolean(userId)}
+            isAuthenticated={isAuthenticated}
             initialRating={initialRating}
             rank={PLACEHOLDER_RATE_ROW.rank}
             typeLabel={PLACEHOLDER_RATE_ROW.typeLabel}
@@ -122,8 +128,19 @@ export default async function PokemonPage({
       </div>
 
       <div className="md:hidden">
-        <PokemonMobileActionBar />
+        <PokemonMobileActionBar isAuthenticated={isAuthenticated} />
       </div>
+
+      <ReviewComposer
+        pokemonId={pokemon.id}
+        slug={pokemon.slug}
+        pokemonName={pokemon.name}
+        primaryType={primaryType}
+        artworkUrl={pokemon.artworkUrl}
+        initialRating={initialRating}
+        initialReviewText={initialReviewText}
+        username={username}
+      />
     </div>
   );
 }

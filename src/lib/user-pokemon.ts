@@ -2,14 +2,26 @@ import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import { toStars } from "@/lib/rating";
 
-/** The signed-in user's rating for one Pokémon, in half-star units (see `rating.ts`), or null if unset. */
-export const getUserRating = cache(async (userId: string, pokemonId: number) => {
-  const userPokemon = await prisma.userPokemon.findUnique({
-    where: { userId_pokemonId: { userId, pokemonId } },
-    select: { rating: true },
-  });
-  return userPokemon?.rating ?? null;
-});
+export interface UserPokemonReview {
+  /** Half-star units (see `rating.ts`), or null if unset. */
+  rating: number | null;
+  reviewText: string | null;
+}
+
+/**
+ * The signed-in user's rating + review text for one Pokémon, in a single
+ * lookup — both fields live on the same `UserPokemon` row, so callers that
+ * need both (e.g. the Pokémon detail page) shouldn't pay for two round-trips.
+ */
+export const getUserPokemonReview = cache(
+  async (userId: string, pokemonId: number): Promise<UserPokemonReview> => {
+    const userPokemon = await prisma.userPokemon.findUnique({
+      where: { userId_pokemonId: { userId, pokemonId } },
+      select: { rating: true, reviewText: true },
+    });
+    return { rating: userPokemon?.rating ?? null, reviewText: userPokemon?.reviewText ?? null };
+  },
+);
 
 interface RatingDistributionEntry {
   stars: 1 | 2 | 3 | 4 | 5;
@@ -81,6 +93,25 @@ export async function setUserRating(userId: string, pokemonId: number, rating: n
     where: { userId_pokemonId: { userId, pokemonId } },
     create: { userId, pokemonId, rating, reviewedAt: new Date() },
     update: { rating, reviewedAt: new Date() },
+  });
+}
+
+/**
+ * Post (or update) the signed-in user's rating and review text together, from
+ * the review composer. Rating is required — the composer gates submission on
+ * one being selected (see rating-review/rating-03-review-composer-spec.md
+ * §3) — while `reviewText` may be null for a rating with no written text.
+ */
+export async function postUserReview(
+  userId: string,
+  pokemonId: number,
+  rating: number,
+  reviewText: string | null,
+) {
+  await prisma.userPokemon.upsert({
+    where: { userId_pokemonId: { userId, pokemonId } },
+    create: { userId, pokemonId, rating, reviewText, reviewedAt: new Date() },
+    update: { rating, reviewText, reviewedAt: new Date() },
   });
 }
 

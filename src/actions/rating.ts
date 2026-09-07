@@ -4,9 +4,15 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { ratingValueSchema } from "@/lib/rating";
-import { clearUserRating, setUserRating } from "@/lib/user-pokemon";
+import {
+  clearUserRating,
+  postUserReview,
+  setUserRating,
+} from "@/lib/user-pokemon";
 
-type ActionResult<T> = { success: true; data: T } | { success: false; error: string };
+type ActionResult<T> =
+  | { success: true; data: T }
+  | { success: false; error: string };
 
 const setRatingSchema = z.object({
   pokemonId: z.number().int().positive(),
@@ -19,10 +25,15 @@ const clearRatingSchema = z.object({
   slug: z.string().min(1),
 });
 
-export async function setRating(input: z.infer<typeof setRatingSchema>): Promise<ActionResult<null>> {
+export async function setRating(
+  input: z.infer<typeof setRatingSchema>,
+): Promise<ActionResult<null>> {
   const session = await auth();
   if (!session?.user?.id) {
-    return { success: false, error: "You need to be signed in to rate a Pokémon." };
+    return {
+      success: false,
+      error: "You need to be signed in to rate a Pokémon.",
+    };
   }
 
   const parsed = setRatingSchema.safeParse(input);
@@ -31,7 +42,11 @@ export async function setRating(input: z.infer<typeof setRatingSchema>): Promise
   }
 
   try {
-    await setUserRating(session.user.id, parsed.data.pokemonId, parsed.data.rating);
+    await setUserRating(
+      session.user.id,
+      parsed.data.pokemonId,
+      parsed.data.rating,
+    );
     revalidatePath(`/p/${parsed.data.slug}`);
     return { success: true, data: null };
   } catch {
@@ -39,10 +54,15 @@ export async function setRating(input: z.infer<typeof setRatingSchema>): Promise
   }
 }
 
-export async function clearRating(input: z.infer<typeof clearRatingSchema>): Promise<ActionResult<null>> {
+export async function clearRating(
+  input: z.infer<typeof clearRatingSchema>,
+): Promise<ActionResult<null>> {
   const session = await auth();
   if (!session?.user?.id) {
-    return { success: false, error: "You need to be signed in to rate a Pokémon." };
+    return {
+      success: false,
+      error: "You need to be signed in to rate a Pokémon.",
+    };
   }
 
   const parsed = clearRatingSchema.safeParse(input);
@@ -56,5 +76,42 @@ export async function clearRating(input: z.infer<typeof clearRatingSchema>): Pro
     return { success: true, data: null };
   } catch {
     return { success: false, error: "Couldn't clear your rating. Try again." };
+  }
+}
+
+const postReviewSchema = z.object({
+  pokemonId: z.number().int().positive(),
+  slug: z.string().min(1),
+  rating: ratingValueSchema,
+  reviewText: z.string().max(1000).nullable(),
+});
+
+export async function postReview(
+  input: z.infer<typeof postReviewSchema>,
+): Promise<ActionResult<null>> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return {
+      success: false,
+      error: "You need to be signed in to write a review.",
+    };
+  }
+
+  const parsed = postReviewSchema.safeParse(input);
+  if (!parsed.success) {
+    return { success: false, error: "Invalid review." };
+  }
+
+  try {
+    await postUserReview(
+      session.user.id,
+      parsed.data.pokemonId,
+      parsed.data.rating,
+      parsed.data.reviewText,
+    );
+    revalidatePath(`/p/${parsed.data.slug}`);
+    return { success: true, data: null };
+  } catch {
+    return { success: false, error: "Couldn't post your review. Try again." };
   }
 }

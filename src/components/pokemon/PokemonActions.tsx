@@ -1,8 +1,29 @@
-export function PokemonActions() {
+"use client";
+
+import { useAuthModal } from "@/store/auth-modal";
+import { useReviewComposer } from "@/store/review-composer";
+
+interface PokemonActionsProps {
+  isAuthenticated: boolean;
+}
+
+export function PokemonActions({ isAuthenticated }: PokemonActionsProps) {
+  const { open: openAuthModal } = useAuthModal();
+  const { open: openComposer } = useReviewComposer();
+
+  function handleWriteReview() {
+    if (!isAuthenticated) {
+      openAuthModal("login");
+      return;
+    }
+    openComposer();
+  }
+
   return (
     <div className="mt-[14px] flex gap-[10px]">
       <button
         type="button"
+        onClick={handleWriteReview}
         className="h-[42px] flex-1 rounded-[11px] bg-[linear-gradient(135deg,var(--brand-from),var(--brand-to))] text-[14px] font-bold text-white"
       >
         Write review
