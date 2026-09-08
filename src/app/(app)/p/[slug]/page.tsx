@@ -15,6 +15,7 @@ import { CommunityRating } from "@/components/pokemon/CommunityRating";
 import { RateRow } from "@/components/pokemon/RateRow";
 import { BaseStats } from "@/components/pokemon/BaseStats";
 import { TopReviews } from "@/components/pokemon/TopReviews";
+import { YourReview } from "@/components/pokemon/YourReview";
 import { AppearsInLists } from "@/components/pokemon/AppearsInLists";
 import { ReviewComposer } from "@/components/pokemon/ReviewComposer";
 import { PLACEHOLDER_RATE_ROW } from "@/lib/placeholder-rate-row";
@@ -45,8 +46,8 @@ export default async function PokemonPage({
   const isAuthenticated = Boolean(userId);
   const userReview = userId
     ? await getUserPokemonReview(userId, pokemon.id)
-    : { rating: null, reviewText: null };
-  const { rating: initialRating, reviewText: initialReviewText } = userReview;
+    : { rating: null, reviewText: null, reviewedAt: null };
+  const { rating: initialRating, reviewText: initialReviewText, reviewedAt } = userReview;
   const ratingStats = await getPokemonRatingStats(pokemon.id);
   const username = session?.user?.username ?? session?.user?.name ?? "you";
 
@@ -119,6 +120,18 @@ export default async function PokemonPage({
               speed: pokemon.speed,
             }}
           />
+          {initialReviewText && reviewedAt && (
+            <YourReview
+              pokemonId={pokemon.id}
+              slug={pokemon.slug}
+              pokemonName={pokemon.name}
+              username={username}
+              avatarImage={session?.user?.image}
+              rating={initialRating}
+              reviewText={initialReviewText}
+              reviewedAt={reviewedAt}
+            />
+          )}
           <TopReviews
             totalReviewCount={PLACEHOLDER_TOP_REVIEWS.totalReviewCount}
             reviews={PLACEHOLDER_TOP_REVIEWS.reviews}

@@ -6,6 +6,7 @@ import { auth } from "@/auth";
 import { ratingValueSchema } from "@/lib/rating";
 import {
   clearUserRating,
+  deleteUserReviewText,
   postUserReview,
   setUserRating,
 } from "@/lib/user-pokemon";
@@ -113,5 +114,35 @@ export async function postReview(
     return { success: true, data: null };
   } catch {
     return { success: false, error: "Couldn't post your review. Try again." };
+  }
+}
+
+const deleteReviewSchema = z.object({
+  pokemonId: z.number().int().positive(),
+  slug: z.string().min(1),
+});
+
+export async function deleteReview(
+  input: z.infer<typeof deleteReviewSchema>,
+): Promise<ActionResult<null>> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return {
+      success: false,
+      error: "You need to be signed in to delete a review.",
+    };
+  }
+
+  const parsed = deleteReviewSchema.safeParse(input);
+  if (!parsed.success) {
+    return { success: false, error: "Invalid request." };
+  }
+
+  try {
+    await deleteUserReviewText(session.user.id, parsed.data.pokemonId);
+    revalidatePath(`/p/${parsed.data.slug}`);
+    return { success: true, data: null };
+  } catch {
+    return { success: false, error: "Couldn't delete your review. Try again." };
   }
 }

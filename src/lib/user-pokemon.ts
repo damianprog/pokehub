@@ -6,6 +6,7 @@ export interface UserPokemonReview {
   /** Half-star units (see `rating.ts`), or null if unset. */
   rating: number | null;
   reviewText: string | null;
+  reviewedAt: Date | null;
 }
 
 /**
@@ -17,9 +18,13 @@ export const getUserPokemonReview = cache(
   async (userId: string, pokemonId: number): Promise<UserPokemonReview> => {
     const userPokemon = await prisma.userPokemon.findUnique({
       where: { userId_pokemonId: { userId, pokemonId } },
-      select: { rating: true, reviewText: true },
+      select: { rating: true, reviewText: true, reviewedAt: true },
     });
-    return { rating: userPokemon?.rating ?? null, reviewText: userPokemon?.reviewText ?? null };
+    return {
+      rating: userPokemon?.rating ?? null,
+      reviewText: userPokemon?.reviewText ?? null,
+      reviewedAt: userPokemon?.reviewedAt ?? null,
+    };
   },
 );
 
@@ -112,6 +117,19 @@ export async function postUserReview(
     where: { userId_pokemonId: { userId, pokemonId } },
     create: { userId, pokemonId, rating, reviewText, reviewedAt: new Date() },
     update: { rating, reviewText, reviewedAt: new Date() },
+  });
+}
+
+/**
+ * Delete the signed-in user's written review for a Pokémon, leaving `rating`
+ * and `reviewedAt` untouched — the rating stays valid on its own (see
+ * rating-review/rating-04-your-review-block-spec.md §6), this only removes
+ * the text the "Your review" card and the composer show back to the user.
+ */
+export async function deleteUserReviewText(userId: string, pokemonId: number) {
+  await prisma.userPokemon.update({
+    where: { userId_pokemonId: { userId, pokemonId } },
+    data: { reviewText: null },
   });
 }
 
