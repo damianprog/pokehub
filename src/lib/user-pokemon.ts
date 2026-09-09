@@ -133,6 +133,61 @@ export async function deleteUserReviewText(userId: string, pokemonId: number) {
   });
 }
 
+export interface TopReviewItem {
+  id: string;
+  username: string;
+  avatarImage: string | null;
+  /** Half-star units (see `rating.ts`), or null if the user cleared their rating but kept the written review. */
+  rating: number | null;
+  reviewText: string;
+}
+
+export interface TopReviewsResult {
+  reviews: TopReviewItem[];
+  totalReviewCount: number;
+}
+
+/**
+ * A capped, most-recent-first preview of other users' written reviews for a
+ * Pokémon, plus the total count of every written review on it (the viewer's
+ * own included) for the "View all N" line. `excludeUserId` omits the
+ * viewer's own review from the preview list — it's already shown in the
+ * `YourReview` card above this component — without affecting the total.
+ * Ordered by `reviewedAt` rather than a helpfulness score, since no
+ * `ReviewLike` wiring exists yet to produce one. See
+ * rating-review/rating-05-top-reviews-real-aggregation-spec.md §3-§5.
+ */
+export const getTopReviews = cache(
+  async (pokemonId: number, excludeUserId?: string, limit = 2): Promise<TopReviewsResult> => {
+    const reviewedWhere = { pokemonId, reviewText: { not: null } } as const;
+
+    const [totalReviewCount, rows] = await Promise.all([
+      prisma.userPokemon.count({ where: reviewedWhere }),
+      prisma.userPokemon.findMany({
+        where: excludeUserId ? { ...reviewedWhere, userId: { not: excludeUserId } } : reviewedWhere,
+        orderBy: { reviewedAt: "desc" },
+        take: limit,
+        select: {
+          id: true,
+          rating: true,
+          reviewText: true,
+          user: { select: { username: true, name: true, image: true } },
+        },
+      }),
+    ]);
+
+    const reviews: TopReviewItem[] = rows.map((row) => ({
+      id: row.id,
+      username: row.user.username ?? row.user.name ?? "trainer",
+      avatarImage: row.user.image,
+      rating: row.rating,
+      reviewText: row.reviewText ?? "",
+    }));
+
+    return { reviews, totalReviewCount };
+  },
+);
+
 /**
  * Clear the signed-in user's rating for a Pokémon. `reviewedAt` is cleared too
  * unless review text already exists on the row — a bare rating is still a

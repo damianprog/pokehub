@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { auth } from "@/auth";
 import { getPokemon } from "@/lib/pokemon";
-import { getUserPokemonReview, getPokemonRatingStats } from "@/lib/user-pokemon";
+import { getUserPokemonReview, getPokemonRatingStats, getTopReviews } from "@/lib/user-pokemon";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { PokemonArtwork } from "@/components/pokemon/PokemonArtwork";
 import { PokemonActions } from "@/components/pokemon/PokemonActions";
@@ -19,7 +19,6 @@ import { YourReview } from "@/components/pokemon/YourReview";
 import { AppearsInLists } from "@/components/pokemon/AppearsInLists";
 import { ReviewComposer } from "@/components/pokemon/ReviewComposer";
 import { PLACEHOLDER_RATE_ROW } from "@/lib/placeholder-rate-row";
-import { PLACEHOLDER_TOP_REVIEWS } from "@/lib/placeholder-top-reviews";
 import { PLACEHOLDER_APPEARS_IN_LISTS } from "@/lib/placeholder-appears-in-lists";
 
 export async function generateMetadata({
@@ -49,6 +48,7 @@ export default async function PokemonPage({
     : { rating: null, reviewText: null, reviewedAt: null };
   const { rating: initialRating, reviewText: initialReviewText, reviewedAt } = userReview;
   const ratingStats = await getPokemonRatingStats(pokemon.id);
+  const topReviews = await getTopReviews(pokemon.id, userId);
   const username = session?.user?.username ?? session?.user?.name ?? "you";
 
   const primaryType = pokemon.types[0];
@@ -133,8 +133,10 @@ export default async function PokemonPage({
             />
           )}
           <TopReviews
-            totalReviewCount={PLACEHOLDER_TOP_REVIEWS.totalReviewCount}
-            reviews={PLACEHOLDER_TOP_REVIEWS.reviews}
+            pokemonName={pokemon.name}
+            totalReviewCount={topReviews.totalReviewCount}
+            reviews={topReviews.reviews}
+            isAuthenticated={isAuthenticated}
           />
           <AppearsInLists lists={PLACEHOLDER_APPEARS_IN_LISTS.lists} />
         </div>

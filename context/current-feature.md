@@ -17,6 +17,7 @@
 ## History
 
 <!-- Keep this updated. Earliest to latest -->
+- 2026-09-09 Completed: Rating 05 · Top Reviews real aggregation (`context/features/rating-review/rating-05-top-reviews-real-aggregation-spec.md`) — `TopReviews` on `/p/[slug]` now reads real `UserPokemon` rows via a new `getTopReviews(pokemonId, excludeUserId)` in `src/lib/user-pokemon.ts`, replacing the static placeholder dataset (removed). Preview list excludes the viewer's own review (already shown in `YourReview`) but the "View all N" count still includes it, ordered by `reviewedAt` descending since no helpfulness signal exists yet. Dropped follower count and the "found this helpful" footer (no backing features), converted star rendering through `rating.ts`'s half-star-unit helpers, added a deterministic gradient-letter avatar fallback (`src/lib/avatar-colors.ts`), and built the "Be the first to review" empty state for the common zero-reviews case. Verified live via crafted session JWTs + curl + Playwright screenshots against real multi-reviewer data (exclusion, ordering, count) and the empty-state/auth-gate path; `npm run build`/`lint` pass.
 
 - 2026-06-22 Initial Next.js project setup (Create Next App) with Tailwind CSS configured.
 - 2026-06-23 Added dark-theme `@theme` color tokens, brand fonts (Space Grotesk + Hanken Grotesk), and shadcn/ui setup.
