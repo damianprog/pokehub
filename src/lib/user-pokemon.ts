@@ -7,26 +7,45 @@ export interface UserPokemonReview {
   rating: number | null;
   reviewText: string | null;
   reviewedAt: Date | null;
+  isFavorite: boolean;
 }
 
 /**
- * The signed-in user's rating + review text for one Pokémon, in a single
- * lookup — both fields live on the same `UserPokemon` row, so callers that
- * need both (e.g. the Pokémon detail page) shouldn't pay for two round-trips.
+ * The signed-in user's rating + review text + favorite flag for one
+ * Pokémon, in a single lookup — all three live on the same `UserPokemon`
+ * row, so callers that need more than one (e.g. the Pokémon detail page)
+ * shouldn't pay for extra round-trips. Name is a holdover from when this
+ * only covered rating/review; worth renaming if more non-review fields
+ * join it.
  */
 export const getUserPokemonReview = cache(
   async (userId: string, pokemonId: number): Promise<UserPokemonReview> => {
     const userPokemon = await prisma.userPokemon.findUnique({
       where: { userId_pokemonId: { userId, pokemonId } },
-      select: { rating: true, reviewText: true, reviewedAt: true },
+      select: { rating: true, reviewText: true, reviewedAt: true, isFavorite: true },
     });
     return {
       rating: userPokemon?.rating ?? null,
       reviewText: userPokemon?.reviewText ?? null,
       reviewedAt: userPokemon?.reviewedAt ?? null,
+      isFavorite: userPokemon?.isFavorite ?? false,
     };
   },
 );
+
+/**
+ * Set the signed-in user's favorite flag for a Pokémon. Upserts on the
+ * (userId, pokemonId) pair so favoriting a Pokémon with no existing row
+ * doesn't disturb rating/review/collection defaults. Favoriting is
+ * unlimited — no cap to enforce here, unlike Wishlist's 3-slot limit.
+ */
+export async function setUserFavorite(userId: string, pokemonId: number, isFavorite: boolean) {
+  await prisma.userPokemon.upsert({
+    where: { userId_pokemonId: { userId, pokemonId } },
+    create: { userId, pokemonId, isFavorite },
+    update: { isFavorite },
+  });
+}
 
 interface RatingDistributionEntry {
   stars: 1 | 2 | 3 | 4 | 5;

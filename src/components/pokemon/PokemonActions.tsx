@@ -2,12 +2,23 @@
 
 import { useAuthModal } from "@/store/auth-modal";
 import { useReviewComposer } from "@/store/review-composer";
+import { FavoriteButton } from "@/components/pokemon/FavoriteButton";
 
 interface PokemonActionsProps {
+  pokemonId: number;
+  slug: string;
+  pokemonName: string;
   isAuthenticated: boolean;
+  initialIsFavorite: boolean;
 }
 
-export function PokemonActions({ isAuthenticated }: PokemonActionsProps) {
+export function PokemonActions({
+  pokemonId,
+  slug,
+  pokemonName,
+  isAuthenticated,
+  initialIsFavorite,
+}: PokemonActionsProps) {
   const { open: openAuthModal } = useAuthModal();
   const { open: openComposer } = useReviewComposer();
 
@@ -28,13 +39,14 @@ export function PokemonActions({ isAuthenticated }: PokemonActionsProps) {
       >
         Write review
       </button>
-      <button
-        type="button"
-        aria-label="Favorite"
-        className="h-[42px] w-[46px] rounded-[11px] border border-white/10 bg-white/[0.06] text-[#e8a0c0]"
-      >
-        ♥
-      </button>
+      <FavoriteButton
+        pokemonId={pokemonId}
+        slug={slug}
+        pokemonName={pokemonName}
+        isAuthenticated={isAuthenticated}
+        initialIsFavorite={initialIsFavorite}
+        className="h-[42px] w-[46px] rounded-[11px] border border-white/10 bg-white/[0.06]"
+      />
       <button
         type="button"
         aria-label="Add to list"

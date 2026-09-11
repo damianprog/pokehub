@@ -45,8 +45,13 @@ export default async function PokemonPage({
   const isAuthenticated = Boolean(userId);
   const userReview = userId
     ? await getUserPokemonReview(userId, pokemon.id)
-    : { rating: null, reviewText: null, reviewedAt: null };
-  const { rating: initialRating, reviewText: initialReviewText, reviewedAt } = userReview;
+    : { rating: null, reviewText: null, reviewedAt: null, isFavorite: false };
+  const {
+    rating: initialRating,
+    reviewText: initialReviewText,
+    reviewedAt,
+    isFavorite: initialIsFavorite,
+  } = userReview;
   const ratingStats = await getPokemonRatingStats(pokemon.id);
   const topReviews = await getTopReviews(pokemon.id, userId);
   const username = session?.user?.username ?? session?.user?.name ?? "you";
@@ -61,9 +66,12 @@ export default async function PokemonPage({
       <div className="-mx-4 mb-[18px] sm:-mx-[26px] md:hidden">
         <PokemonMobileHero
           id={pokemon.id}
+          slug={pokemon.slug}
           name={pokemon.name}
           artworkUrl={pokemon.artworkUrl}
           types={pokemon.types}
+          isAuthenticated={isAuthenticated}
+          initialIsFavorite={initialIsFavorite}
         />
       </div>
 
@@ -85,7 +93,13 @@ export default async function PokemonPage({
             artworkUrl={pokemon.artworkUrl}
             types={pokemon.types}
           />
-          <PokemonActions isAuthenticated={isAuthenticated} />
+          <PokemonActions
+            pokemonId={pokemon.id}
+            slug={pokemon.slug}
+            pokemonName={pokemon.name}
+            isAuthenticated={isAuthenticated}
+            initialIsFavorite={initialIsFavorite}
+          />
         </div>
         <div className="min-w-0 pb-[90px] md:pb-0">
           <PokemonHeader id={pokemon.id} name={pokemon.name} types={pokemon.types} />

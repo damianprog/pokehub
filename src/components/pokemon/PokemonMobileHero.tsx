@@ -1,14 +1,26 @@
 import Image from "next/image";
 import { TYPE_GRADIENTS, FALLBACK_GRADIENT } from "@/lib/type-gradients";
+import { FavoriteButton } from "@/components/pokemon/FavoriteButton";
 
 interface PokemonMobileHeroProps {
   id: number;
+  slug: string;
   name: string;
   artworkUrl: string;
   types: string[];
+  isAuthenticated: boolean;
+  initialIsFavorite: boolean;
 }
 
-export function PokemonMobileHero({ id, name, artworkUrl, types }: PokemonMobileHeroProps) {
+export function PokemonMobileHero({
+  id,
+  slug,
+  name,
+  artworkUrl,
+  types,
+  isAuthenticated,
+  initialIsFavorite,
+}: PokemonMobileHeroProps) {
   const { bg } = TYPE_GRADIENTS[types[0]?.toLowerCase()] ?? FALLBACK_GRADIENT;
   const dexNumber = `#${String(id).padStart(3, "0")}`;
 
@@ -47,14 +59,14 @@ export function PokemonMobileHero({ id, name, artworkUrl, types }: PokemonMobile
         </div>
       </div>
 
-      {/* Favorite button — static/unfavorited, no toggle this iteration */}
-      <button
-        type="button"
-        aria-label="Favorite"
-        className="absolute top-[14px] right-[14px] flex size-[42px] items-center justify-center rounded-full bg-background/[0.55] text-[18px] text-[#e8a0c0] backdrop-blur-[6px]"
-      >
-        ♥
-      </button>
+      <FavoriteButton
+        pokemonId={id}
+        slug={slug}
+        pokemonName={name}
+        isAuthenticated={isAuthenticated}
+        initialIsFavorite={initialIsFavorite}
+        className="absolute top-[14px] right-[14px] flex size-[42px] items-center justify-center rounded-full bg-background/[0.55] text-[18px] backdrop-blur-[6px]"
+      />
     </div>
   );
 }
