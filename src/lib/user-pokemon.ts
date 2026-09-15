@@ -1,34 +1,41 @@
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import { toStars } from "@/lib/rating";
+import { WISHLIST_CAP } from "@/lib/wishlist";
 
-export interface UserPokemonReview {
+export interface UserPokemonState {
   /** Half-star units (see `rating.ts`), or null if unset. */
   rating: number | null;
   reviewText: string | null;
   reviewedAt: Date | null;
   isFavorite: boolean;
+  isWishlist: boolean;
 }
 
 /**
- * The signed-in user's rating + review text + favorite flag for one
- * Pokémon, in a single lookup — all three live on the same `UserPokemon`
- * row, so callers that need more than one (e.g. the Pokémon detail page)
- * shouldn't pay for extra round-trips. Name is a holdover from when this
- * only covered rating/review; worth renaming if more non-review fields
- * join it.
+ * The signed-in user's rating + review text + favorite/wishlist flags for
+ * one Pokémon, in a single lookup — all live on the same `UserPokemon` row,
+ * so callers that need more than one (e.g. the Pokémon detail page)
+ * shouldn't pay for extra round-trips.
  */
-export const getUserPokemonReview = cache(
-  async (userId: string, pokemonId: number): Promise<UserPokemonReview> => {
+export const getUserPokemonState = cache(
+  async (userId: string, pokemonId: number): Promise<UserPokemonState> => {
     const userPokemon = await prisma.userPokemon.findUnique({
       where: { userId_pokemonId: { userId, pokemonId } },
-      select: { rating: true, reviewText: true, reviewedAt: true, isFavorite: true },
+      select: {
+        rating: true,
+        reviewText: true,
+        reviewedAt: true,
+        isFavorite: true,
+        isWishlist: true,
+      },
     });
     return {
       rating: userPokemon?.rating ?? null,
       reviewText: userPokemon?.reviewText ?? null,
       reviewedAt: userPokemon?.reviewedAt ?? null,
       isFavorite: userPokemon?.isFavorite ?? false,
+      isWishlist: userPokemon?.isWishlist ?? false,
     };
   },
 );
@@ -44,6 +51,71 @@ export async function setUserFavorite(userId: string, pokemonId: number, isFavor
     where: { userId_pokemonId: { userId, pokemonId } },
     create: { userId, pokemonId, isFavorite },
     update: { isFavorite },
+  });
+}
+
+/** Thrown by `setUserWishlist` when adding would exceed `WISHLIST_CAP`. */
+export class WishlistAtCapacityError extends Error {
+  constructor() {
+    super(`Wishlist is full (max ${WISHLIST_CAP}).`);
+    this.name = "WishlistAtCapacityError";
+  }
+}
+
+/**
+ * The signed-in user's total wishlisted Pokémon count, across every
+ * Pokémon — not the per-Pokémon flag `getUserPokemonState` returns. Backs
+ * the "X of 3" UI and the at-capacity check on the add path.
+ */
+export const getUserWishlistCount = cache(async (userId: string): Promise<number> => {
+  return prisma.userPokemon.count({ where: { userId, isWishlist: true } });
+});
+
+/**
+ * Set the signed-in user's wishlist flag for a Pokémon. Upserts on the
+ * (userId, pokemonId) pair so wishlisting a Pokémon with no existing row
+ * doesn't disturb rating/review/favorite/collection defaults. Removing
+ * (isWishlist: false) is always allowed. Adding is guarded by a
+ * transactional count-then-write check against `WISHLIST_CAP` so two
+ * concurrent adds can't both succeed and leave a user over the cap; throws
+ * `WishlistAtCapacityError` when the cap would be exceeded.
+ */
+export async function setUserWishlist(userId: string, pokemonId: number, isWishlist: boolean) {
+  if (!isWishlist) {
+    await prisma.userPokemon.upsert({
+      where: { userId_pokemonId: { userId, pokemonId } },
+      create: { userId, pokemonId, isWishlist: false },
+      update: { isWishlist: false },
+    });
+    return;
+  }
+
+  await prisma.$transaction(async (tx) => {
+    // Postgres's default READ COMMITTED isolation does NOT serialize the
+    // count-check below against a concurrent add for the same user targeting
+    // a *different* Pokémon (different row, so no natural write conflict) —
+    // two adds racing this way can both read a count under the cap and both
+    // commit, exceeding it. Locking the user's own row forces a second
+    // concurrent transaction for the same user to block here until the first
+    // commits, so its count-check afterward sees the first add's write.
+    await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${userId} FOR UPDATE`;
+
+    const existing = await tx.userPokemon.findUnique({
+      where: { userId_pokemonId: { userId, pokemonId } },
+      select: { isWishlist: true },
+    });
+    if (existing?.isWishlist) return;
+
+    const count = await tx.userPokemon.count({ where: { userId, isWishlist: true } });
+    if (count >= WISHLIST_CAP) {
+      throw new WishlistAtCapacityError();
+    }
+
+    await tx.userPokemon.upsert({
+      where: { userId_pokemonId: { userId, pokemonId } },
+      create: { userId, pokemonId, isWishlist: true },
+      update: { isWishlist: true },
+    });
   });
 }
 
@@ -122,15 +194,15 @@ export async function setUserRating(userId: string, pokemonId: number, rating: n
 
 /**
  * Post (or update) the signed-in user's rating and review text together, from
- * the review composer. Rating is required — the composer gates submission on
- * one being selected (see rating-review/rating-03-review-composer-spec.md
- * §3) — while `reviewText` may be null for a rating with no written text.
+ * the review composer. Both rating and `reviewText` are required — a
+ * rating with no written text is set via `setUserRating` instead (the "Rate
+ * it" stars), not this path.
  */
 export async function postUserReview(
   userId: string,
   pokemonId: number,
   rating: number,
-  reviewText: string | null,
+  reviewText: string,
 ) {
   await prisma.userPokemon.upsert({
     where: { userId_pokemonId: { userId, pokemonId } },

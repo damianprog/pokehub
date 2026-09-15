@@ -2,7 +2,12 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { auth } from "@/auth";
 import { getPokemon } from "@/lib/pokemon";
-import { getUserPokemonReview, getPokemonRatingStats, getTopReviews } from "@/lib/user-pokemon";
+import {
+  getUserPokemonState,
+  getPokemonRatingStats,
+  getTopReviews,
+  getUserWishlistCount,
+} from "@/lib/user-pokemon";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { PokemonArtwork } from "@/components/pokemon/PokemonArtwork";
 import { PokemonActions } from "@/components/pokemon/PokemonActions";
@@ -43,15 +48,17 @@ export default async function PokemonPage({
   const session = await auth();
   const userId = session?.user?.id;
   const isAuthenticated = Boolean(userId);
-  const userReview = userId
-    ? await getUserPokemonReview(userId, pokemon.id)
-    : { rating: null, reviewText: null, reviewedAt: null, isFavorite: false };
+  const userState = userId
+    ? await getUserPokemonState(userId, pokemon.id)
+    : { rating: null, reviewText: null, reviewedAt: null, isFavorite: false, isWishlist: false };
   const {
     rating: initialRating,
     reviewText: initialReviewText,
     reviewedAt,
     isFavorite: initialIsFavorite,
-  } = userReview;
+    isWishlist: initialIsWishlist,
+  } = userState;
+  const initialWishlistCount = userId ? await getUserWishlistCount(userId) : 0;
   const ratingStats = await getPokemonRatingStats(pokemon.id);
   const topReviews = await getTopReviews(pokemon.id, userId);
   const username = session?.user?.username ?? session?.user?.name ?? "you";
@@ -72,6 +79,8 @@ export default async function PokemonPage({
           types={pokemon.types}
           isAuthenticated={isAuthenticated}
           initialIsFavorite={initialIsFavorite}
+          initialIsWishlist={initialIsWishlist}
+          initialWishlistCount={initialWishlistCount}
         />
       </div>
 
@@ -92,6 +101,8 @@ export default async function PokemonPage({
             name={pokemon.name}
             artworkUrl={pokemon.artworkUrl}
             types={pokemon.types}
+            initialIsWishlist={initialIsWishlist}
+            initialWishlistCount={initialWishlistCount}
           />
           <PokemonActions
             pokemonId={pokemon.id}
@@ -99,6 +110,8 @@ export default async function PokemonPage({
             pokemonName={pokemon.name}
             isAuthenticated={isAuthenticated}
             initialIsFavorite={initialIsFavorite}
+            initialIsWishlist={initialIsWishlist}
+            initialWishlistCount={initialWishlistCount}
           />
         </div>
         <div className="min-w-0 pb-[90px] md:pb-0">

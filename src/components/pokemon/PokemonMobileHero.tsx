@@ -1,6 +1,9 @@
 import Image from "next/image";
 import { TYPE_GRADIENTS, FALLBACK_GRADIENT } from "@/lib/type-gradients";
 import { FavoriteButton } from "@/components/pokemon/FavoriteButton";
+import { WishlistButton } from "@/components/pokemon/WishlistButton";
+import { WishlistMobileBadge } from "@/components/pokemon/WishlistMobileBadge";
+import { WishlistCapacitySheet } from "@/components/pokemon/WishlistCapacitySheet";
 
 interface PokemonMobileHeroProps {
   id: number;
@@ -10,6 +13,8 @@ interface PokemonMobileHeroProps {
   types: string[];
   isAuthenticated: boolean;
   initialIsFavorite: boolean;
+  initialIsWishlist: boolean;
+  initialWishlistCount: number;
 }
 
 export function PokemonMobileHero({
@@ -20,6 +25,8 @@ export function PokemonMobileHero({
   types,
   isAuthenticated,
   initialIsFavorite,
+  initialIsWishlist,
+  initialWishlistCount,
 }: PokemonMobileHeroProps) {
   const { bg } = TYPE_GRADIENTS[types[0]?.toLowerCase()] ?? FALLBACK_GRADIENT;
   const dexNumber = `#${String(id).padStart(3, "0")}`;
@@ -59,14 +66,34 @@ export function PokemonMobileHero({
         </div>
       </div>
 
-      <FavoriteButton
+      <div className="absolute top-[14px] right-[14px] flex flex-col gap-[10px]">
+        <FavoriteButton
+          pokemonId={id}
+          slug={slug}
+          pokemonName={name}
+          isAuthenticated={isAuthenticated}
+          initialIsFavorite={initialIsFavorite}
+          className="flex size-[42px] items-center justify-center rounded-full bg-background/[0.55] text-[18px] backdrop-blur-[6px]"
+        />
+        <WishlistButton
+          pokemonId={id}
+          slug={slug}
+          pokemonName={name}
+          isAuthenticated={isAuthenticated}
+          initialIsWishlist={initialIsWishlist}
+          initialWishlistCount={initialWishlistCount}
+          notWishlistedColor="#cdd2da"
+          className="relative flex size-[42px] items-center justify-center rounded-full bg-background/[0.55] backdrop-blur-[6px]"
+          capacityBadgeClassName="absolute -top-[1px] -right-[1px] flex h-[17px] min-w-[17px] items-center justify-center rounded-[6px] border border-white/[0.14] bg-[#22262e] px-[4px] font-['Space_Grotesk'] text-[9.5px] font-extrabold text-[#9aa0ab]"
+        />
+      </div>
+
+      <WishlistMobileBadge
         pokemonId={id}
-        slug={slug}
-        pokemonName={name}
-        isAuthenticated={isAuthenticated}
-        initialIsFavorite={initialIsFavorite}
-        className="absolute top-[14px] right-[14px] flex size-[42px] items-center justify-center rounded-full bg-background/[0.55] text-[18px] backdrop-blur-[6px]"
+        initialIsWishlist={initialIsWishlist}
+        initialWishlistCount={initialWishlistCount}
       />
+      <WishlistCapacitySheet pokemonName={name} />
     </div>
   );
 }

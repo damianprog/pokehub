@@ -84,7 +84,10 @@ const postReviewSchema = z.object({
   pokemonId: z.number().int().positive(),
   slug: z.string().min(1),
   rating: ratingValueSchema,
-  reviewText: z.string().max(1000).nullable(),
+  // Rating-only (no text) is a separate path — the "Rate it" stars call
+  // `setRating` directly. Reaching this action means the user went through
+  // the "Write review" composer, so text is mandatory here.
+  reviewText: z.string().trim().min(6, "Review must be at least 6 characters.").max(1000),
 });
 
 export async function postReview(

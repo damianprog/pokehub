@@ -11,6 +11,7 @@ import { ReviewComposerMobile } from "@/components/pokemon/ReviewComposerMobile"
 import { ReviewComposerDesktop } from "@/components/pokemon/ReviewComposerDesktop";
 
 const REVIEW_MAX_LENGTH = 1000;
+const REVIEW_MIN_LENGTH = 6;
 
 interface ReviewComposerFormProps {
   pokemonId: number;
@@ -50,7 +51,9 @@ export function ReviewComposerForm({
 
   const displayValue = previewValue ?? committedValue;
   const isDimmed = previewValue !== null;
-  const canSubmit = committedValue > 0 && !isSubmitting;
+  const trimmedReviewLength = reviewText.trim().length;
+  const reviewTooShort = trimmedReviewLength < REVIEW_MIN_LENGTH;
+  const canSubmit = committedValue > 0 && !reviewTooShort && !isSubmitting;
   const dexNumber = `#${String(pokemonId).padStart(3, "0")}`;
   const gradient = TYPE_GRADIENTS[primaryType.toLowerCase()]?.bg ?? FALLBACK_GRADIENT.bg;
   const ariaLabel = `Rate ${pokemonName}`;
@@ -69,7 +72,7 @@ export function ReviewComposerForm({
       pokemonId,
       slug,
       rating: committedValue,
-      reviewText: reviewText.trim() === "" ? null : reviewText.trim(),
+      reviewText: reviewText.trim(),
     });
     setIsSubmitting(false);
 
@@ -121,7 +124,11 @@ export function ReviewComposerForm({
         />
       </div>
       <div className="flex justify-between text-[12px] text-[#5c636e]">
-        <span>Markdown-lite: *italic*, **bold**</span>
+        <span>
+          {reviewTooShort
+            ? `Write at least ${REVIEW_MIN_LENGTH} characters to post`
+            : "Markdown-lite: *italic*, **bold**"}
+        </span>
         <span className={reviewText.length > 0 ? "text-[#9aa0ab]" : ""}>
           {reviewText.length.toLocaleString()} / {REVIEW_MAX_LENGTH.toLocaleString()}
         </span>
@@ -129,7 +136,7 @@ export function ReviewComposerForm({
     </div>
   );
 
-  const pickARatingHint = !canSubmit && !isSubmitting && (
+  const pickARatingHint = !canSubmit && !isSubmitting && !reviewTooShort && (
     <div className="text-right text-[12px] text-[#7b818c]">Pick a rating to post</div>
   );
 

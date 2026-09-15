@@ -1,14 +1,24 @@
 import Image from "next/image";
 import { TYPE_GRADIENTS, FALLBACK_GRADIENT } from "@/lib/type-gradients";
+import { WishlistBadge } from "@/components/pokemon/WishlistBadge";
 
 interface PokemonArtworkProps {
   id: number;
   name: string;
   artworkUrl: string;
   types: string[];
+  initialIsWishlist: boolean;
+  initialWishlistCount: number;
 }
 
-export function PokemonArtwork({ id, name, artworkUrl, types }: PokemonArtworkProps) {
+export function PokemonArtwork({
+  id,
+  name,
+  artworkUrl,
+  types,
+  initialIsWishlist,
+  initialWishlistCount,
+}: PokemonArtworkProps) {
   const { bg, shadow } = TYPE_GRADIENTS[types[0]?.toLowerCase()] ?? FALLBACK_GRADIENT;
   const dexNumber = `#${String(id).padStart(3, "0")}`;
 
@@ -55,6 +65,12 @@ export function PokemonArtwork({ id, name, artworkUrl, types }: PokemonArtworkPr
           />
         </div>
       </div>
+
+      <WishlistBadge
+        pokemonId={id}
+        initialIsWishlist={initialIsWishlist}
+        initialWishlistCount={initialWishlistCount}
+      />
     </div>
   );
 }
