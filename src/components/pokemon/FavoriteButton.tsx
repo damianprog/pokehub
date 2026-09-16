@@ -11,6 +11,7 @@ import { useAuthModal } from "@/store/auth-modal";
 // its own (favorite-wishlist-01-favorite-toggle-spec.md §3).
 const UNFAVORITED_COLOR = "#e8a0c0";
 const FAVORITED_COLOR = "#ff5d8f";
+const FAVORITED_BG = "rgba(255,93,143,0.18)";
 
 interface FavoriteButtonProps {
   pokemonId: number;
@@ -52,14 +53,20 @@ export function FavoriteButton({
     }
   }
 
+  const label = isFavorite ? "Remove from favorites" : "Add to favorites";
+
   return (
     <button
       type="button"
-      aria-label="Favorite"
+      aria-label={label}
+      title={label}
       aria-pressed={isFavorite}
       onClick={handleClick}
       className={className}
-      style={{ color: isFavorite ? FAVORITED_COLOR : UNFAVORITED_COLOR }}
+      style={{
+        color: isFavorite ? FAVORITED_COLOR : UNFAVORITED_COLOR,
+        backgroundColor: isFavorite ? FAVORITED_BG : undefined,
+      }}
     >
       ♥
     </button>
