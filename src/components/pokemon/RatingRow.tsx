@@ -33,9 +33,25 @@ export function RatingRow({
   likeCount,
 }: RatingRowProps) {
   const { open } = useAuthModal();
-  const [committedValue, setCommittedValue] = useState<number | null>(initialRating);
+  const [committedValue, setCommittedValue] = useState<number | null>(
+    initialRating,
+  );
   const [previewValue, setPreviewValue] = useState<number | null>(null);
   const [isEditing, setIsEditing] = useState(initialRating === null);
+
+  // `initialRating` only seeds state on mount, but the review composer
+  // updates this row's rating via `router.refresh()` (re-fetching this same,
+  // still-mounted component with a new prop) rather than a full page
+  // navigation. Adjusting state during render (rather than in an effect)
+  // applies the new value in the same render pass instead of an extra one —
+  // without this the stars stayed unrated until an actual reload remounted
+  // the component.
+  const [prevInitialRating, setPrevInitialRating] = useState(initialRating);
+  if (initialRating !== prevInitialRating) {
+    setPrevInitialRating(initialRating);
+    setCommittedValue(initialRating);
+    setIsEditing(initialRating === null);
+  }
 
   const isRated = committedValue !== null && !isEditing;
   const displayValue = previewValue ?? (isEditing ? 0 : (committedValue ?? 0));
@@ -87,7 +103,9 @@ export function RatingRow({
   const label = isRated ? "Your rating" : "Rate it";
   const ariaLabel = `Rate ${pokemonName}`;
   const ariaValueText =
-    displayValue > 0 ? `${formatRatingValue(displayValue)} out of 5 stars` : "Not yet rated";
+    displayValue > 0
+      ? `${formatRatingValue(displayValue)} out of 5 stars`
+      : "Not yet rated";
 
   const cardStateClass = isRated
     ? "border-[rgba(230,180,80,0.2)]"
@@ -102,7 +120,9 @@ export function RatingRow({
       {/* Mobile layout — label on its own line, stats below a rule */}
       <div className="flex flex-col gap-[12px] md:hidden">
         <div className="flex items-center justify-between">
-          <span className="text-[12.5px] font-semibold text-[#9aa0ab]">{label}</span>
+          <span className="text-[12.5px] font-semibold text-[#9aa0ab]">
+            {label}
+          </span>
           {isRated && (
             <div className="flex gap-[7px]">
               <button
@@ -141,17 +161,24 @@ export function RatingRow({
         </div>
         <div className="flex gap-[24px] border-t border-white/[0.06] pt-[13px] text-[12px] text-[#7b818c]">
           <span>
-            Ranked <span className="font-bold text-[#ff9a6b]">#{rank}</span> of {typeLabel}
+            Ranked <span className="font-bold text-[#ff9a6b]">#{rank}</span> of{" "}
+            {typeLabel}
           </span>
           <span>
-            In <span className="font-bold text-[#e8eaed]">{listCount.toLocaleString()}</span> lists
+            In{" "}
+            <span className="font-bold text-[#e8eaed]">
+              {listCount.toLocaleString()}
+            </span>{" "}
+            lists
           </span>
         </div>
       </div>
 
       {/* Desktop layout */}
       <div className="hidden items-center gap-[14px] md:flex">
-        <span className="text-[13px] font-semibold text-[#9aa0ab]">{label}</span>
+        <span className="text-[13px] font-semibold text-[#9aa0ab]">
+          {label}
+        </span>
         <RatingStars
           value={displayValue}
           pointerInteractive={isEditing}
@@ -188,14 +215,22 @@ export function RatingRow({
         <div className="flex-1" />
         <div className="flex gap-[24px] text-[12.5px] text-[#7b818c]">
           <span>
-            Ranked <span className="font-bold text-[#ff9a6b]">#{rank}</span> of {typeLabel}
+            Ranked <span className="font-bold text-[#ff9a6b]">#{rank}</span> of{" "}
+            {typeLabel}
           </span>
           <span>
-            In <span className="font-bold text-[#e8eaed]">{listCount.toLocaleString()}</span> lists
+            In{" "}
+            <span className="font-bold text-[#e8eaed]">
+              {listCount.toLocaleString()}
+            </span>{" "}
+            lists
           </span>
           {!isRated && (
             <span>
-              <span className="font-bold text-[#e8eaed]">{likeCount.toLocaleString()}</span> likes
+              <span className="font-bold text-[#e8eaed]">
+                {likeCount.toLocaleString()}
+              </span>{" "}
+              likes
             </span>
           )}
         </div>
