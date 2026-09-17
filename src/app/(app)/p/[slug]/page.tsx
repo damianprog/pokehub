@@ -62,6 +62,7 @@ export default async function PokemonPage({
   const ratingStats = await getPokemonRatingStats(pokemon.id);
   const topReviews = await getTopReviews(pokemon.id, userId);
   const username = session?.user?.username ?? session?.user?.name ?? "you";
+  const profileHref = session?.user?.username ? `/u/${session.user.username}` : null;
 
   const primaryType = pokemon.types[0];
   const typeLabel = primaryType.charAt(0).toUpperCase() + primaryType.slice(1);
@@ -153,6 +154,7 @@ export default async function PokemonPage({
               slug={pokemon.slug}
               pokemonName={pokemon.name}
               username={username}
+              profileHref={profileHref}
               avatarImage={session?.user?.image}
               rating={initialRating}
               reviewText={initialReviewText}

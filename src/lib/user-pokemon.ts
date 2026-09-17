@@ -227,6 +227,8 @@ export async function deleteUserReviewText(userId: string, pokemonId: number) {
 export interface TopReviewItem {
   id: string;
   username: string;
+  /** `/u/[username]`, or null when the reviewer has no username set (shouldn't happen post-onboarding, but the field is nullable in the schema). */
+  profileHref: string | null;
   avatarImage: string | null;
   /** Half-star units (see `rating.ts`), or null if the user cleared their rating but kept the written review. */
   rating: number | null;
@@ -273,6 +275,7 @@ export const getTopReviews = cache(
     const reviews: TopReviewItem[] = rows.map((row) => ({
       id: row.id,
       username: row.user.username ?? row.user.name ?? "trainer",
+      profileHref: row.user.username ? `/u/${row.user.username}` : null,
       avatarImage: row.user.image,
       rating: row.rating,
       reviewText: row.reviewText ?? "",
