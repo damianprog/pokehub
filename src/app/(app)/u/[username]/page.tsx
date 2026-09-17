@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getUserByUsername } from "@/lib/user";
 import { getPokemonsByIds } from "@/lib/pokemon";
+import { getRecentReviews } from "@/lib/user-pokemon";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { ProfileBioStats } from "@/components/profile/ProfileBioStats";
 import { SignatureTeam } from "@/components/profile/SignatureTeam";
@@ -9,7 +10,6 @@ import { RecentActivity } from "@/components/profile/RecentActivity";
 import { FavoriteTypes } from "@/components/profile/FavoriteTypes";
 import { PLACEHOLDER_PROFILE_STATS } from "@/lib/placeholder-profile-stats";
 import { PLACEHOLDER_SIGNATURE_TEAM } from "@/lib/placeholder-signature-team";
-import { PLACEHOLDER_RECENT_ACTIVITY } from "@/lib/placeholder-recent-activity";
 import { PLACEHOLDER_FAVORITE_TYPES } from "@/lib/placeholder-favorite-types";
 
 export async function generateMetadata({
@@ -48,22 +48,7 @@ export default async function ProfilePage({
     };
   });
 
-  const recentActivityPokemons = await getPokemonsByIds(
-    PLACEHOLDER_RECENT_ACTIVITY.map((item) => item.pokemonId),
-  );
-  const recentActivity = PLACEHOLDER_RECENT_ACTIVITY.map((item) => {
-    const pokemon = recentActivityPokemons.find((p) => p.id === item.pokemonId)!;
-    return {
-      id: pokemon.id,
-      slug: pokemon.slug,
-      name: pokemon.name,
-      types: pokemon.types,
-      artworkUrl: pokemon.artworkUrl,
-      timeLabel: item.timeLabel,
-      rating: item.rating,
-      quote: item.quote,
-    };
-  });
+  const recentActivity = await getRecentReviews(user.id);
 
   return (
     <div>

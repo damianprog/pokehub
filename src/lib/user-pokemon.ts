@@ -284,6 +284,52 @@ export const getTopReviews = cache(
   },
 );
 
+export interface RecentReviewItem {
+  id: string;
+  slug: string;
+  name: string;
+  types: string[];
+  artworkUrl: string;
+  /** Half-star units (see `rating.ts`), or null if the user cleared their rating but kept the written review. */
+  rating: number | null;
+  reviewText: string;
+  reviewedAt: Date;
+}
+
+/**
+ * A capped, most-recent-first feed of one user's own written reviews, across
+ * every Pokémon they've reviewed — the inverse scope of `getTopReviews`
+ * (one Pokémon, every user). Backs the profile page's "Recent activity"
+ * section. See profile-page/recent-activity-real-reviews-spec.md.
+ */
+export const getRecentReviews = cache(
+  async (userId: string, limit = 2): Promise<RecentReviewItem[]> => {
+    const rows = await prisma.userPokemon.findMany({
+      where: { userId, reviewText: { not: null } },
+      orderBy: { reviewedAt: "desc" },
+      take: limit,
+      select: {
+        id: true,
+        rating: true,
+        reviewText: true,
+        reviewedAt: true,
+        pokemon: { select: { slug: true, name: true, types: true, artworkUrl: true } },
+      },
+    });
+
+    return rows.map((row) => ({
+      id: row.id,
+      slug: row.pokemon.slug,
+      name: row.pokemon.name,
+      types: row.pokemon.types,
+      artworkUrl: row.pokemon.artworkUrl,
+      rating: row.rating,
+      reviewText: row.reviewText ?? "",
+      reviewedAt: row.reviewedAt!,
+    }));
+  },
+);
+
 /**
  * Clear the signed-in user's rating for a Pokémon. `reviewedAt` is cleared too
  * unless review text already exists on the row — a bare rating is still a
