@@ -231,6 +231,8 @@ export interface TopReviewItem {
   /** Half-star units (see `rating.ts`), or null if the user cleared their rating but kept the written review. */
   rating: number | null;
   reviewText: string;
+  reviewedAt: Date;
+  isOwn: boolean;
 }
 
 export interface TopReviewsResult {
@@ -243,10 +245,12 @@ export interface TopReviewsResult {
  * (the viewer's own included), plus the total count of every written review
  * on it for the "View all N" line. Ordered by `reviewedAt` rather than a
  * helpfulness score, since no `ReviewLike` wiring exists yet to produce one.
+ * `viewerId` only flags which row (if any) is the viewer's own, so it can
+ * get the "· you" treatment inline rather than a separate pinned card.
  * See rating-review/rating-05-top-reviews-real-aggregation-spec.md §3-§5.
  */
 export const getTopReviews = cache(
-  async (pokemonId: number, limit = 2): Promise<TopReviewsResult> => {
+  async (pokemonId: number, viewerId?: string, limit = 2): Promise<TopReviewsResult> => {
     const reviewedWhere = { pokemonId, reviewText: { not: null } } as const;
 
     const [totalReviewCount, rows] = await Promise.all([
@@ -257,8 +261,10 @@ export const getTopReviews = cache(
         take: limit,
         select: {
           id: true,
+          userId: true,
           rating: true,
           reviewText: true,
+          reviewedAt: true,
           user: { select: { username: true, name: true, image: true } },
         },
       }),
@@ -270,6 +276,8 @@ export const getTopReviews = cache(
       avatarImage: row.user.image,
       rating: row.rating,
       reviewText: row.reviewText ?? "",
+      reviewedAt: row.reviewedAt!,
+      isOwn: row.userId === viewerId,
     }));
 
     return { reviews, totalReviewCount };

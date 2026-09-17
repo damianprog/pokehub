@@ -1,6 +1,6 @@
 import Image from "next/image";
 import type { TopReviewItem } from "@/lib/user-pokemon";
-import { toFillPercent } from "@/lib/rating";
+import { formatRatingValue, toFillPercent } from "@/lib/rating";
 import { TopReviewsEmptyState } from "@/components/pokemon/TopReviewsEmptyState";
 
 interface TopReviewsProps {
@@ -14,7 +14,7 @@ export function TopReviews({ pokemonName, totalReviewCount, reviews, isAuthentic
   return (
     <div className="leading-[normal]">
       <div className="mb-[14px] flex items-center justify-between">
-        <h2 className="font-heading text-[17px] font-bold md:text-[19px]">Top Reviews</h2>
+        <h2 className="font-heading text-[17px] font-bold md:text-[19px]">Top reviews</h2>
         <span className="cursor-pointer text-[12.5px] text-[#7b818c] md:text-[13px]">
           View all {totalReviewCount.toLocaleString()} →
         </span>
@@ -25,6 +25,11 @@ export function TopReviews({ pokemonName, totalReviewCount, reviews, isAuthentic
         reviews.map((review) => {
           const letter = review.username.charAt(0).toUpperCase();
           const starFillPct = review.rating !== null ? toFillPercent(review.rating) : 0;
+          const date = review.reviewedAt.toLocaleDateString("en-GB", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          });
 
           return (
             <article
@@ -46,27 +51,35 @@ export function TopReviews({ pokemonName, totalReviewCount, reviews, isAuthentic
                   )}
                 </div>
                 <div className="flex-1">
-                  <span className="text-[13.5px] font-bold md:text-[14px]">{review.username}</span>
+                  <span className="text-[13.5px] font-bold md:text-[14px]">{review.username}</span>{" "}
+                  <span className="text-[12px] text-[#7b818c]">
+                    {review.isOwn ? `· you · ${date}` : `· ${date}`}
+                  </span>
                 </div>
                 {review.rating !== null ? (
-                  <span
-                    className="relative inline-block text-[12.5px] leading-none tracking-[2px] md:text-[14px]"
-                    style={{ fontFamily: "Arial" }}
-                  >
-                    <span style={{ color: "#363b45" }}>★★★★★</span>
+                  <>
                     <span
-                      className="absolute top-0 left-0 overflow-hidden whitespace-nowrap"
-                      style={{ color: "#e6b450", width: `${starFillPct}%` }}
+                      className="relative inline-block text-[12.5px] leading-none tracking-[2px] md:text-[14px]"
+                      style={{ fontFamily: "Arial" }}
                     >
-                      ★★★★★
+                      <span style={{ color: "#363b45" }}>★★★★★</span>
+                      <span
+                        className="absolute top-0 left-0 overflow-hidden whitespace-nowrap"
+                        style={{ color: "#e6b450", width: `${starFillPct}%` }}
+                      >
+                        ★★★★★
+                      </span>
                     </span>
-                  </span>
+                    <span className="font-heading text-[13px] font-bold text-[#e6b450]">
+                      {formatRatingValue(review.rating)}
+                    </span>
+                  </>
                 ) : (
                   <span className="text-[12px] text-[#7b818c]">Not yet rated</span>
                 )}
               </div>
               <p className="text-[13.5px] leading-[1.55] text-[#cdd2da] md:text-[14.5px]">
-                &quot;{review.reviewText}&quot;
+                {review.reviewText}
               </p>
             </article>
           );

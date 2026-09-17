@@ -55,7 +55,7 @@ export function YourReview({
           </div>
           <div className="flex-1">
             <span className="text-[13.5px] font-bold md:text-[14px]">{username}</span>{" "}
-            <span className="text-[12px] text-[#7b818c]">· you · {date}</span>
+            <span className="text-[12px] text-[#7b818c]">· {date}</span>
           </div>
           {rating !== null ? (
             <>

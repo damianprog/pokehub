@@ -60,7 +60,7 @@ export default async function PokemonPage({
   } = userState;
   const initialWishlistCount = userId ? await getUserWishlistCount(userId) : 0;
   const ratingStats = await getPokemonRatingStats(pokemon.id);
-  const topReviews = await getTopReviews(pokemon.id);
+  const topReviews = await getTopReviews(pokemon.id, userId);
   const username = session?.user?.username ?? session?.user?.name ?? "you";
 
   const primaryType = pokemon.types[0];
