@@ -1,7 +1,6 @@
 import Image from "next/image";
 import type { TopReviewItem } from "@/lib/user-pokemon";
 import { toFillPercent } from "@/lib/rating";
-import { pickAvatarGradient } from "@/lib/avatar-colors";
 import { TopReviewsEmptyState } from "@/components/pokemon/TopReviewsEmptyState";
 
 interface TopReviewsProps {
@@ -25,7 +24,6 @@ export function TopReviews({ pokemonName, totalReviewCount, reviews, isAuthentic
       ) : (
         reviews.map((review) => {
           const letter = review.username.charAt(0).toUpperCase();
-          const gradient = pickAvatarGradient(review.username);
           const starFillPct = review.rating !== null ? toFillPercent(review.rating) : 0;
 
           return (
@@ -34,14 +32,7 @@ export function TopReviews({ pokemonName, totalReviewCount, reviews, isAuthentic
               className="mb-[12px] rounded-[14px] border border-white/[0.06] bg-[#15181e] p-[16px] md:mb-[13px] md:p-[18px]"
             >
               <div className="mb-[11px] flex items-center gap-[11px]">
-                <div
-                  className="flex size-[30px] flex-none items-center justify-center overflow-hidden rounded-full text-[11px] font-extrabold text-white md:size-[34px] md:text-[12px]"
-                  style={
-                    review.avatarImage
-                      ? undefined
-                      : { background: `linear-gradient(135deg, ${gradient.from}, ${gradient.to})` }
-                  }
-                >
+                <div className="flex size-[30px] flex-none items-center justify-center overflow-hidden rounded-full bg-[linear-gradient(135deg,#6a5acd,var(--brand-to))] text-[11px] font-extrabold text-white md:size-[34px] md:text-[12px]">
                   {review.avatarImage ? (
                     <Image
                       src={review.avatarImage}

@@ -239,23 +239,20 @@ export interface TopReviewsResult {
 }
 
 /**
- * A capped, most-recent-first preview of other users' written reviews for a
- * Pokémon, plus the total count of every written review on it (the viewer's
- * own included) for the "View all N" line. `excludeUserId` omits the
- * viewer's own review from the preview list — it's already shown in the
- * `YourReview` card above this component — without affecting the total.
- * Ordered by `reviewedAt` rather than a helpfulness score, since no
- * `ReviewLike` wiring exists yet to produce one. See
- * rating-review/rating-05-top-reviews-real-aggregation-spec.md §3-§5.
+ * A capped, most-recent-first preview of written reviews for a Pokémon
+ * (the viewer's own included), plus the total count of every written review
+ * on it for the "View all N" line. Ordered by `reviewedAt` rather than a
+ * helpfulness score, since no `ReviewLike` wiring exists yet to produce one.
+ * See rating-review/rating-05-top-reviews-real-aggregation-spec.md §3-§5.
  */
 export const getTopReviews = cache(
-  async (pokemonId: number, excludeUserId?: string, limit = 2): Promise<TopReviewsResult> => {
+  async (pokemonId: number, limit = 2): Promise<TopReviewsResult> => {
     const reviewedWhere = { pokemonId, reviewText: { not: null } } as const;
 
     const [totalReviewCount, rows] = await Promise.all([
       prisma.userPokemon.count({ where: reviewedWhere }),
       prisma.userPokemon.findMany({
-        where: excludeUserId ? { ...reviewedWhere, userId: { not: excludeUserId } } : reviewedWhere,
+        where: reviewedWhere,
         orderBy: { reviewedAt: "desc" },
         take: limit,
         select: {
