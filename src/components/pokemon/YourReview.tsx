@@ -6,8 +6,7 @@ interface YourReviewProps {
   slug: string;
   pokemonName: string;
   username: string;
-  /** `/u/[username]`, or null if the viewer somehow has no username set. */
-  profileHref: string | null;
+  profileHref: string;
   avatarImage?: string | null;
   /** Half-star units, or null if the user cleared their rating but kept the written review (see rating-04 §2). */
   rating: number | null;

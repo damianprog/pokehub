@@ -14,7 +14,7 @@ import {
 interface NavAvatarMenuProps {
   letter: string;
   image?: string | null;
-  username: string | null;
+  username: string;
 }
 
 export function NavAvatarMenu({ letter, image, username }: NavAvatarMenuProps) {
@@ -36,14 +36,10 @@ export function NavAvatarMenu({ letter, image, username }: NavAvatarMenuProps) {
         )}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-40">
-        {username && (
-          <>
-            <DropdownMenuItem onClick={() => router.push(`/u/${username}`)}>
-              Profile
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-          </>
-        )}
+        <DropdownMenuItem onClick={() => router.push(`/u/${username}`)}>
+          Profile
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })}>
           Sign out
         </DropdownMenuItem>

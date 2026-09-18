@@ -3,14 +3,13 @@ import { NavAvatarMenu } from "@/components/landing/NavAvatarMenu";
 
 interface SignedInNavProps {
   user: {
-    username: string | null;
-    name?: string | null;
+    username: string;
     image?: string | null;
   };
 }
 
 export function SignedInNav({ user }: SignedInNavProps) {
-  const letter = (user.username ?? user.name ?? "?").charAt(0).toUpperCase();
+  const letter = user.username.charAt(0).toUpperCase();
 
   return (
     <>

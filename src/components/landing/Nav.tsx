@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
+import { Button } from "@/components/ui/button";
 import { NavAuthButtons } from "@/components/auth/NavAuthButtons";
 import { SignedInNav } from "@/components/landing/SignedInNav";
 
@@ -25,8 +26,24 @@ export function Nav() {
           </span>
         </Link>
 
-        {session?.user ? (
+        {session?.user?.username ? (
           <SignedInNav user={session.user} />
+        ) : session ? (
+          // Signed in but still on /signup/username — the one page proxy.ts
+          // exempts from the username gate, so the only place this session can
+          // have `username === null` (see the Session type in next-auth.d.ts).
+          // SignedInNav assumes a username; all this user needs is a way out.
+          <>
+            <div className="flex-1" />
+            <Button
+              variant="outline"
+              size="lg"
+              className="rounded-[9px] px-3 text-sm font-semibold whitespace-nowrap sm:px-[17px]"
+              onClick={() => signOut({ callbackUrl: "/" })}
+            >
+              Sign out
+            </Button>
+          </>
         ) : (
           <>
             <div className="flex-1" />

@@ -61,8 +61,9 @@ export default async function PokemonPage({
   const initialWishlistCount = userId ? await getUserWishlistCount(userId) : 0;
   const ratingStats = await getPokemonRatingStats(pokemon.id);
   const topReviews = await getTopReviews(pokemon.id, userId);
-  const username = session?.user?.username ?? session?.user?.name ?? "you";
-  const profileHref = session?.user?.username ? `/u/${session.user.username}` : null;
+  // Signed-out visitors never see the composer (the CTA opens the auth modal
+  // instead), so the fallback only satisfies the prop type.
+  const username = session?.user?.username ?? "you";
 
   const primaryType = pokemon.types[0];
   const typeLabel = primaryType.charAt(0).toUpperCase() + primaryType.slice(1);
@@ -148,14 +149,14 @@ export default async function PokemonPage({
               speed: pokemon.speed,
             }}
           />
-          {initialReviewText && reviewedAt && (
+          {session && initialReviewText && reviewedAt && (
             <YourReview
               pokemonId={pokemon.id}
               slug={pokemon.slug}
               pokemonName={pokemon.name}
-              username={username}
-              profileHref={profileHref}
-              avatarImage={session?.user?.image}
+              username={session.user.username}
+              profileHref={`/u/${session.user.username}`}
+              avatarImage={session.user.image}
               rating={initialRating}
               reviewText={initialReviewText}
               reviewedAt={reviewedAt}

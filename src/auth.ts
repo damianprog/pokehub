@@ -68,7 +68,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     session({ session, token }) {
       session.user.id = token.id;
-      session.user.username = token.username;
+      // The token carries `string | null`; the session is typed `string`.
+      // This is the one place the two meet — proxy.ts guarantees null never
+      // reaches app code (see the `Session` augmentation in next-auth.d.ts).
+      session.user.username = token.username as string;
       return session;
     },
   },

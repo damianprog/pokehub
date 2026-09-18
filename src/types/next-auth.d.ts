@@ -6,7 +6,15 @@ declare module "next-auth" {
   interface Session {
     user: {
       id: string;
-      username: string | null;
+      /**
+       * Non-null by invariant, not by schema: `proxy.ts` redirects (or 403s)
+       * every signed-in request without a username to `/signup/username`
+       * before any app code runs. Only the gate-exempt surfaces can observe
+       * `null` here at runtime — `/signup/username` (the page, and the
+       * root-layout `Nav` rendered on it) and `/api/auth/*` — and those must
+       * keep treating the value as possibly-null.
+       */
+      username: string;
     } & DefaultSession["user"];
   }
 
