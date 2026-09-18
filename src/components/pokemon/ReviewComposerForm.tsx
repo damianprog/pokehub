@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { postReview } from "@/actions/rating";
 import { formatRatingValue, toWordLabel } from "@/lib/rating";
+import { runAction } from "@/lib/run-action";
 import { TYPE_GRADIENTS, FALLBACK_GRADIENT } from "@/lib/type-gradients";
 import { RatingStars } from "@/components/pokemon/RatingStars";
 import { ReviewComposerMobile } from "@/components/pokemon/ReviewComposerMobile";
@@ -68,12 +69,14 @@ export function ReviewComposerForm({
   async function handleSubmit() {
     if (!canSubmit) return;
     setIsSubmitting(true);
-    const result = await postReview({
-      pokemonId,
-      slug,
-      rating: committedValue,
-      reviewText: reviewText.trim(),
-    });
+    const result = await runAction(
+      postReview({
+        pokemonId,
+        slug,
+        rating: committedValue,
+        reviewText: reviewText.trim(),
+      }),
+    );
     setIsSubmitting(false);
 
     if (!result.success) {

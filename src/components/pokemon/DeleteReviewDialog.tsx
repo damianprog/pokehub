@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { deleteReview } from "@/actions/rating";
 import { formatRatingValue } from "@/lib/rating";
+import { runAction } from "@/lib/run-action";
 
 interface DeleteReviewDialogProps {
   pokemonId: number;
@@ -40,7 +41,7 @@ export function DeleteReviewDialog({
 
   async function handleDelete() {
     setIsDeleting(true);
-    const result = await deleteReview({ pokemonId, slug });
+    const result = await runAction(deleteReview({ pokemonId, slug }));
     setIsDeleting(false);
 
     if (!result.success) {

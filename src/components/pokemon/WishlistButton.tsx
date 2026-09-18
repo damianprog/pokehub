@@ -6,6 +6,7 @@ import { setWishlist } from "@/actions/wishlist";
 import { useAuthModal } from "@/store/auth-modal";
 import { useWishlistStore, useWishlistState } from "@/store/wishlist";
 import { WISHLIST_CAP } from "@/lib/wishlist";
+import { runAction } from "@/lib/run-action";
 
 // Sourced from `PokeHub-Wishlist.dc.html` §1-2 — outline bookmark when not
 // wishlisted, filled when wishlisted. Same path/viewBox on both surfaces;
@@ -90,14 +91,16 @@ export function WishlistButton({
     const nextCount = currentCount + (nextIsWishlist ? 1 : -1);
     setStoreWishlist(nextIsWishlist, nextCount);
 
-    const result = await setWishlist({ pokemonId, slug, isWishlist: nextIsWishlist });
+    const result = await runAction(setWishlist({ pokemonId, slug, isWishlist: nextIsWishlist }));
     if (result.success) {
       toast.success(
         nextIsWishlist ? `Added ${pokemonName} to your wishlist.` : `Removed ${pokemonName} from your wishlist.`,
       );
     } else {
       setStoreWishlist(currentIsWishlist, currentCount);
-      if (result.atCapacity) {
+      // `atCapacity` only exists on the action's own failure arm — a failure
+      // synthesized by `runAction` (call never reached the action) won't have it.
+      if ("atCapacity" in result && result.atCapacity) {
         openCapacityNotice();
       } else {
         toast.error(result.error);

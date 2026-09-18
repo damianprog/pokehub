@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { setFavorite } from "@/actions/favorite";
+import { runAction } from "@/lib/run-action";
 import { useAuthModal } from "@/store/auth-modal";
 
 // Sourced from `PokeHub-PokemonDetail-Mobile.dc.html`'s script block — the
@@ -42,7 +43,7 @@ export function FavoriteButton({
     const nextIsFavorite = !isFavorite;
     setIsFavorite(nextIsFavorite);
 
-    const result = await setFavorite({ pokemonId, slug, isFavorite: nextIsFavorite });
+    const result = await runAction(setFavorite({ pokemonId, slug, isFavorite: nextIsFavorite }));
     if (result.success) {
       toast.success(
         nextIsFavorite ? `Added ${pokemonName} to favorites.` : `Removed ${pokemonName} from favorites.`,

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { clearRating, setRating } from "@/actions/rating";
 import { formatRatingValue } from "@/lib/rating";
+import { runAction } from "@/lib/run-action";
 import { useAuthModal } from "@/store/auth-modal";
 import { RatingStars } from "@/components/pokemon/RatingStars";
 import { RatingValueChip } from "@/components/pokemon/RatingValueChip";
@@ -73,7 +74,7 @@ export function RatingRow({
     setPreviewValue(null);
     setIsEditing(false);
 
-    const result = await setRating({ pokemonId, slug, rating: value });
+    const result = await runAction(setRating({ pokemonId, slug, rating: value }));
     if (!result.success) {
       setCommittedValue(previousValue);
       setIsEditing(wasUnset);
@@ -87,7 +88,7 @@ export function RatingRow({
     setPreviewValue(null);
     setIsEditing(true);
 
-    const result = await clearRating({ pokemonId, slug });
+    const result = await runAction(clearRating({ pokemonId, slug }));
     if (!result.success) {
       setCommittedValue(previousValue);
       setIsEditing(false);
