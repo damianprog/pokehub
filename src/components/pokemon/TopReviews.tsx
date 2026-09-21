@@ -1,22 +1,33 @@
+import Link from "next/link";
 import type { TopReviewItem } from "@/lib/user-pokemon";
 import { ReviewCard } from "@/components/pokemon/ReviewCard";
 import { TopReviewsEmptyState } from "@/components/pokemon/TopReviewsEmptyState";
 
 interface TopReviewsProps {
+  slug: string;
   pokemonName: string;
   totalReviewCount: number;
   reviews: TopReviewItem[];
   isAuthenticated: boolean;
 }
 
-export function TopReviews({ pokemonName, totalReviewCount, reviews, isAuthenticated }: TopReviewsProps) {
+export function TopReviews({
+  slug,
+  pokemonName,
+  totalReviewCount,
+  reviews,
+  isAuthenticated,
+}: TopReviewsProps) {
   return (
     <div className="leading-[normal]">
       <div className="mb-[14px] flex items-center justify-between">
         <h2 className="font-heading text-[17px] font-bold md:text-[19px]">Top reviews</h2>
-        <span className="cursor-pointer text-[12.5px] text-[#7b818c] md:text-[13px]">
+        <Link
+          href={`/p/${slug}/reviews`}
+          className="text-[12.5px] text-[#7b818c] hover:text-[#9aa0ab] md:text-[13px]"
+        >
           View all {totalReviewCount.toLocaleString()} →
-        </span>
+        </Link>
       </div>
       {reviews.length === 0 ? (
         <TopReviewsEmptyState pokemonName={pokemonName} isAuthenticated={isAuthenticated} />

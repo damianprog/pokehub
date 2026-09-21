@@ -49,6 +49,7 @@ export async function setRating(
       parsed.data.rating,
     );
     revalidatePath(`/p/${parsed.data.slug}`);
+    revalidatePath(`/p/${parsed.data.slug}/reviews`);
     return { success: true, data: null };
   } catch {
     return { success: false, error: "Couldn't save your rating. Try again." };
@@ -74,6 +75,7 @@ export async function clearRating(
   try {
     await clearUserRating(session.user.id, parsed.data.pokemonId);
     revalidatePath(`/p/${parsed.data.slug}`);
+    revalidatePath(`/p/${parsed.data.slug}/reviews`);
     return { success: true, data: null };
   } catch {
     return { success: false, error: "Couldn't clear your rating. Try again." };
@@ -114,6 +116,7 @@ export async function postReview(
       parsed.data.reviewText,
     );
     revalidatePath(`/p/${parsed.data.slug}`);
+    revalidatePath(`/p/${parsed.data.slug}/reviews`);
     return { success: true, data: null };
   } catch {
     return { success: false, error: "Couldn't post your review. Try again." };
@@ -144,6 +147,7 @@ export async function deleteReview(
   try {
     await deleteUserReviewText(session.user.id, parsed.data.pokemonId);
     revalidatePath(`/p/${parsed.data.slug}`);
+    revalidatePath(`/p/${parsed.data.slug}/reviews`);
     return { success: true, data: null };
   } catch {
     return { success: false, error: "Couldn't delete your review. Try again." };

@@ -1,7 +1,4 @@
-"use client";
-
-import { useAuthModal } from "@/store/auth-modal";
-import { useReviewComposer } from "@/store/review-composer";
+import { WriteReviewButton } from "@/components/pokemon/WriteReviewButton";
 import { FavoriteButton } from "@/components/pokemon/FavoriteButton";
 import { WishlistButton } from "@/components/pokemon/WishlistButton";
 import { WishlistCountFooter } from "@/components/pokemon/WishlistCountFooter";
@@ -26,27 +23,13 @@ export function PokemonActions({
   initialIsWishlist,
   initialWishlistCount,
 }: PokemonActionsProps) {
-  const { open: openAuthModal } = useAuthModal();
-  const { open: openComposer } = useReviewComposer();
-
-  function handleWriteReview() {
-    if (!isAuthenticated) {
-      openAuthModal("login");
-      return;
-    }
-    openComposer();
-  }
-
   return (
     <div className="mt-[14px]">
       <div className="flex gap-[10px]">
-        <button
-          type="button"
-          onClick={handleWriteReview}
-          className="h-[42px] flex-1 rounded-[11px] bg-[linear-gradient(135deg,var(--brand-from),var(--brand-to))] text-[14px] font-bold text-white"
-        >
-          Write review
-        </button>
+        <WriteReviewButton
+          isAuthenticated={isAuthenticated}
+          className="h-[42px] flex-1 rounded-[11px] text-[14px]"
+        />
         <FavoriteButton
           pokemonId={pokemonId}
           slug={slug}

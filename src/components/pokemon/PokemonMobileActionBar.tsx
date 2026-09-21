@@ -1,24 +1,10 @@
-"use client";
-
-import { useAuthModal } from "@/store/auth-modal";
-import { useReviewComposer } from "@/store/review-composer";
+import { WriteReviewButton } from "@/components/pokemon/WriteReviewButton";
 
 interface PokemonMobileActionBarProps {
   isAuthenticated: boolean;
 }
 
 export function PokemonMobileActionBar({ isAuthenticated }: PokemonMobileActionBarProps) {
-  const { open: openAuthModal } = useAuthModal();
-  const { open: openComposer } = useReviewComposer();
-
-  function handleWriteReview() {
-    if (!isAuthenticated) {
-      openAuthModal("login");
-      return;
-    }
-    openComposer();
-  }
-
   return (
     <div
       className="fixed inset-x-0 bottom-0 z-50 flex gap-[10px] border-t border-white/[0.07] bg-background/[0.9] px-4 pt-[12px] backdrop-blur-[14px]"
@@ -31,13 +17,10 @@ export function PokemonMobileActionBar({ isAuthenticated }: PokemonMobileActionB
       >
         +
       </button>
-      <button
-        type="button"
-        onClick={handleWriteReview}
-        className="h-[46px] flex-1 rounded-[12px] bg-[linear-gradient(135deg,var(--brand-from),var(--brand-to))] text-[15px] font-bold text-white shadow-[0_6px_18px_rgba(196,79,224,0.32)]"
-      >
-        Write review
-      </button>
+      <WriteReviewButton
+        isAuthenticated={isAuthenticated}
+        className="h-[46px] flex-1 rounded-[12px] text-[15px] shadow-[0_6px_18px_rgba(196,79,224,0.32)]"
+      />
     </div>
   );
 }

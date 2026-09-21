@@ -287,6 +287,84 @@ export const getTopReviews = cache(
   },
 );
 
+export interface AllReviewsResult {
+  ownReview: TopReviewItem | null;
+  reviews: TopReviewItem[];
+  totalReviewCount: number;
+}
+
+const ALL_REVIEWS_SELECT = {
+  id: true,
+  userId: true,
+  rating: true,
+  reviewText: true,
+  reviewedAt: true,
+  user: { select: { username: true, name: true, image: true } },
+} as const;
+
+type AllReviewsRow = {
+  id: string;
+  userId: string;
+  rating: number | null;
+  reviewText: string | null;
+  reviewedAt: Date | null;
+  user: { username: string | null; name: string | null; image: string | null };
+};
+
+function toReviewItem(row: AllReviewsRow, viewerId?: string): TopReviewItem {
+  return {
+    id: row.id,
+    username: row.user.username ?? row.user.name ?? "trainer",
+    profileHref: row.user.username ? `/u/${row.user.username}` : null,
+    avatarImage: row.user.image,
+    rating: row.rating,
+    reviewText: row.reviewText ?? "",
+    reviewedAt: row.reviewedAt!,
+    isOwn: row.userId === viewerId,
+  };
+}
+
+/**
+ * Every written review for a Pokémon, for the `/p/[slug]/reviews` page: the
+ * viewer's own qualifying row separated out for pinning, everyone else's
+ * ordered most-recently-reviewed first and unpaginated (see
+ * rating-review/rating-07-all-reviews-page-shell-spec.md §3, §9).
+ *
+ * Deliberately distinct from `getTopReviews`, which is a capped detail-page
+ * preview that includes the viewer's own review inline (marked "· you")
+ * rather than excluding it — a different, intentional behavior for a short
+ * recency preview versus this page's pinned-then-everyone-else structure.
+ */
+export const getAllReviews = cache(
+  async (pokemonId: number, viewerId?: string): Promise<AllReviewsResult> => {
+    const reviewedWhere = { pokemonId, reviewText: { not: null } } as const;
+
+    const [totalReviewCount, ownRowRaw, otherRows] = await Promise.all([
+      prisma.userPokemon.count({ where: reviewedWhere }),
+      viewerId
+        ? prisma.userPokemon.findUnique({
+            where: { userId_pokemonId: { userId: viewerId, pokemonId } },
+            select: ALL_REVIEWS_SELECT,
+          })
+        : Promise.resolve(null),
+      prisma.userPokemon.findMany({
+        where: viewerId ? { ...reviewedWhere, userId: { not: viewerId } } : reviewedWhere,
+        orderBy: { reviewedAt: "desc" },
+        select: ALL_REVIEWS_SELECT,
+      }),
+    ]);
+
+    const ownReview =
+      ownRowRaw && ownRowRaw.reviewText ? toReviewItem(ownRowRaw, viewerId) : null;
+
+    return {
+      ownReview,
+      reviews: otherRows.map((row) => toReviewItem(row, viewerId)),
+      totalReviewCount,
+    };
+  },
+);
+
 export interface RecentReviewItem {
   id: string;
   slug: string;

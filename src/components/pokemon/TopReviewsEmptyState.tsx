@@ -1,7 +1,4 @@
-"use client";
-
-import { useAuthModal } from "@/store/auth-modal";
-import { useReviewComposer } from "@/store/review-composer";
+import { WriteReviewButton } from "@/components/pokemon/WriteReviewButton";
 
 interface TopReviewsEmptyStateProps {
   pokemonName: string;
@@ -15,17 +12,6 @@ interface TopReviewsEmptyStateProps {
  * rating-review/rating-05-top-reviews-real-aggregation-spec.md §8).
  */
 export function TopReviewsEmptyState({ pokemonName, isAuthenticated }: TopReviewsEmptyStateProps) {
-  const { open: openAuthModal } = useAuthModal();
-  const { open: openComposer } = useReviewComposer();
-
-  function handleWriteReview() {
-    if (!isAuthenticated) {
-      openAuthModal("login");
-      return;
-    }
-    openComposer();
-  }
-
   return (
     <div className="rounded-[14px] border border-dashed border-white/10 bg-[#13161b] px-[24px] py-[34px] text-center">
       <div className="mb-[12px] text-[26px] opacity-80">✎</div>
@@ -33,13 +19,10 @@ export function TopReviewsEmptyState({ pokemonName, isAuthenticated }: TopReview
       <p className="mx-auto mt-[8px] mb-[18px] max-w-[380px] text-[13.5px] leading-[1.6] text-[#8b919e]">
         Nobody&apos;s written about {pokemonName} yet — yours will be the first thing shown here.
       </p>
-      <button
-        type="button"
-        onClick={handleWriteReview}
-        className="h-[40px] rounded-[11px] bg-[linear-gradient(135deg,var(--brand-from),var(--brand-to))] px-[20px] text-[14px] font-bold text-white"
-      >
-        Write review
-      </button>
+      <WriteReviewButton
+        isAuthenticated={isAuthenticated}
+        className="h-[40px] rounded-[11px] px-[20px] text-[14px]"
+      />
     </div>
   );
 }

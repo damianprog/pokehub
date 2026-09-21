@@ -163,6 +163,7 @@ export default async function PokemonPage({
             />
           )}
           <TopReviews
+            slug={pokemon.slug}
             pokemonName={pokemon.name}
             totalReviewCount={topReviews.totalReviewCount}
             reviews={topReviews.reviews}
