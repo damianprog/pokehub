@@ -293,6 +293,21 @@ export interface AllReviewsResult {
   totalReviewCount: number;
 }
 
+/** The three sort options on `/p/[slug]/reviews` (see rating-08-sort-control-spec.md §5). */
+export type ReviewSortOption = "newest" | "highest" | "lowest";
+
+/** Every `ReviewSortOption`, in display order — the single source both the page's param validation and the chip row's rendering read from. */
+export const REVIEW_SORT_OPTIONS: ReviewSortOption[] = ["newest", "highest", "lowest"];
+
+const REVIEW_SORT_ORDER_BY: Record<
+  ReviewSortOption,
+  Array<{ reviewedAt: "desc" } | { rating: { sort: "asc" | "desc"; nulls: "last" } }>
+> = {
+  newest: [{ reviewedAt: "desc" }],
+  highest: [{ rating: { sort: "desc", nulls: "last" } }, { reviewedAt: "desc" }],
+  lowest: [{ rating: { sort: "asc", nulls: "last" } }, { reviewedAt: "desc" }],
+};
+
 const ALL_REVIEWS_SELECT = {
   id: true,
   userId: true,
@@ -327,8 +342,10 @@ function toReviewItem(row: AllReviewsRow, viewerId?: string): TopReviewItem {
 /**
  * Every written review for a Pokémon, for the `/p/[slug]/reviews` page: the
  * viewer's own qualifying row separated out for pinning, everyone else's
- * ordered most-recently-reviewed first and unpaginated (see
- * rating-review/rating-07-all-reviews-page-shell-spec.md §3, §9).
+ * ordered per `sort` (defaulting to most-recently-reviewed first) and
+ * unpaginated (see rating-review/rating-07-all-reviews-page-shell-spec.md
+ * §3, §9 and rating-08-sort-control-spec.md §5-§6). The pinned row is never
+ * affected by `sort` — it's a separate query with no ordering concept.
  *
  * Deliberately distinct from `getTopReviews`, which is a capped detail-page
  * preview that includes the viewer's own review inline (marked "· you")
@@ -336,7 +353,11 @@ function toReviewItem(row: AllReviewsRow, viewerId?: string): TopReviewItem {
  * recency preview versus this page's pinned-then-everyone-else structure.
  */
 export const getAllReviews = cache(
-  async (pokemonId: number, viewerId?: string): Promise<AllReviewsResult> => {
+  async (
+    pokemonId: number,
+    viewerId?: string,
+    sort: ReviewSortOption = "newest",
+  ): Promise<AllReviewsResult> => {
     const reviewedWhere = { pokemonId, reviewText: { not: null } } as const;
 
     const [totalReviewCount, ownRowRaw, otherRows] = await Promise.all([
@@ -349,7 +370,7 @@ export const getAllReviews = cache(
         : Promise.resolve(null),
       prisma.userPokemon.findMany({
         where: viewerId ? { ...reviewedWhere, userId: { not: viewerId } } : reviewedWhere,
-        orderBy: { reviewedAt: "desc" },
+        orderBy: REVIEW_SORT_ORDER_BY[sort],
         select: ALL_REVIEWS_SELECT,
       }),
     ]);

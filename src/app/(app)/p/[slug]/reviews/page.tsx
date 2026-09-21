@@ -2,7 +2,13 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { auth } from "@/auth";
 import { getPokemon } from "@/lib/pokemon";
-import { getUserPokemonState, getPokemonRatingStats, getAllReviews } from "@/lib/user-pokemon";
+import {
+  getUserPokemonState,
+  getPokemonRatingStats,
+  getAllReviews,
+  REVIEW_SORT_OPTIONS,
+  type ReviewSortOption,
+} from "@/lib/user-pokemon";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { PokemonMobileTopBar } from "@/components/pokemon/PokemonMobileTopBar";
 import { PokemonReviewsHeader } from "@/components/pokemon/PokemonReviewsHeader";
@@ -22,14 +28,24 @@ export async function generateMetadata({
   return { title: pokemon ? `${pokemon.name} reviews — PokeHub` : "Pokémon — PokeHub" };
 }
 
+function parseSort(value: string | undefined): ReviewSortOption {
+  return REVIEW_SORT_OPTIONS.includes(value as ReviewSortOption)
+    ? (value as ReviewSortOption)
+    : "newest";
+}
+
 export default async function PokemonReviewsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ sort?: string }>;
 }) {
   const { slug } = await params;
   const pokemon = await getPokemon(slug);
   if (!pokemon) notFound();
+
+  const sort = parseSort((await searchParams).sort);
 
   const session = await auth();
   const userId = session?.user?.id;
@@ -43,7 +59,7 @@ export default async function PokemonReviewsPage({
 
   const [ratingStats, allReviews] = await Promise.all([
     getPokemonRatingStats(pokemon.id),
-    getAllReviews(pokemon.id, userId),
+    getAllReviews(pokemon.id, userId, sort),
   ]);
 
   const primaryType = pokemon.types[0];
@@ -85,7 +101,7 @@ export default async function PokemonReviewsPage({
         className="mb-[16px] flex h-[46px] w-full items-center justify-center rounded-[12px] text-[15px] shadow-[0_8px_24px_rgba(196,79,224,0.32)] md:hidden"
       />
 
-      <ReviewSortChips />
+      <ReviewSortChips slug={pokemon.slug} activeSort={sort} />
 
       <PokemonReviewsList
         pokemonId={pokemon.id}
