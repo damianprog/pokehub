@@ -1,7 +1,8 @@
-import type { TopReviewItem } from "@/lib/user-pokemon";
+import type { ReviewSortOption, TopReviewItem } from "@/lib/user-pokemon";
 import { ReviewCard } from "@/components/pokemon/ReviewCard";
 import { YourReviewMenu } from "@/components/pokemon/YourReviewMenu";
 import { TopReviewsEmptyState } from "@/components/pokemon/TopReviewsEmptyState";
+import { LoadMoreReviews } from "@/components/pokemon/LoadMoreReviews";
 
 interface PokemonReviewsListProps {
   pokemonId: number;
@@ -10,6 +11,9 @@ interface PokemonReviewsListProps {
   ownReview: TopReviewItem | null;
   reviews: TopReviewItem[];
   isAuthenticated: boolean;
+  hasMore: boolean;
+  sort: ReviewSortOption;
+  count: number;
 }
 
 /**
@@ -31,6 +35,9 @@ export function PokemonReviewsList({
   ownReview,
   reviews,
   isAuthenticated,
+  hasMore,
+  sort,
+  count,
 }: PokemonReviewsListProps) {
   if (!ownReview && reviews.length === 0) {
     return <TopReviewsEmptyState pokemonName={pokemonName} isAuthenticated={isAuthenticated} />;
@@ -69,6 +76,7 @@ export function PokemonReviewsList({
           reviewedAt={review.reviewedAt}
         />
       ))}
+      {hasMore && <LoadMoreReviews slug={slug} sort={sort} count={count} />}
     </div>
   );
 }

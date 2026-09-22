@@ -7,6 +7,7 @@ import {
   getPokemonRatingStats,
   getAllReviews,
   REVIEW_SORT_OPTIONS,
+  REVIEWS_PAGE_SIZE,
   type ReviewSortOption,
 } from "@/lib/user-pokemon";
 import { Breadcrumb } from "@/components/ui/Breadcrumb";
@@ -34,18 +35,25 @@ function parseSort(value: string | undefined): ReviewSortOption {
     : "newest";
 }
 
+function parseCount(value: string | undefined): number {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : REVIEWS_PAGE_SIZE;
+}
+
 export default async function PokemonReviewsPage({
   params,
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ sort?: string }>;
+  searchParams: Promise<{ sort?: string; count?: string }>;
 }) {
   const { slug } = await params;
   const pokemon = await getPokemon(slug);
   if (!pokemon) notFound();
 
-  const sort = parseSort((await searchParams).sort);
+  const resolvedSearchParams = await searchParams;
+  const sort = parseSort(resolvedSearchParams.sort);
+  const count = parseCount(resolvedSearchParams.count);
 
   const session = await auth();
   const userId = session?.user?.id;
@@ -59,7 +67,7 @@ export default async function PokemonReviewsPage({
 
   const [ratingStats, allReviews] = await Promise.all([
     getPokemonRatingStats(pokemon.id),
-    getAllReviews(pokemon.id, userId, sort),
+    getAllReviews(pokemon.id, userId, sort, count),
   ]);
 
   const primaryType = pokemon.types[0];
@@ -110,6 +118,9 @@ export default async function PokemonReviewsPage({
         ownReview={allReviews.ownReview}
         reviews={allReviews.reviews}
         isAuthenticated={isAuthenticated}
+        hasMore={allReviews.hasMore}
+        sort={sort}
+        count={count}
       />
 
       <ReviewComposer

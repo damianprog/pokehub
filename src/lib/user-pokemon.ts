@@ -291,7 +291,12 @@ export interface AllReviewsResult {
   ownReview: TopReviewItem | null;
   reviews: TopReviewItem[];
   totalReviewCount: number;
+  /** Whether more non-pinned reviews exist beyond the requested `count` (see rating-09-load-more-pagination-spec.md §5). */
+  hasMore: boolean;
 }
+
+/** Default/increment page size for `/p/[slug]/reviews`'s "Load more" control (rating-09-load-more-pagination-spec.md §3). */
+export const REVIEWS_PAGE_SIZE = 10;
 
 /** The three sort options on `/p/[slug]/reviews` (see rating-08-sort-control-spec.md §5). */
 export type ReviewSortOption = "newest" | "highest" | "lowest";
@@ -343,9 +348,16 @@ function toReviewItem(row: AllReviewsRow, viewerId?: string): TopReviewItem {
  * Every written review for a Pokémon, for the `/p/[slug]/reviews` page: the
  * viewer's own qualifying row separated out for pinning, everyone else's
  * ordered per `sort` (defaulting to most-recently-reviewed first) and
- * unpaginated (see rating-review/rating-07-all-reviews-page-shell-spec.md
- * §3, §9 and rating-08-sort-control-spec.md §5-§6). The pinned row is never
- * affected by `sort` — it's a separate query with no ordering concept.
+ * windowed to `count` rows (defaulting to `REVIEWS_PAGE_SIZE`) — see
+ * rating-review/rating-07-all-reviews-page-shell-spec.md §3, §9,
+ * rating-08-sort-control-spec.md §5-§6, and
+ * rating-09-load-more-pagination-spec.md §3, §5-§6. The pinned row is never
+ * affected by `sort` or `count` — it's a separate query with no ordering or
+ * windowing concept.
+ *
+ * `hasMore` is derived from `totalReviewCount`, which this function already
+ * computes unconditionally for the header — no sentinel row, no extra query
+ * (rating-09-load-more-pagination-spec.md §5).
  *
  * Deliberately distinct from `getTopReviews`, which is a capped detail-page
  * preview that includes the viewer's own review inline (marked "· you")
@@ -357,6 +369,7 @@ export const getAllReviews = cache(
     pokemonId: number,
     viewerId?: string,
     sort: ReviewSortOption = "newest",
+    count: number = REVIEWS_PAGE_SIZE,
   ): Promise<AllReviewsResult> => {
     const reviewedWhere = { pokemonId, reviewText: { not: null } } as const;
 
@@ -371,17 +384,21 @@ export const getAllReviews = cache(
       prisma.userPokemon.findMany({
         where: viewerId ? { ...reviewedWhere, userId: { not: viewerId } } : reviewedWhere,
         orderBy: REVIEW_SORT_ORDER_BY[sort],
+        take: count,
         select: ALL_REVIEWS_SELECT,
       }),
     ]);
 
     const ownReview =
       ownRowRaw && ownRowRaw.reviewText ? toReviewItem(ownRowRaw, viewerId) : null;
+    const displayedCount = otherRows.length + (ownReview ? 1 : 0);
+    const hasMore = totalReviewCount > displayedCount;
 
     return {
       ownReview,
       reviews: otherRows.map((row) => toReviewItem(row, viewerId)),
       totalReviewCount,
+      hasMore,
     };
   },
 );
