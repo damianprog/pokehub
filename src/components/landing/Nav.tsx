@@ -52,7 +52,7 @@ export function Nav() {
               href="/discover"
               className="hidden px-1 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground sm:block"
             >
-              Browse Pokedex
+              Pokedex
             </Link>
 
             <NavAuthButtons />

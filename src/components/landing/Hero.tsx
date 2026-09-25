@@ -46,7 +46,7 @@ export function Hero() {
             size="lg"
             className="h-[50px] rounded-[13px] px-[26px] text-base font-semibold"
           >
-            Browse Pokedex
+            Pokedex
           </Button>
         </div>
 

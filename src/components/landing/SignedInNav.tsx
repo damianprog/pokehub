@@ -27,7 +27,7 @@ export function SignedInNav({ user }: SignedInNavProps) {
           href="/api/pokemon/random"
           className="rounded-[9px] px-3.5 py-2 text-sm font-semibold text-muted-foreground hover:bg-[rgba(255,255,255,0.06)] hover:text-foreground"
         >
-          Browse
+          Pokedex
         </a>
         <Link
           href="/"
