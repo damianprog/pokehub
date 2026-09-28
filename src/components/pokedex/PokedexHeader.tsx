@@ -1,14 +1,21 @@
+import type { ReactNode } from "react";
 import { Shuffle } from "lucide-react";
 
 interface PokedexHeaderProps {
   /** Total Pokémon count, or `null` while loading (renders a skeleton bar in its place). */
   total: number | null;
+  /** The search field — the live `PokedexSearch`, or its placeholder in the loading skeleton. */
+  search: ReactNode;
 }
 
-export function PokedexHeader({ total }: PokedexHeaderProps) {
+/**
+ * Desktop: one row — title block, search, "Surprise me". Mobile: the title
+ * block takes a full row, so search + the "Surprise me" square wrap below it.
+ */
+export function PokedexHeader({ total, search }: PokedexHeaderProps) {
   return (
-    <div className="mb-[18px] flex items-end gap-[12px] md:mb-[22px]">
-      <div className="min-w-0 flex-1">
+    <div className="mb-[14px] flex flex-wrap items-end gap-x-[8px] gap-y-[14px] md:mb-[22px] md:flex-nowrap md:gap-x-[12px]">
+      <div className="w-full min-w-0 md:w-auto md:flex-1">
         <h1 className="font-heading m-0 text-[28px] leading-[1.05] font-bold tracking-[-0.025em] md:text-[40px] md:tracking-[-0.03em]">
           Pokédex
         </h1>
@@ -22,6 +29,8 @@ export function PokedexHeader({ total }: PokedexHeaderProps) {
           )}
         </div>
       </div>
+
+      {search}
 
       {/* Plain <a>, not <Link> — a full navigation so the browser follows the
           redirect from /api/pokemon/random and rolls a fresh Pokémon each click. */}

@@ -1,10 +1,18 @@
 import type { Metadata } from "next";
-import { getPokedexPage, getPokemonCount, POKEDEX_PAGE_SIZE } from "@/lib/pokemon";
+import {
+  getPokedexMatchCount,
+  getPokedexPage,
+  getPokemonCount,
+  POKEDEX_PAGE_SIZE,
+} from "@/lib/pokemon";
+import { normalizePokedexSearch } from "@/lib/pokedex-search";
 import { getRatingSummaries } from "@/lib/user-pokemon";
 import { PokedexHeader } from "@/components/pokedex/PokedexHeader";
+import { PokedexSearch } from "@/components/pokedex/PokedexSearch";
 import { PokedexGrid } from "@/components/pokedex/PokedexGrid";
 import { PokedexCard } from "@/components/pokedex/PokedexCard";
 import { PokedexLoadMore } from "@/components/pokedex/PokedexLoadMore";
+import { PokedexEmptyState } from "@/components/pokedex/PokedexEmptyState";
 
 export const metadata: Metadata = { title: "Pokédex — PokeHub" };
 
@@ -19,24 +27,40 @@ function parseCount(value: string | undefined): number {
 export default async function PokedexPage({
   searchParams,
 }: {
-  searchParams: Promise<{ count?: string }>;
+  searchParams: Promise<{ count?: string; q?: string }>;
 }) {
-  const count = parseCount((await searchParams).count);
+  const params = await searchParams;
+  const count = parseCount(params.count);
+  const search = normalizePokedexSearch(params.q);
 
-  const [total, pokemons] = await Promise.all([getPokemonCount(), getPokedexPage(count)]);
+  // The header always shows the unfiltered total; `matchCount` is what
+  // "Load more" and the no-results state go by (the same number without a search).
+  const [total, matchCount, pokemons] = await Promise.all([
+    getPokemonCount(),
+    search ? getPokedexMatchCount(search) : null,
+    getPokedexPage(count, search),
+  ]);
+  const matches = matchCount ?? total;
   const ratings = await getRatingSummaries(pokemons.map((pokemon) => pokemon.id));
 
   return (
-    <div>
-      <PokedexHeader total={total} />
+    <div className="group/pokedex">
+      <PokedexHeader total={total} search={<PokedexSearch query={search} />} />
 
-      <PokedexGrid>
-        {pokemons.map((pokemon) => (
-          <PokedexCard key={pokemon.id} pokemon={pokemon} rating={ratings.get(pokemon.id)} />
-        ))}
-      </PokedexGrid>
+      {/* Dims while a new search is loading — `PokedexSearch` sets `data-pending`. */}
+      <div className="transition-opacity duration-150 group-has-[[data-pending]]/pokedex:opacity-60">
+        {search && matches === 0 ? (
+          <PokedexEmptyState search={search} />
+        ) : (
+          <PokedexGrid>
+            {pokemons.map((pokemon) => (
+              <PokedexCard key={pokemon.id} pokemon={pokemon} rating={ratings.get(pokemon.id)} />
+            ))}
+          </PokedexGrid>
+        )}
 
-      {total > count && <PokedexLoadMore count={count} />}
+        {matches > count && <PokedexLoadMore count={count} search={search} />}
+      </div>
     </div>
   );
 }

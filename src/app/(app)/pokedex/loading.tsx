@@ -1,4 +1,5 @@
 import { PokedexHeader } from "@/components/pokedex/PokedexHeader";
+import { PokedexSearchPlaceholder } from "@/components/pokedex/PokedexSearchPlaceholder";
 import { PokedexGrid } from "@/components/pokedex/PokedexGrid";
 import { PokedexCardSkeleton } from "@/components/pokedex/PokedexCardSkeleton";
 
@@ -8,7 +9,7 @@ const MOBILE_PLACEHOLDERS = 6;
 export default function PokedexLoading() {
   return (
     <div>
-      <PokedexHeader total={null} />
+      <PokedexHeader total={null} search={<PokedexSearchPlaceholder />} />
       <PokedexGrid>
         {Array.from({ length: DESKTOP_PLACEHOLDERS }, (_, index) => (
           <PokedexCardSkeleton

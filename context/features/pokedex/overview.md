@@ -19,8 +19,8 @@ Built one slice at a time, with one spec per slice. Each spec gets written only 
 | # | Slice | Summary |
 |---|---|---|
 | 01 | Page shell + grid | `/pokedex` route, title + total count, "Surprise me", card grid (dex order) with community rating, "Load more", loading skeleton, all "Pokedex" links pointed at the new route |
-| 02 | Search | Name / dex-number search input, driven by a URL param |
-| 03 | Type & generation filters | Type chip panel, Generation menu, active-filter chips + "Clear all", "Showing N of 1,025", no-results empty state; breadcrumb type crumb links to a type-filtered Pokédex |
+| 02 | Search | Name / dex-number search input, driven by a URL param; search-only no-results state |
+| 03 | Type & generation filters | Type chip panel, Generation menu, active-filter chips + "Clear all", "Showing N of 1,025", no-results state widened to filters; breadcrumb type crumb links to a type-filtered Pokédex |
 | 04 | Rarity filter | Rarity menu (tier mapping per §3 below) |
 | 05 | Sort | Dex number / Name A–Z / Highest rated / Most rated |
 | 06 | Personal layer (signed in) | "You rated" line, favorite/wishlist indicators, desktop hover quick-toggle buttons, "My status" filter |

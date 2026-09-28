@@ -3,6 +3,8 @@ import { POKEDEX_PAGE_SIZE } from "@/lib/pokemon";
 
 interface PokedexLoadMoreProps {
   count: number;
+  /** The active search term, carried forward so "Load more" grows the results, not the full list. */
+  search?: string;
 }
 
 /**
@@ -12,8 +14,9 @@ interface PokedexLoadMoreProps {
  * the two differ in sizing and mobile layout, not just href. The href goes
  * through `URLSearchParams` so later slices' filter/sort params compose in.
  */
-export function PokedexLoadMore({ count }: PokedexLoadMoreProps) {
+export function PokedexLoadMore({ count, search }: PokedexLoadMoreProps) {
   const params = new URLSearchParams();
+  if (search) params.set("q", search);
   params.set("count", String(count + POKEDEX_PAGE_SIZE));
 
   return (
