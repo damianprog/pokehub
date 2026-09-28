@@ -6,9 +6,10 @@ interface SignedInNavProps {
     username: string;
     image?: string | null;
   };
+  isPokedexActive: boolean;
 }
 
-export function SignedInNav({ user }: SignedInNavProps) {
+export function SignedInNav({ user, isPokedexActive }: SignedInNavProps) {
   const letter = user.username.charAt(0).toUpperCase();
 
   return (
@@ -20,15 +21,12 @@ export function SignedInNav({ user }: SignedInNavProps) {
         >
           Feed
         </Link>
-        {/* Plain <a>, not <Link> — this needs a full navigation so the browser
-            follows the redirect from /api/pokemon/random, landing on a fresh
-            random Pokémon on every click rather than a soft-navigated one. */}
-        <a
-          href="/api/pokemon/random"
-          className="rounded-[9px] px-3.5 py-2 text-sm font-semibold text-muted-foreground hover:bg-[rgba(255,255,255,0.06)] hover:text-foreground"
+        <Link
+          href="/pokedex"
+          className={`rounded-[9px] px-3.5 py-2 text-sm font-semibold hover:bg-[rgba(255,255,255,0.06)] hover:text-foreground ${isPokedexActive ? "bg-[rgba(255,255,255,0.08)] text-foreground" : "text-muted-foreground"}`}
         >
           Pokedex
-        </a>
+        </Link>
         <Link
           href="/"
           className="rounded-[9px] px-3.5 py-2 text-sm font-semibold text-muted-foreground hover:bg-[rgba(255,255,255,0.06)] hover:text-foreground"

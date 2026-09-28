@@ -80,7 +80,7 @@ export default async function PokemonReviewsPage({
       <div className="mb-[14px] md:mb-[18px]">
         <Breadcrumb
           items={[
-            { label: "Pokedex", href: "/discover" },
+            { label: "Pokedex", href: "/pokedex" },
             { label: typeLabel },
             { label: pokemon.name, href: `/p/${pokemon.slug}` },
             { label: "Reviews" },

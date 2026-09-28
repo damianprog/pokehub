@@ -56,6 +56,7 @@
   --animate-float: floaty 4.8s ease-in-out infinite;
   --animate-shiny-pulse: shiny-pulse 2.6s ease-in-out infinite;
   --animate-shimmer: shimmer 2.8s linear infinite;
+  --animate-skeleton: shimmer 1.4s linear infinite;
   --animate-scroll-left: scrollLeft 42s linear infinite;
   --animate-modal-in: modalIn 0.2s ease both;
   --animate-fade-up: fadeUp 0.45s ease both;

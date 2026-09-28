@@ -179,6 +179,37 @@ export const getPokemonRatingStats = cache(
   },
 );
 
+export interface RatingSummary {
+  /** Average in half-star units — convert via `src/lib/rating.ts` for display. */
+  averageHalfUnits: number;
+  totalRatings: number;
+}
+
+/**
+ * Average + count per Pokémon for a batch of ids, in one `groupBy` — the
+ * Pokédex grid's per-card rating line without an N+1 of
+ * `getPokemonRatingStats` calls. Ids with zero ratings are absent from the map.
+ * Not wrapped in React `cache()`: it compares arguments by identity, so a fresh
+ * `pokemonIds` array on every call would never hit the cache.
+ */
+export async function getRatingSummaries(
+  pokemonIds: number[],
+): Promise<Map<number, RatingSummary>> {
+  const rows = await prisma.userPokemon.groupBy({
+    by: ["pokemonId"],
+    where: { pokemonId: { in: pokemonIds }, rating: { not: null } },
+    _avg: { rating: true },
+    _count: { rating: true },
+  });
+
+  return new Map(
+    rows.map((row) => [
+      row.pokemonId,
+      { averageHalfUnits: row._avg.rating ?? 0, totalRatings: row._count.rating },
+    ]),
+  );
+}
+
 /**
  * Set (or change) the signed-in user's rating for a Pokémon. Upserts on the
  * (userId, pokemonId) pair so rating a Pokémon the user has never caught,

@@ -11,6 +11,7 @@ export function Nav() {
   const { data: session } = useSession();
   const pathname = usePathname();
   const hasMobileChrome = pathname.startsWith("/p/");
+  const isPokedexActive = pathname === "/pokedex";
 
   return (
     <header
@@ -27,7 +28,7 @@ export function Nav() {
         </Link>
 
         {session?.user?.username ? (
-          <SignedInNav user={session.user} />
+          <SignedInNav user={session.user} isPokedexActive={isPokedexActive} />
         ) : session ? (
           // Signed in but still on /signup/username — the one page proxy.ts
           // exempts from the username gate, so the only place this session can
@@ -49,10 +50,13 @@ export function Nav() {
             <div className="flex-1" />
 
             <Link
-              href="/discover"
-              className="hidden px-1 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground sm:block"
+              href="/pokedex"
+              className={`relative hidden px-1 text-sm font-semibold transition-colors hover:text-foreground sm:block ${isPokedexActive ? "text-foreground" : "text-muted-foreground"}`}
             >
               Pokedex
+              {isPokedexActive && (
+                <span className="absolute right-1 -bottom-[23px] left-1 h-[2px] rounded-[2px] bg-[linear-gradient(90deg,var(--brand-from),var(--brand-to))]" />
+              )}
             </Link>
 
             <NavAuthButtons />

@@ -40,7 +40,7 @@ export function Hero() {
             Start for free
           </Button>
           <Button
-            render={<Link href="/discover" />}
+            render={<Link href="/pokedex" />}
             nativeButton={false}
             variant="outline"
             size="lg"

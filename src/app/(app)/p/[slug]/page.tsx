@@ -89,7 +89,7 @@ export default async function PokemonPage({
       <div className="mb-[18px] hidden md:block">
         <Breadcrumb
           items={[
-            { label: "Pokedex", href: "/discover" },
+            { label: "Pokedex", href: "/pokedex" },
             { label: typeLabel },
             { label: pokemon.name },
           ]}
