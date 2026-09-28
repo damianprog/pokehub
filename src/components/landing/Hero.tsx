@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PokemonCard } from "@/components/landing/PokemonCard";
+import { HeroSignupButton } from "@/components/landing/HeroSignupButton";
 
 const SPRITE_BASE =
   "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork";
@@ -33,12 +34,7 @@ export function Hero() {
         </p>
 
         <div className="mb-10 flex flex-wrap gap-3">
-          <Button
-            size="lg"
-            className="h-[50px] rounded-[13px] border-0 bg-[linear-gradient(135deg,var(--brand-from),var(--brand-to))] px-[30px] text-base font-bold text-white shadow-[0_8px_26px_rgba(196,79,224,0.38)] hover:brightness-110"
-          >
-            Start for free
-          </Button>
+          <HeroSignupButton />
           <Button
             render={<Link href="/pokedex" />}
             nativeButton={false}

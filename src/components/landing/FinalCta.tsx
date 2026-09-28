@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useAuthModal } from "@/store/auth-modal";
 
 export function FinalCta() {
@@ -38,8 +39,9 @@ export function FinalCta() {
           Create free account
         </button>
 
-        <button
-          className="inline-flex h-[52px] cursor-pointer items-center rounded-[13px] px-7 text-[16px] font-semibold"
+        <Link
+          href="/pokedex"
+          className="inline-flex h-[52px] items-center rounded-[13px] px-7 text-[16px] font-semibold"
           style={{
             border: "1px solid rgba(255,255,255,0.14)",
             background: "rgba(255,255,255,0.05)",
@@ -47,7 +49,7 @@ export function FinalCta() {
           }}
         >
           Browse as guest
-        </button>
+        </Link>
       </div>
 
       <div className="text-[13px]" style={{ color: "#7b818c" }}>
