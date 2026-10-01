@@ -37,14 +37,6 @@ export function SignedInNav({ user, isPokedexActive }: SignedInNavProps) {
 
       <div className="flex-1" />
 
-      <div className="hidden h-[38px] w-[230px] items-center gap-2 rounded-[11px] border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.05)] px-3 lg:flex">
-        <span className="text-[15px] text-[#646b78]">⌕</span>
-        <input
-          placeholder="Search 1,302 Pokémon, lists, people…"
-          className="w-full border-0 bg-transparent text-[13px] text-foreground outline-none"
-        />
-      </div>
-
       <div className="hidden h-[38px] items-center gap-[7px] rounded-[11px] border border-[rgba(110,170,255,0.22)] bg-[rgba(110,170,255,0.1)] px-[13px] md:flex">
         <span className="text-[13px] text-[#7fb6ff]">◆</span>
         <span className="font-heading text-[13px] font-bold text-[#bcd6ff]">2,450</span>
