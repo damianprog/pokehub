@@ -3,7 +3,10 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Search, X } from "lucide-react";
-import { normalizePokedexSearch, POKEDEX_SEARCH_MAX_LENGTH } from "@/lib/pokedex-search";
+import {
+  normalizePokedexSearch,
+  POKEDEX_SEARCH_MAX_LENGTH,
+} from "@/lib/pokedex-search";
 
 const DEBOUNCE_MS = 300;
 
@@ -26,12 +29,14 @@ export function PokedexSearch({ query }: PokedexSearchProps) {
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   // The input owns its text; `sentQuery` is the last value we navigated to.
-  // When `query` lands and matches it, that's our own navigation — keep what
-  // the user has typed since. Anything else (back button, "Clear search") is
-  // an outside change, so re-sync the field to it.
+  // While one of our navigations is pending, `query` still holds the old value
+  // (or an older result of ours), so leave the field alone. Once settled, a
+  // `query` that matches it is our own navigation — keep what the user has
+  // typed since. Anything else ("Clear search", a failed navigation) is an
+  // outside change, so re-sync the field to it.
   const [value, setValue] = useState(query);
   const [sentQuery, setSentQuery] = useState(query);
-  if (query !== sentQuery) {
+  if (query !== sentQuery && !isPending) {
     setSentQuery(query);
     setValue(query);
   }
@@ -79,7 +84,11 @@ export function PokedexSearch({ query }: PokedexSearchProps) {
       data-pending={isPending || undefined}
       className="relative flex h-[44px] min-w-0 flex-1 items-center gap-[8px] rounded-[12px] border border-white/[0.09] bg-white/[0.05] px-[13px] focus-within:border-white/[0.2] md:w-[360px] md:flex-none md:gap-[9px] md:px-[14px]"
     >
-      <Search aria-hidden className="size-[16px] flex-none text-[#7b818c] md:size-[17px]" strokeWidth={2.2} />
+      <Search
+        aria-hidden
+        className="size-[16px] flex-none text-[#7b818c] md:size-[17px]"
+        strokeWidth={2.2}
+      />
 
       <div className="relative h-full min-w-0 flex-1">
         {value === "" && (
@@ -88,7 +97,9 @@ export function PokedexSearch({ query }: PokedexSearchProps) {
             className="pointer-events-none absolute inset-0 flex items-center truncate text-[14px] text-[#646b78]"
           >
             <span className="md:hidden">Name or dex number</span>
-            <span className="hidden md:inline">Search by name or dex number</span>
+            <span className="hidden md:inline">
+              Search by name or dex number
+            </span>
           </span>
         )}
         <input
