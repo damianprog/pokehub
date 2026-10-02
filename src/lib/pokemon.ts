@@ -47,13 +47,14 @@ function pokedexSearchWhere(search: string): Prisma.PokemonWhereInput {
   return { OR: conditions };
 }
 
-/** Search AND type (any of the selected) AND generation. */
-function pokedexWhere({ search, types, gen }: PokedexFilters): Prisma.PokemonWhereInput {
+/** Search AND type (any of the selected) AND generation AND rarity. */
+function pokedexWhere({ search, types, gen, rarity }: PokedexFilters): Prisma.PokemonWhereInput {
   return {
     AND: [
       pokedexSearchWhere(search),
       types.length > 0 ? { types: { hasSome: types } } : {},
       gen !== null ? { generation: gen } : {},
+      rarity !== null ? { rarity: rarity.tier } : {},
     ],
   };
 }

@@ -29,7 +29,7 @@ function parseCount(value: string | undefined): number {
 export default async function PokedexPage({
   searchParams,
 }: {
-  searchParams: Promise<{ count?: string; q?: string; type?: string; gen?: string }>;
+  searchParams: Promise<{ count?: string; q?: string; type?: string; gen?: string; rarity?: string }>;
 }) {
   const params = await searchParams;
   const count = parseCount(params.count);

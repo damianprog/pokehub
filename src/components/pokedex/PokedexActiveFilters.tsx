@@ -26,6 +26,13 @@ function buildChips(filters: PokedexFilters) {
       removeHref: pokedexHref({ ...filters, gen: null }),
     });
   }
+  if (filters.rarity !== null) {
+    chips.push({
+      label: filters.rarity.label,
+      color: CHIP_TEXT,
+      removeHref: pokedexHref({ ...filters, rarity: null }),
+    });
+  }
   if (filters.search) {
     chips.push({
       label: `“${filters.search}”`,
