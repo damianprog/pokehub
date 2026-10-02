@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Search, X } from "lucide-react";
 import {
   normalizePokedexSearch,
   POKEDEX_SEARCH_MAX_LENGTH,
 } from "@/lib/pokedex-search";
+import { pokedexUrl } from "@/lib/pokedex-filters";
 
 const DEBOUNCE_MS = 300;
 
@@ -22,7 +23,6 @@ interface PokedexSearchProps {
  */
 export function PokedexSearch({ query }: PokedexSearchProps) {
   const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -53,10 +53,9 @@ export function PokedexSearch({ query }: PokedexSearchProps) {
     params.delete("count");
     if (normalized) params.set("q", normalized);
     else params.delete("q");
-    const qs = params.toString();
 
     startTransition(() => {
-      router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+      router.replace(pokedexUrl(params), { scroll: false });
     });
   }
 

@@ -81,7 +81,7 @@ export default async function PokemonReviewsPage({
         <Breadcrumb
           items={[
             { label: "Pokedex", href: "/pokedex" },
-            { label: typeLabel },
+            { label: typeLabel, href: `/pokedex?type=${primaryType}` },
             { label: pokemon.name, href: `/p/${pokemon.slug}` },
             { label: "Reviews" },
           ]}

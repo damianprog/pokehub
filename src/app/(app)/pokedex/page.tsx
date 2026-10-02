@@ -5,10 +5,12 @@ import {
   getPokemonCount,
   POKEDEX_PAGE_SIZE,
 } from "@/lib/pokemon";
-import { normalizePokedexSearch } from "@/lib/pokedex-search";
+import { hasPokedexFilters, parsePokedexFilters } from "@/lib/pokedex-filters";
 import { getRatingSummaries } from "@/lib/user-pokemon";
 import { PokedexHeader } from "@/components/pokedex/PokedexHeader";
 import { PokedexSearch } from "@/components/pokedex/PokedexSearch";
+import { PokedexFilterPanel } from "@/components/pokedex/PokedexFilterPanel";
+import { PokedexActiveFilters } from "@/components/pokedex/PokedexActiveFilters";
 import { PokedexGrid } from "@/components/pokedex/PokedexGrid";
 import { PokedexCard } from "@/components/pokedex/PokedexCard";
 import { PokedexLoadMore } from "@/components/pokedex/PokedexLoadMore";
@@ -27,30 +29,34 @@ function parseCount(value: string | undefined): number {
 export default async function PokedexPage({
   searchParams,
 }: {
-  searchParams: Promise<{ count?: string; q?: string }>;
+  searchParams: Promise<{ count?: string; q?: string; type?: string; gen?: string }>;
 }) {
   const params = await searchParams;
   const count = parseCount(params.count);
-  const search = normalizePokedexSearch(params.q);
+  const filters = parsePokedexFilters(params);
+  const isNarrowed = filters.search !== "" || hasPokedexFilters(filters);
 
-  // The header always shows the unfiltered total; `matchCount` is what
-  // "Load more" and the no-results state go by (the same number without a search).
+  // The header always shows the unfiltered total; `matches` is what "Load
+  // more", the count line and the no-results state go by (the same number
+  // when nothing narrows the list, so it's only counted separately then).
   const [total, matchCount, pokemons] = await Promise.all([
     getPokemonCount(),
-    search ? getPokedexMatchCount(search) : null,
-    getPokedexPage(count, search),
+    isNarrowed ? getPokedexMatchCount(filters) : null,
+    getPokedexPage(count, filters),
   ]);
   const matches = matchCount ?? total;
   const ratings = await getRatingSummaries(pokemons.map((pokemon) => pokemon.id));
 
   return (
     <div className="group/pokedex">
-      <PokedexHeader total={total} search={<PokedexSearch query={search} />} />
+      <PokedexHeader total={total} search={<PokedexSearch query={filters.search} />} />
+      <PokedexFilterPanel filters={filters} />
+      <PokedexActiveFilters filters={filters} total={total} matches={matches} />
 
-      {/* Dims while a new search is loading — `PokedexSearch` sets `data-pending`. */}
+      {/* Dims while a search or filter change is loading — pending controls set `data-pending`. */}
       <div className="transition-opacity duration-150 group-has-[[data-pending]]/pokedex:opacity-60">
-        {search && matches === 0 ? (
-          <PokedexEmptyState search={search} />
+        {matches === 0 ? (
+          <PokedexEmptyState search={filters.search} filtered={hasPokedexFilters(filters)} />
         ) : (
           <PokedexGrid>
             {pokemons.map((pokemon) => (
@@ -59,7 +65,7 @@ export default async function PokedexPage({
           </PokedexGrid>
         )}
 
-        {matches > count && <PokedexLoadMore count={count} search={search} />}
+        {matches > count && <PokedexLoadMore count={count} filters={filters} />}
       </div>
     </div>
   );

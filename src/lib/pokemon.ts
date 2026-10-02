@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@/generated/prisma/client";
+import type { PokedexFilters } from "@/lib/pokedex-filters";
 
 export const getPokemon = cache((slug: string) =>
   prisma.pokemon.findUnique({ where: { slug } }),
@@ -28,7 +29,7 @@ export const getPokemonCount = cache(() => prisma.pokemon.count());
  * with punctuation or accents), OR — for a whole number, with an optional "#"
  * and leading zeros — the dex number equals it exactly.
  */
-function pokedexSearchWhere(search: string | undefined): Prisma.PokemonWhereInput {
+function pokedexSearchWhere(search: string): Prisma.PokemonWhereInput {
   if (!search) return {};
 
   // Prisma's `contains` becomes `LIKE '%…%'` without escaping the term, so a
@@ -46,20 +47,34 @@ function pokedexSearchWhere(search: string | undefined): Prisma.PokemonWhereInpu
   return { OR: conditions };
 }
 
-/** The first `count` Pokémon matching `search` (or all, without one) in dex order, with only the fields a Pokédex card renders. */
-export const getPokedexPage = cache((count: number, search?: string) =>
-  prisma.pokemon.findMany({
-    where: pokedexSearchWhere(search),
+/** Search AND type (any of the selected) AND generation. */
+function pokedexWhere({ search, types, gen }: PokedexFilters): Prisma.PokemonWhereInput {
+  return {
+    AND: [
+      pokedexSearchWhere(search),
+      types.length > 0 ? { types: { hasSome: types } } : {},
+      gen !== null ? { generation: gen } : {},
+    ],
+  };
+}
+
+// The two Pokédex reads below take a `filters` object, so they aren't wrapped
+// in React `cache()` (it compares by identity) — the page calls each once.
+
+/** The first `count` Pokémon matching `filters` in dex order, with only the fields a Pokédex card renders. */
+export function getPokedexPage(count: number, filters: PokedexFilters) {
+  return prisma.pokemon.findMany({
+    where: pokedexWhere(filters),
     orderBy: { id: "asc" },
     take: count,
     select: { id: true, slug: true, name: true, types: true, artworkUrl: true },
-  }),
-);
+  });
+}
 
-/** How many Pokémon match `search` — drives "Load more" and the no-results state. */
-export const getPokedexMatchCount = cache((search?: string) =>
-  prisma.pokemon.count({ where: pokedexSearchWhere(search) }),
-);
+/** How many Pokémon match `filters` — drives "Load more", the count line and the no-results state. */
+export function getPokedexMatchCount(filters: PokedexFilters) {
+  return prisma.pokemon.count({ where: pokedexWhere(filters) });
+}
 
 export type PokedexEntry = Awaited<ReturnType<typeof getPokedexPage>>[number];
 
