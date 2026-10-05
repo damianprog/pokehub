@@ -186,18 +186,22 @@ export interface RatingSummary {
 }
 
 /**
- * Average + count per Pokémon for a batch of ids, in one `groupBy` — the
- * Pokédex grid's per-card rating line without an N+1 of
- * `getPokemonRatingStats` calls. Ids with zero ratings are absent from the map.
+ * Average + count per Pokémon for a batch of ids (or every rated Pokémon when
+ * `pokemonIds` is omitted), in one `groupBy` — the Pokédex grid's per-card
+ * rating line without an N+1 of `getPokemonRatingStats` calls, and the input to
+ * the Pokédex rating sorts. Ids with zero ratings are absent from the map.
  * Not wrapped in React `cache()`: it compares arguments by identity, so a fresh
  * `pokemonIds` array on every call would never hit the cache.
  */
 export async function getRatingSummaries(
-  pokemonIds: number[],
+  pokemonIds?: number[],
 ): Promise<Map<number, RatingSummary>> {
   const rows = await prisma.userPokemon.groupBy({
     by: ["pokemonId"],
-    where: { pokemonId: { in: pokemonIds }, rating: { not: null } },
+    where: {
+      pokemonId: pokemonIds ? { in: pokemonIds } : undefined,
+      rating: { not: null },
+    },
     _avg: { rating: true },
     _count: { rating: true },
   });

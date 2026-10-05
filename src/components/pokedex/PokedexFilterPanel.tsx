@@ -9,6 +9,7 @@ import {
 } from "@/lib/pokedex-filters";
 import { PokedexTypeChip } from "@/components/pokedex/PokedexTypeChip";
 import { PokedexRefineMenu, type PokedexRefineOption } from "@/components/pokedex/PokedexRefineMenu";
+import { PokedexSortMenu } from "@/components/pokedex/PokedexSortMenu";
 
 interface PokedexFilterPanelProps {
   /** Active filters, or `null` for the loading skeleton (same layout, nothing interactive). */
@@ -42,7 +43,7 @@ function rarityOptions(filters: PokedexFilters): PokedexRefineOption[] {
   }));
 }
 
-/** Desktop-only filter card: the Type chip row, then the Refine row's menus. Mobile filters arrive with slice 07's sheet. */
+/** Desktop-only filter card: the Type chip row, then the Refine row's menus with Sort on the far right. Mobile filters arrive with slice 07's sheet. */
 export function PokedexFilterPanel({ filters }: PokedexFilterPanelProps) {
   const current = filters ?? NO_POKEDEX_FILTERS;
   const disabled = filters === null;
@@ -79,6 +80,8 @@ export function PokedexFilterPanel({ filters }: PokedexFilterPanelProps) {
           options={rarityOptions(current)}
           disabled={disabled}
         />
+        <div className="flex-1" />
+        <PokedexSortMenu filters={current} disabled={disabled} />
       </div>
     </div>
   );

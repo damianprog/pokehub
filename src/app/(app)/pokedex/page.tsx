@@ -10,6 +10,7 @@ import { getRatingSummaries } from "@/lib/user-pokemon";
 import { PokedexHeader } from "@/components/pokedex/PokedexHeader";
 import { PokedexSearch } from "@/components/pokedex/PokedexSearch";
 import { PokedexFilterPanel } from "@/components/pokedex/PokedexFilterPanel";
+import { PokedexMobileSortRow } from "@/components/pokedex/PokedexMobileSortRow";
 import { PokedexActiveFilters } from "@/components/pokedex/PokedexActiveFilters";
 import { PokedexGrid } from "@/components/pokedex/PokedexGrid";
 import { PokedexCard } from "@/components/pokedex/PokedexCard";
@@ -29,7 +30,14 @@ function parseCount(value: string | undefined): number {
 export default async function PokedexPage({
   searchParams,
 }: {
-  searchParams: Promise<{ count?: string; q?: string; type?: string; gen?: string; rarity?: string }>;
+  searchParams: Promise<{
+    count?: string;
+    q?: string;
+    type?: string;
+    gen?: string;
+    rarity?: string;
+    sort?: string;
+  }>;
 }) {
   const params = await searchParams;
   const count = parseCount(params.count);
@@ -51,6 +59,7 @@ export default async function PokedexPage({
     <div className="group/pokedex">
       <PokedexHeader total={total} search={<PokedexSearch query={filters.search} />} />
       <PokedexFilterPanel filters={filters} />
+      <PokedexMobileSortRow filters={filters} />
       <PokedexActiveFilters filters={filters} total={total} matches={matches} />
 
       {/* Dims while a search or filter change is loading — pending controls set `data-pending`. */}

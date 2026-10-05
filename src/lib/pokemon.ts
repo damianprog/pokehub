@@ -2,6 +2,7 @@ import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@/generated/prisma/client";
 import type { PokedexFilters } from "@/lib/pokedex-filters";
+import { getRatingSummaries, type RatingSummary } from "@/lib/user-pokemon";
 
 export const getPokemon = cache((slug: string) =>
   prisma.pokemon.findUnique({ where: { slug } }),
@@ -59,16 +60,77 @@ function pokedexWhere({ search, types, gen, rarity }: PokedexFilters): Prisma.Po
   };
 }
 
+/** Only the fields a Pokédex card renders. */
+const POKEDEX_CARD_SELECT = {
+  id: true,
+  slug: true,
+  name: true,
+  types: true,
+  artworkUrl: true,
+} as const satisfies Prisma.PokemonSelect;
+
+export type PokedexEntry = Prisma.PokemonGetPayload<{ select: typeof POKEDEX_CARD_SELECT }>;
+
+type RatingSortKey = "highest-rated" | "most-rated";
+
+/** Rated-Pokémon comparators per rating sort; the dex-number tiebreak is applied by the caller. */
+const RATING_COMPARATORS: Record<RatingSortKey, (a: RatingSummary, b: RatingSummary) => number> = {
+  "highest-rated": (a, b) =>
+    b.averageHalfUnits - a.averageHalfUnits || b.totalRatings - a.totalRatings,
+  "most-rated": (a, b) =>
+    b.totalRatings - a.totalRatings || b.averageHalfUnits - a.averageHalfUnits,
+};
+
+/**
+ * A rating-sorted page. Prisma can't order Pokémon by an aggregate over their
+ * ratings, so this reads every rated Pokémon's stats plus the ids matching the
+ * filters (both bounded by the ~1,025-row catalogue), orders them here, and
+ * fetches the rows for the first `count`. Unrated Pokémon follow in dex order.
+ */
+async function getRatingSortedPage(
+  count: number,
+  where: Prisma.PokemonWhereInput,
+  sortKey: RatingSortKey,
+): Promise<PokedexEntry[]> {
+  const [stats, matching] = await Promise.all([
+    getRatingSummaries(),
+    prisma.pokemon.findMany({ where, orderBy: { id: "asc" }, select: { id: true } }),
+  ]);
+
+  const compare = RATING_COMPARATORS[sortKey];
+  const ids = matching.map((pokemon) => pokemon.id);
+  // `!` is safe: the filter just above keeps only ids present in `stats`.
+  const rated = ids
+    .filter((id) => stats.has(id))
+    .sort((a, b) => compare(stats.get(a)!, stats.get(b)!) || a - b);
+  const unrated = ids.filter((id) => !stats.has(id));
+  const pageIds = [...rated, ...unrated].slice(0, count);
+
+  const rows = await prisma.pokemon.findMany({
+    where: { id: { in: pageIds } },
+    select: POKEDEX_CARD_SELECT,
+  });
+  const byId = new Map(rows.map((row) => [row.id, row]));
+  return pageIds.map((id) => byId.get(id)).filter((row) => row !== undefined);
+}
+
 // The two Pokédex reads below take a `filters` object, so they aren't wrapped
 // in React `cache()` (it compares by identity) — the page calls each once.
 
-/** The first `count` Pokémon matching `filters` in dex order, with only the fields a Pokédex card renders. */
-export function getPokedexPage(count: number, filters: PokedexFilters) {
+/** The first `count` Pokémon matching `filters`, in the order `filters.sort` asks for. Dex number breaks every tie. */
+export function getPokedexPage(count: number, filters: PokedexFilters): Promise<PokedexEntry[]> {
+  const where = pokedexWhere(filters);
+  const sortKey = filters.sort.key;
+
+  if (sortKey === "highest-rated" || sortKey === "most-rated") {
+    return getRatingSortedPage(count, where, sortKey);
+  }
+
   return prisma.pokemon.findMany({
-    where: pokedexWhere(filters),
-    orderBy: { id: "asc" },
+    where,
+    orderBy: sortKey === "name" ? [{ name: "asc" }, { id: "asc" }] : { id: "asc" },
     take: count,
-    select: { id: true, slug: true, name: true, types: true, artworkUrl: true },
+    select: POKEDEX_CARD_SELECT,
   });
 }
 
@@ -76,8 +138,6 @@ export function getPokedexPage(count: number, filters: PokedexFilters) {
 export function getPokedexMatchCount(filters: PokedexFilters) {
   return prisma.pokemon.count({ where: pokedexWhere(filters) });
 }
-
-export type PokedexEntry = Awaited<ReturnType<typeof getPokedexPage>>[number];
 
 // Not wrapped in React `cache()` — each call should roll a fresh random pick,
 // not be memoized/deduped within a request like the helpers above.

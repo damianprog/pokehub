@@ -1,6 +1,7 @@
 import { PokedexHeader } from "@/components/pokedex/PokedexHeader";
 import { PokedexSearchPlaceholder } from "@/components/pokedex/PokedexSearchPlaceholder";
 import { PokedexFilterPanel } from "@/components/pokedex/PokedexFilterPanel";
+import { PokedexMobileSortRow } from "@/components/pokedex/PokedexMobileSortRow";
 import { PokedexActiveFilters } from "@/components/pokedex/PokedexActiveFilters";
 import { PokedexGrid } from "@/components/pokedex/PokedexGrid";
 import { PokedexCardSkeleton } from "@/components/pokedex/PokedexCardSkeleton";
@@ -13,6 +14,7 @@ export default function PokedexLoading() {
     <div>
       <PokedexHeader total={null} search={<PokedexSearchPlaceholder />} />
       <PokedexFilterPanel filters={null} />
+      <PokedexMobileSortRow filters={null} />
       <PokedexActiveFilters filters={null} total={null} matches={null} />
       <PokedexGrid>
         {Array.from({ length: DESKTOP_PLACEHOLDERS }, (_, index) => (
