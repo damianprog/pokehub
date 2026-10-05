@@ -77,7 +77,7 @@ export function PokemonReviewsHeader({
       </div>
       <WriteReviewButton
         isAuthenticated={isAuthenticated}
-        className="hidden h-[44px] shrink-0 items-center rounded-[12px] px-[22px] text-[14.5px] shadow-[0_8px_24px_rgba(196,79,224,0.32)] md:inline-flex"
+        className="hidden h-[44px] shrink-0 items-center rounded-[12px] px-[22px] text-[14.5px] shadow-[0_8px_24px_rgba(63,217,138,0.32)] md:inline-flex"
       />
     </div>
   );

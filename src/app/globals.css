@@ -51,6 +51,9 @@
   --color-dim-foreground: var(--dim-foreground);
   --color-brand-from: var(--brand-from);
   --color-brand-to: var(--brand-to);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-link: var(--brand-link);
+  --color-brand-link-hover: var(--brand-link-hover);
   --color-gold: var(--gold);
 
   --animate-float: floaty 4.8s ease-in-out infinite;
@@ -97,8 +100,8 @@
   }
   50% {
     box-shadow:
-      0 0 52px rgba(255, 150, 222, 0.6),
-      inset 0 0 0 1px rgba(255, 184, 232, 0.75);
+      0 0 52px rgba(63, 217, 138, 0.55),
+      inset 0 0 0 1px rgba(143, 240, 184, 0.75);
   }
 }
 
@@ -159,8 +162,8 @@
   --card-foreground: #e8eaed;
   --popover: #15181e;
   --popover-foreground: #e8eaed;
-  --primary: #ff7a45;
-  --primary-foreground: #ffffff;
+  --primary: #3fd98a;
+  --primary-foreground: #0b1f12;
   --secondary: #13161b;
   --secondary-foreground: #9aa0ab;
   --muted: #13161b;
@@ -170,26 +173,30 @@
   --destructive: #ef4444;
   --border: rgba(255, 255, 255, 0.08);
   --input: rgba(255, 255, 255, 0.12);
-  --ring: #c44fe0;
+  --ring: #3fd98a;
   --chart-1: #e6b450;
-  --chart-2: #ff7a45;
-  --chart-3: #c44fe0;
+  --chart-2: #c6f36b;
+  --chart-3: #3fd98a;
   --chart-4: #9aa0ab;
   --chart-5: #5c636e;
   --radius: 1rem;
   --sidebar: #15181e;
   --sidebar-foreground: #e8eaed;
-  --sidebar-primary: #ff7a45;
-  --sidebar-primary-foreground: #ffffff;
+  --sidebar-primary: #3fd98a;
+  --sidebar-primary-foreground: #0b1f12;
   --sidebar-accent: #13161b;
   --sidebar-accent-foreground: #e8eaed;
   --sidebar-border: rgba(255, 255, 255, 0.08);
-  --sidebar-ring: #c44fe0;
+  --sidebar-ring: #3fd98a;
 
   /* PokeHub brand tokens */
   --dim-foreground: #7b818c;
-  --brand-from: #ff7a45;
-  --brand-to: #c44fe0;
+  --brand-from: #c6f36b;
+  --brand-to: #3fd98a;
+  /* Text on the brand gradient, and the brand link color + its hover. */
+  --brand-ink: #0b1f12;
+  --brand-link: #5fe3a0;
+  --brand-link-hover: #8ff0b8;
   --gold: #e6b450;
 }
 
@@ -206,6 +213,10 @@
   button {
     cursor: pointer;
   }
+  ::selection {
+    background: var(--brand-to);
+    color: var(--brand-ink);
+  }
 }
 
 /* Landing page glow — applied to the full-page wrapper (matches Claude Design:
@@ -214,8 +225,8 @@
 .landing-glow {
   background-color: var(--background);
   background-image:
-    radial-gradient(1400px 700px at 75% -5%, rgba(196, 79, 224, 0.09), transparent),
-    radial-gradient(900px 500px at -5% 8%, rgba(255, 122, 69, 0.06), transparent),
+    radial-gradient(1400px 700px at 75% -5%, rgba(63, 217, 138, 0.09), transparent),
+    radial-gradient(900px 500px at -5% 8%, rgba(198, 243, 107, 0.04), transparent),
     radial-gradient(700px 400px at 50% 95%, rgba(110, 170, 255, 0.04), transparent);
 }
 
@@ -224,7 +235,7 @@
    so they render correctly even though the div starts below the nav. */
 .app-bg {
   background-image:
-    radial-gradient(1200px 600px at 80% -8%, rgba(196, 79, 224, 0.07), transparent),
-    radial-gradient(900px 500px at 0% 0%, rgba(255, 122, 69, 0.05), transparent);
+    radial-gradient(1200px 600px at 80% -8%, rgba(63, 217, 138, 0.07), transparent),
+    radial-gradient(900px 500px at 0% 0%, rgba(198, 243, 107, 0.04), transparent);
   background-attachment: fixed;
 }

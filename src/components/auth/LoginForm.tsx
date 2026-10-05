@@ -109,7 +109,7 @@ export function LoginForm({ onSuccess, initialError }: LoginFormProps) {
             type="button"
             onClick={handleResend}
             disabled={resending}
-            className="block mb-[18px] text-[13px] font-semibold text-brand-to disabled:opacity-60"
+            className="block mb-[18px] text-[13px] font-semibold text-brand-link hover:text-brand-link-hover disabled:opacity-60"
           >
             {resending ? "Sending…" : "Resend verification email"}
           </button>
@@ -134,7 +134,7 @@ export function LoginForm({ onSuccess, initialError }: LoginFormProps) {
         <div className="mb-[22px]">
           <div className="flex justify-between items-baseline mb-[7px]">
             <span className={fieldLabelClass}>Password</span>
-            <Link href="/forgot-password" className="text-xs text-brand-to">
+            <Link href="/forgot-password" className="text-xs text-brand-link hover:text-brand-link-hover">
               Forgot?
             </Link>
           </div>

@@ -39,7 +39,7 @@ export function WriteReviewButton({ isAuthenticated, className }: WriteReviewBut
     <button
       type="button"
       onClick={handleClick}
-      className={`bg-[linear-gradient(135deg,var(--brand-from),var(--brand-to))] font-heading font-bold text-white${className ? ` ${className}` : ""}`}
+      className={`bg-[linear-gradient(135deg,var(--brand-from),var(--brand-to))] font-heading font-bold text-brand-ink${className ? ` ${className}` : ""}`}
     >
       Write review
     </button>

@@ -22,7 +22,7 @@ export function NavAvatarMenu({ letter, image, username }: NavAvatarMenuProps) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex size-[38px] items-center justify-center overflow-hidden rounded-full border-2 border-[rgba(255,255,255,0.12)] bg-[linear-gradient(135deg,#6a5acd,var(--brand-to))] font-heading text-sm font-extrabold text-white">
+      <DropdownMenuTrigger className="flex size-[38px] items-center justify-center overflow-hidden rounded-full border-2 border-[rgba(255,255,255,0.12)] bg-[linear-gradient(135deg,#1fa58c,var(--brand-to))] font-heading text-sm font-extrabold text-white">
         {image ? (
           <Image
             src={image}

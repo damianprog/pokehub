@@ -74,7 +74,7 @@ export function ReviewComposerMobile({
           disabled={!canSubmit}
           className={`h-[50px] rounded-[13px] text-[15px] font-bold ${
             canSubmit
-              ? "bg-[linear-gradient(135deg,var(--brand-from),var(--brand-to))] text-white shadow-[0_8px_24px_rgba(196,79,224,0.35)]"
+              ? "bg-[linear-gradient(135deg,var(--brand-from),var(--brand-to))] text-brand-ink shadow-[0_8px_24px_rgba(63,217,138,0.35)]"
               : "bg-white/[0.05] text-[#6c7280]"
           }`}
         >

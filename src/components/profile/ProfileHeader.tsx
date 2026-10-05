@@ -25,7 +25,7 @@ export function ProfileHeader({
       <div
         className="relative h-[120px] overflow-hidden rounded-[18px] md:h-[172px]"
         style={{
-          background: "linear-gradient(120deg,#3a2a5a,#6a5acd 45%,#c44fe0)",
+          background: "linear-gradient(120deg,#10241c,#1a6b52 45%,#2fbf78)",
         }}
       >
         <div
@@ -47,7 +47,7 @@ export function ProfileHeader({
       <div className="relative -mt-[38px] flex flex-wrap items-end gap-[16px] px-[16px] md:-mt-[52px] md:flex-nowrap md:gap-[22px] md:px-[26px]">
         <div
           className="relative flex size-[76px] flex-none items-center justify-center overflow-hidden rounded-[18px] border-4 border-[#0c0e12] font-heading text-[28px] font-extrabold text-white md:size-[108px] md:rounded-[26px] md:text-[40px]"
-          style={{ background: "linear-gradient(135deg,#6a5acd,#c44fe0)" }}
+          style={{ background: "linear-gradient(135deg,#1fa58c,#3fd98a)" }}
         >
           {image ? (
             <Image src={image} alt="" fill sizes="108px" className="object-cover" />
@@ -66,7 +66,7 @@ export function ProfileHeader({
         <div className="flex w-full flex-none justify-end gap-[9px] md:ml-auto md:w-auto md:justify-normal md:pb-[6px]">
           <button
             type="button"
-            className="h-[38px] rounded-[10px] bg-[linear-gradient(135deg,var(--brand-from),var(--brand-to))] px-[20px] text-[14px] font-bold text-white shadow-[0_4px_16px_rgba(196,79,224,0.32)]"
+            className="h-[38px] rounded-[10px] bg-[linear-gradient(135deg,var(--brand-from),var(--brand-to))] px-[20px] text-[14px] font-bold text-brand-ink shadow-[0_4px_16px_rgba(63,217,138,0.32)]"
           >
             Follow
           </button>

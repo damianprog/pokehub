@@ -42,7 +42,7 @@ function triggerClassName(active: boolean, compact: boolean) {
     ? "h-[40px] gap-[7px] rounded-[11px] px-[12px] text-[13px] font-bold"
     : "h-[38px] gap-[8px] rounded-[10px] px-[13px] text-[13.5px]";
   const tint = active
-    ? "border-[rgba(196,79,224,0.4)] bg-[rgba(196,79,224,0.1)]"
+    ? "border-[rgba(63,217,138,0.4)] bg-[rgba(63,217,138,0.1)]"
     : `${compact ? "border-white/[0.1]" : "border-white/[0.08]"} bg-white/[0.05] hover:bg-white/[0.08]`;
   return `inline-flex items-center border whitespace-nowrap select-none ${shape} ${tint}`;
 }
@@ -105,7 +105,7 @@ export function PokedexRefineMenu({
                 value={option.href}
                 closeOnClick
                 // The built-in check indicator, restyled to the design's check mark.
-                className={`cursor-pointer gap-[10px] rounded-[8px] py-[7px] pr-[34px] pl-[10px] focus:bg-white/[0.07] [&_svg]:!size-[14px] [&_svg]:stroke-[3] [&_svg]:text-[#d88ef0] [&>[data-slot=dropdown-menu-radio-item-indicator]]:right-[10px] ${
+                className={`cursor-pointer gap-[10px] rounded-[8px] py-[7px] pr-[34px] pl-[10px] focus:bg-white/[0.07] [&_svg]:!size-[14px] [&_svg]:stroke-[3] [&_svg]:text-brand-link-hover [&>[data-slot=dropdown-menu-radio-item-indicator]]:right-[10px] ${
                   compact ? "min-h-[44px] text-[14px]" : "min-h-[36px] text-[13.5px]"
                 } ${option.selected ? "bg-white/[0.05] text-white" : "text-[#cdd2da]"}`}
               >

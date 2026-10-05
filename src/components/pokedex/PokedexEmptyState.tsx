@@ -36,7 +36,7 @@ export function PokedexEmptyState({ search, filtered }: PokedexEmptyStateProps) 
       </p>
       <Link
         href="/pokedex"
-        className="font-heading inline-flex h-[44px] w-full items-center justify-center rounded-[11px] bg-[linear-gradient(135deg,var(--brand-from),var(--brand-to))] px-[22px] text-[14px] font-bold text-white md:h-[42px] md:w-auto md:shadow-[0_8px_24px_rgba(196,79,224,0.28)]"
+        className="font-heading inline-flex h-[44px] w-full items-center justify-center rounded-[11px] bg-[linear-gradient(135deg,var(--brand-from),var(--brand-to))] px-[22px] text-[14px] font-bold text-brand-ink md:h-[42px] md:w-auto md:shadow-[0_8px_24px_rgba(63,217,138,0.28)]"
       >
         {text.action}
       </Link>

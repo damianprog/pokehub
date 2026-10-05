@@ -62,7 +62,7 @@ export function PokedexActiveFilters({ filters, total, matches }: PokedexActiveF
           <Link
             href="/pokedex"
             scroll={false}
-            className="flex-none px-[4px] text-[12.5px] font-semibold text-[var(--brand-to)] hover:text-[#d88ef0] md:ml-[4px] md:px-0 md:text-[13px]"
+            className="flex-none px-[4px] text-[12.5px] font-semibold text-brand-link hover:text-brand-link-hover md:ml-[4px] md:px-0 md:text-[13px]"
           >
             Clear all
             <PokedexLinkPending />

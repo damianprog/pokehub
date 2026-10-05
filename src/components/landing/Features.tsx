@@ -1,16 +1,16 @@
 const FEATURES = [
   {
     icon: "★",
-    iconColor: "#ff9a6b",
-    iconBg: "linear-gradient(135deg, rgba(255,122,69,0.2), rgba(196,79,224,0.2))",
-    iconBorder: "1px solid rgba(255,122,69,0.3)",
+    iconColor: "#8ff0b8",
+    iconBg: "linear-gradient(135deg, rgba(198,243,107,0.18), rgba(63,217,138,0.18))",
+    iconBorder: "1px solid rgba(63,217,138,0.3)",
     title: "Rate & Review",
     body: "Write in-depth reviews for every Pokémon across all nine generations. Build your personal ratings and share your takes with the community.",
   },
   {
     icon: "◆",
     iconColor: "#7fb6ff",
-    iconBg: "linear-gradient(135deg, rgba(110,170,255,0.18), rgba(196,79,224,0.18))",
+    iconBg: "linear-gradient(135deg, rgba(110,170,255,0.18), rgba(63,217,138,0.18))",
     iconBorder: "1px solid rgba(110,170,255,0.3)",
     title: "Daily Packs",
     body: "Unwrap a free pack of 3 Pokémon every day. Chase genuine 1-in-4,096 shinies, build your collection, and trade duplicates for dust.",

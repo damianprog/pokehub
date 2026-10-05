@@ -106,7 +106,7 @@ export default async function PokemonReviewsPage({
 
       <WriteReviewButton
         isAuthenticated={isAuthenticated}
-        className="mb-[16px] flex h-[46px] w-full items-center justify-center rounded-[12px] text-[15px] shadow-[0_8px_24px_rgba(196,79,224,0.32)] md:hidden"
+        className="mb-[16px] flex h-[46px] w-full items-center justify-center rounded-[12px] text-[15px] shadow-[0_8px_24px_rgba(63,217,138,0.32)] md:hidden"
       />
 
       <ReviewSortChips slug={pokemon.slug} activeSort={sort} />

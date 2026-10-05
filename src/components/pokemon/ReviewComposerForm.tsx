@@ -114,7 +114,7 @@ export function ReviewComposerForm({
       <div
         className={`rounded-[13px] border bg-[#0f1216] p-[14px_15px] ${
           reviewText
-            ? "border-[rgba(196,79,224,0.35)] shadow-[0_0_0_3px_rgba(196,79,224,0.1)]"
+            ? "border-[rgba(63,217,138,0.35)] shadow-[0_0_0_3px_rgba(63,217,138,0.1)]"
             : "border-white/[0.08]"
         }`}
       >

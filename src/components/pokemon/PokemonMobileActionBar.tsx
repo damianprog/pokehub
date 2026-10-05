@@ -19,7 +19,7 @@ export function PokemonMobileActionBar({ isAuthenticated }: PokemonMobileActionB
       </button>
       <WriteReviewButton
         isAuthenticated={isAuthenticated}
-        className="h-[46px] flex-1 rounded-[12px] text-[15px] shadow-[0_6px_18px_rgba(196,79,224,0.32)]"
+        className="h-[46px] flex-1 rounded-[12px] text-[15px] shadow-[0_6px_18px_rgba(63,217,138,0.32)]"
       />
     </div>
   );

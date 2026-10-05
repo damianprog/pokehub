@@ -10,7 +10,7 @@ function verificationEmailHtml(name: string | null, verifyUrl: string): string {
       <p>${greeting}</p>
       <p>Confirm your email address to finish setting up your PokeHub account.</p>
       <p>
-        <a href="${verifyUrl}" style="display: inline-block; background: #c44fe0; color: #fff; padding: 12px 20px; border-radius: 10px; text-decoration: none; font-weight: 600;">
+        <a href="${verifyUrl}" style="display: inline-block; background: #3fd98a; color: #0b1f12; padding: 12px 20px; border-radius: 10px; text-decoration: none; font-weight: 600;">
           Verify email
         </a>
       </p>

@@ -18,7 +18,7 @@ export function NavAuthButtons() {
       </Button>
       <Button
         size="lg"
-        className="rounded-[9px] border-0 bg-[linear-gradient(135deg,var(--brand-from),var(--brand-to))] px-3 text-sm font-bold whitespace-nowrap text-white shadow-[0_4px_14px_rgba(196,79,224,0.32)] hover:brightness-110 sm:px-[17px]"
+        className="rounded-[9px] border-0 bg-[linear-gradient(135deg,var(--brand-from),var(--brand-to))] px-3 text-sm font-bold whitespace-nowrap text-brand-ink shadow-[0_4px_14px_rgba(63,217,138,0.32)] hover:brightness-110 sm:px-[17px]"
         onClick={() => open("signup")}
       >
         Sign up free

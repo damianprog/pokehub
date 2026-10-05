@@ -10,7 +10,7 @@ export function HeroSignupButton() {
   return (
     <Button
       size="lg"
-      className="h-[50px] rounded-[13px] border-0 bg-[linear-gradient(135deg,var(--brand-from),var(--brand-to))] px-[30px] text-base font-bold text-white shadow-[0_8px_26px_rgba(196,79,224,0.38)] hover:brightness-110"
+      className="h-[50px] rounded-[13px] border-0 bg-[linear-gradient(135deg,var(--brand-from),var(--brand-to))] px-[30px] text-base font-bold text-brand-ink shadow-[0_8px_26px_rgba(63,217,138,0.38)] hover:brightness-110"
       onClick={() => open("signup")}
     >
       Start for free

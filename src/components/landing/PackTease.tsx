@@ -29,7 +29,7 @@ const PACK_CARDS = [
   {
     name: "Charizard",
     spriteUrl: `${SPRITE_BASE}/shiny/6.png`,
-    background: "radial-gradient(circle at 50% 70%, #ffd07a, #c44fe0 78%)",
+    background: "radial-gradient(circle at 50% 70%, #ffd07a, #2fbf78 78%)",
     border: undefined as string | undefined,
     boxShadow: undefined as string | undefined,
     topOffset: -8,
@@ -123,8 +123,8 @@ export function PackTease() {
       <div
         className="relative grid grid-cols-1 gap-12 overflow-hidden rounded-[22px] p-8 md:grid-cols-[1fr_460px] md:gap-12 md:p-[48px_52px]"
         style={{
-          background: "linear-gradient(120deg, #1a1626, #221836 50%, #1a1626)",
-          border: "1px solid rgba(196,79,224,0.2)",
+          background: "linear-gradient(120deg, #121c17, #13241b 50%, #121c17)",
+          border: "1px solid rgba(63,217,138,0.2)",
         }}
       >
         {/* Decorative glow orb */}
@@ -135,7 +135,7 @@ export function PackTease() {
             right: "180px",
             width: "320px",
             height: "320px",
-            background: "rgba(196,79,224,0.06)",
+            background: "rgba(63,217,138,0.06)",
           }}
         />
 
@@ -178,10 +178,10 @@ export function PackTease() {
 
           {/* CTA */}
           <button
-            className="h-12 cursor-pointer rounded-[12px] border-0 px-7 text-[15px] font-bold text-white"
+            className="h-12 cursor-pointer rounded-[12px] border-0 px-7 text-[15px] font-bold text-brand-ink"
             style={{
-              background: "linear-gradient(135deg, #ff7a45, #c44fe0)",
-              boxShadow: "0 8px 24px rgba(196,79,224,0.35)",
+              background: "linear-gradient(135deg, var(--brand-from), var(--brand-to))",
+              boxShadow: "0 8px 24px rgba(63,217,138,0.35)",
             }}
           >
             Claim your first pack

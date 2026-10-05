@@ -109,7 +109,7 @@ export function SignupForm({ onDone, onPhaseChange }: SignupFormProps) {
   if (phase === "success") {
     return (
       <div className="text-center">
-        <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-[rgba(196,79,224,0.12)] text-2xl">
+        <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-[rgba(63,217,138,0.12)] text-2xl">
           ✉️
         </div>
         <h3 className="mt-0 mb-2 font-heading font-bold text-[19px]">Check your email</h3>
@@ -127,7 +127,7 @@ export function SignupForm({ onDone, onPhaseChange }: SignupFormProps) {
           type="button"
           onClick={handleResend}
           disabled={resending || resent}
-          className="mt-4 w-full text-[13px] font-semibold text-brand-to disabled:opacity-60"
+          className="mt-4 w-full text-[13px] font-semibold text-brand-link hover:text-brand-link-hover disabled:opacity-60"
         >
           {resent ? "Verification email sent" : resending ? "Sending…" : "Resend verification email"}
         </button>

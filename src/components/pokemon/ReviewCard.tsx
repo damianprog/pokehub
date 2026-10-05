@@ -4,12 +4,12 @@ import type { ReactNode } from "react";
 import { formatRatingValue, toFillPercent } from "@/lib/rating";
 
 const VARIANT_BORDER_CLASSES = {
-  pinned: "border-[rgba(196,79,224,0.22)] shadow-[inset_3px_0_0_0_rgba(196,79,224,0.55)]",
+  pinned: "border-[rgba(63,217,138,0.22)] shadow-[inset_3px_0_0_0_rgba(63,217,138,0.55)]",
   default: "border-white/[0.06]",
 } as const;
 
 const AVATAR_CLASSES =
-  "flex size-[30px] flex-none items-center justify-center overflow-hidden rounded-full bg-[linear-gradient(135deg,#6a5acd,var(--brand-to))] text-[11px] font-extrabold text-white md:size-[34px] md:text-[12px]";
+  "flex size-[30px] flex-none items-center justify-center overflow-hidden rounded-full bg-[linear-gradient(135deg,#1fa58c,var(--brand-to))] text-[11px] font-extrabold text-white md:size-[34px] md:text-[12px]";
 
 interface ReviewCardProps {
   username: string;

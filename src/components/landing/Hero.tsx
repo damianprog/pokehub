@@ -11,9 +11,9 @@ export function Hero() {
     <section className="mx-auto grid w-full max-w-[1180px] grid-cols-1 items-center gap-12 px-4 py-14 sm:px-[26px] lg:grid-cols-[1fr_500px] lg:gap-[60px] lg:py-[88px]">
       {/* Text column */}
       <div>
-        <div className="mb-7 inline-flex h-7 items-center gap-2 rounded-lg border border-brand-to/25 bg-brand-to/10 px-[13px]">
+        <div className="mb-7 inline-flex h-7 items-center gap-2 rounded-lg border border-brand-to/28 bg-brand-to/12 px-[13px]">
           <span className="size-1.5 shrink-0 rounded-full bg-brand-to" />
-          <span className="text-xs font-bold tracking-wide text-[#d88ef0]">
+          <span className="text-xs font-bold tracking-wide text-brand-link-hover">
             214,000 trainers &amp; counting
           </span>
         </div>
@@ -78,10 +78,10 @@ export function Hero() {
             name="Charizard"
             caption="✦ SHINY · ULTRA RARE"
             spriteUrl={`${SPRITE_BASE}/shiny/6.png`}
-            background="radial-gradient(circle at 50% 72%, #ffd07a, #c44fe0 78%)"
+            background="radial-gradient(circle at 50% 72%, #ffd07a, #2fbf78 78%)"
             captionColor="#ffffff"
             shiny
-            className="h-[294px] w-[210px] rounded-[18px] shadow-[0_28px_64px_rgba(196,79,224,0.48)]"
+            className="h-[294px] w-[210px] rounded-[18px] shadow-[0_28px_64px_rgba(63,217,138,0.48)]"
           />
         </div>
 

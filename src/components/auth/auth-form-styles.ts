@@ -1,17 +1,17 @@
 export const fieldLabelClass = "text-[12.5px] font-semibold text-muted-foreground";
 
 export const inputClass =
-  "w-full h-[46px] bg-[rgba(255,255,255,0.05)] border rounded-[11px] px-[14px] text-[14.5px] text-foreground outline-none transition-colors";
+  "w-full h-[46px] bg-[rgba(255,255,255,0.05)] border rounded-[11px] px-[14px] text-[14.5px] text-foreground outline-none transition-colors focus:border-[rgba(63,217,138,0.55)] focus:bg-[rgba(255,255,255,0.07)]";
 
 export const inputBorderClass = "border-[rgba(255,255,255,0.1)]";
 export const inputErrorBorderClass = "border-[rgba(224,74,74,0.55)]";
 
 export const submitBtnClass =
-  "w-full h-12 rounded-[12px] bg-gradient-to-br from-brand-from to-brand-to font-bold text-base text-white shadow-[0_6px_20px_rgba(196,79,224,0.32)] disabled:opacity-60 disabled:cursor-not-allowed";
+  "w-full h-12 rounded-[12px] bg-gradient-to-br from-brand-from to-brand-to font-bold text-base text-brand-ink shadow-[0_6px_20px_rgba(63,217,138,0.32)] disabled:opacity-60 disabled:cursor-not-allowed";
 
 export const footerTextClass = "text-center text-[13.5px] text-dim-foreground";
 
-export const footerLinkClass = "text-brand-to font-semibold";
+export const footerLinkClass = "text-brand-link font-semibold hover:text-brand-link-hover";
 
 export const fieldErrorClass = "text-[12.5px] text-[#f4a8a8] mt-[6px]";
 

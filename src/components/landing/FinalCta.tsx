@@ -11,7 +11,7 @@ export function FinalCta() {
       style={{
         borderTop: "1px solid rgba(255,255,255,0.06)",
         background:
-          "radial-gradient(1000px 400px at 50% 0%, rgba(196,79,224,0.07), transparent)",
+          "radial-gradient(1000px 400px at 50% 0%, rgba(63,217,138,0.07), transparent)",
       }}
     >
       <h2 className="font-heading m-0 mb-[14px] text-[48px] font-extrabold leading-tight tracking-[-0.03em]">
@@ -29,10 +29,10 @@ export function FinalCta() {
 
       <div className="mb-5 flex items-center justify-center gap-3">
         <button
-          className="h-[52px] cursor-pointer rounded-[13px] border-0 px-[34px] text-[17px] font-bold text-white"
+          className="h-[52px] cursor-pointer rounded-[13px] border-0 px-[34px] text-[17px] font-bold text-brand-ink"
           style={{
-            background: "linear-gradient(135deg, #ff7a45, #c44fe0)",
-            boxShadow: "0 10px 30px rgba(196,79,224,0.38)",
+            background: "linear-gradient(135deg, var(--brand-from), var(--brand-to))",
+            boxShadow: "0 10px 30px rgba(63,217,138,0.38)",
           }}
           onClick={() => open("signup")}
         >
@@ -56,7 +56,7 @@ export function FinalCta() {
         Already a trainer?{" "}
         <button
           className="cursor-pointer border-0 bg-transparent p-0 text-[13px] font-semibold"
-          style={{ color: "#c44fe0" }}
+          style={{ color: "var(--brand-link)" }}
           onClick={() => open("login")}
         >
           Log in
