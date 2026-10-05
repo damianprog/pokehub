@@ -147,12 +147,12 @@ export function PackTease() {
             className="mb-[18px] inline-flex h-[26px] items-center gap-[7px] rounded-[7px] px-[11px]"
             style={{
               background:
-                "linear-gradient(135deg, rgba(255,216,107,0.15), rgba(255,158,216,0.15))",
+                "linear-gradient(135deg, rgba(255,216,107,0.15), rgba(63,217,138,0.15))",
               border: "1px solid rgba(255,200,150,0.3)",
             }}
           >
             <span
-              className="text-[11px] font-extrabold tracking-[0.1em] bg-[linear-gradient(90deg,#ffd86b,#ff9ed8)] bg-clip-text text-transparent"
+              className="text-[11px] font-extrabold tracking-[0.1em] bg-[linear-gradient(90deg,#ffd86b,#8ff0b8)] bg-clip-text text-transparent"
             >
               ✦ FREE DAILY PACK
             </span>
