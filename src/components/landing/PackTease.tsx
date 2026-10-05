@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { RARITY_CARD_COLORS } from "@/lib/rarity-colors";
 
 const SPRITE_BASE =
   "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork";
@@ -18,12 +19,12 @@ const PACK_CARDS = [
   {
     name: "Gengar",
     spriteUrl: `${SPRITE_BASE}/94.png`,
-    background: "radial-gradient(circle at 50% 70%, #8b6fd4, #2e1e5a)",
-    border: "1px solid rgba(150,120,220,0.38)",
-    boxShadow: "0 0 18px rgba(139,111,212,0.25)",
+    background: `radial-gradient(circle at 50% 70%, ${RARITY_CARD_COLORS.RARE.gradient})`,
+    border: `1px solid ${RARITY_CARD_COLORS.RARE.border}`,
+    boxShadow: `0 0 18px ${RARITY_CARD_COLORS.RARE.glow}`,
     topOffset: 0,
     rarity: "RARE",
-    rarityColor: "#c4aaf0",
+    rarityColor: RARITY_CARD_COLORS.RARE.caption,
     shiny: false,
   },
   {

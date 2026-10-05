@@ -7,6 +7,7 @@ export function PokemonCard({
   spriteUrl,
   background,
   captionColor,
+  borderColor,
   shiny = false,
   className,
 }: {
@@ -15,6 +16,8 @@ export function PokemonCard({
   spriteUrl: string;
   background: string;
   captionColor: string;
+  /** Optional 1px border, e.g. a rarity tier's border color. */
+  borderColor?: string;
   shiny?: boolean;
   className?: string;
 }) {
@@ -25,7 +28,7 @@ export function PokemonCard({
         shiny && "animate-shiny-pulse",
         className
       )}
-      style={{ background }}
+      style={{ background, border: borderColor ? `1px solid ${borderColor}` : undefined }}
     >
       <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,rgba(255,255,255,0.04)_0_2px,transparent_2px_11px)]" />
       {shiny && (

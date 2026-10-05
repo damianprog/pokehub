@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PokemonCard } from "@/components/landing/PokemonCard";
 import { HeroSignupButton } from "@/components/landing/HeroSignupButton";
+import { RARITY_CARD_COLORS } from "@/lib/rarity-colors";
 
 const SPRITE_BASE =
   "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork";
@@ -61,16 +62,18 @@ export function Hero() {
           name="Gengar"
           caption="GHOST · RARE"
           spriteUrl={`${SPRITE_BASE}/94.png`}
-          background="radial-gradient(circle at 50% 65%, #8b6fd4, #2e1e5a)"
-          captionColor="#c4aaf0"
+          background={`radial-gradient(circle at 50% 65%, ${RARITY_CARD_COLORS.RARE.gradient})`}
+          captionColor={RARITY_CARD_COLORS.RARE.caption}
+          borderColor="rgba(63,217,170,0.3)"
           className="absolute top-[50px] left-[38px] h-[272px] w-[195px] -rotate-[9deg] opacity-70"
         />
         <PokemonCard
           name="Gardevoir"
           caption="FAIRY · ULTRA RARE"
           spriteUrl={`${SPRITE_BASE}/282.png`}
-          background="radial-gradient(circle at 50% 65%, #e89ec8, #7a2a6a)"
-          captionColor="#e8c4d8"
+          background={`radial-gradient(circle at 50% 65%, ${RARITY_CARD_COLORS.ULTRA_RARE.gradient})`}
+          captionColor={RARITY_CARD_COLORS.ULTRA_RARE.caption}
+          borderColor={RARITY_CARD_COLORS.ULTRA_RARE.border}
           className="absolute top-[38px] right-[28px] h-[272px] w-[195px] rotate-[8deg] opacity-70"
         />
         <div className="absolute top-[14px] left-1/2 z-10 -translate-x-1/2 animate-float">
