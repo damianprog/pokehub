@@ -54,6 +54,35 @@ export async function setUserFavorite(userId: string, pokemonId: number, isFavor
   });
 }
 
+export interface ViewerPokemonFlags {
+  /** Half-star units, or `null` when the viewer hasn't rated it. */
+  rating: number | null;
+  isFavorite: boolean;
+  isWishlist: boolean;
+}
+
+/** A signed-in viewer's flags for a Pokémon they have no `UserPokemon` row for: nothing set. */
+export const NO_VIEWER_FLAGS: ViewerPokemonFlags = { rating: null, isFavorite: false, isWishlist: false };
+
+/**
+ * The viewer's rating + favorite/wishlist flags for a batch of Pokémon, in
+ * one query — the Pokédex grid's personal layer. Pokémon the viewer has no
+ * row for are absent from the map; callers fall back to `NO_VIEWER_FLAGS`. Not wrapped in React
+ * `cache()`: a fresh `pokemonIds` array would never hit it.
+ */
+export async function getViewerPokemonFlags(
+  userId: string,
+  pokemonIds: number[],
+): Promise<Map<number, ViewerPokemonFlags>> {
+  const rows = await prisma.userPokemon.findMany({
+    where: { userId, pokemonId: { in: pokemonIds } },
+    select: { pokemonId: true, rating: true, isFavorite: true, isWishlist: true },
+  });
+  return new Map(
+    rows.map(({ pokemonId, ...flags }) => [pokemonId, flags]),
+  );
+}
+
 /** Thrown by `setUserWishlist` when adding would exceed `WISHLIST_CAP`. */
 export class WishlistAtCapacityError extends Error {
   constructor() {

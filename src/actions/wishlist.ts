@@ -34,6 +34,7 @@ export async function setWishlist(
   try {
     await setUserWishlist(session.user.id, parsed.data.pokemonId, parsed.data.isWishlist);
     revalidatePath(`/p/${parsed.data.slug}`);
+    revalidatePath("/pokedex");
     return { success: true, data: null };
   } catch (error) {
     if (error instanceof WishlistAtCapacityError) {

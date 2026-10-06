@@ -2,6 +2,7 @@ import {
   NO_POKEDEX_FILTERS,
   POKEDEX_GENERATIONS,
   POKEDEX_RARITIES,
+  POKEDEX_STATUSES,
   POKEDEX_TYPES,
   pokedexHref,
   toggleType,
@@ -14,6 +15,8 @@ import { PokedexSortMenu } from "@/components/pokedex/PokedexSortMenu";
 interface PokedexFilterPanelProps {
   /** Active filters, or `null` for the loading skeleton (same layout, nothing interactive). */
   filters: PokedexFilters | null;
+  /** Shows the "My status" menu — signed-in viewers only. */
+  signedIn: boolean;
 }
 
 const ROW_LABEL =
@@ -43,8 +46,19 @@ function rarityOptions(filters: PokedexFilters): PokedexRefineOption[] {
   }));
 }
 
+function statusOptions(filters: PokedexFilters): PokedexRefineOption[] {
+  return [
+    { status: null, label: "Any status" },
+    ...POKEDEX_STATUSES.map((status) => ({ status, label: status.label })),
+  ].map(({ status, label }) => ({
+    label,
+    href: pokedexHref({ ...filters, status }),
+    selected: filters.status?.key === status?.key,
+  }));
+}
+
 /** Desktop-only filter card: the Type chip row, then the Refine row's menus with Sort on the far right. Mobile filters arrive with slice 07's sheet. */
-export function PokedexFilterPanel({ filters }: PokedexFilterPanelProps) {
+export function PokedexFilterPanel({ filters, signedIn }: PokedexFilterPanelProps) {
   const current = filters ?? NO_POKEDEX_FILTERS;
   const disabled = filters === null;
 
@@ -80,6 +94,15 @@ export function PokedexFilterPanel({ filters }: PokedexFilterPanelProps) {
           options={rarityOptions(current)}
           disabled={disabled}
         />
+        {signedIn && (
+          <PokedexRefineMenu
+            label="My status"
+            value={current.status?.label ?? "All"}
+            active={current.status !== null}
+            options={statusOptions(current)}
+            disabled={disabled}
+          />
+        )}
         <div className="flex-1" />
         <PokedexSortMenu filters={current} disabled={disabled} />
       </div>

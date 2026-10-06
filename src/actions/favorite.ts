@@ -38,6 +38,7 @@ export async function setFavorite(
       parsed.data.isFavorite,
     );
     revalidatePath(`/p/${parsed.data.slug}`);
+    revalidatePath("/pokedex");
     return { success: true, data: null };
   } catch {
     return { success: false, error: "Couldn't update your favorite. Try again." };

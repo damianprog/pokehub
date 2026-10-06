@@ -47,6 +47,16 @@ export const POKEDEX_RARITIES = [
 
 export type PokedexRarity = (typeof POKEDEX_RARITIES)[number];
 
+/** "My status" options in menu order: URL key and label. Signed-in only — the page drops it for logged-out visitors. */
+export const POKEDEX_STATUSES = [
+  { key: "rated", label: "Rated" },
+  { key: "not-rated", label: "Not rated" },
+  { key: "favorites", label: "Favorites" },
+  { key: "wishlist", label: "Wishlist" },
+] as const;
+
+export type PokedexStatus = (typeof POKEDEX_STATUSES)[number];
+
 /** Sort options in menu order. The first (dex number) is the default and never appears in the URL. */
 export const POKEDEX_SORTS = [
   { key: "dex", label: "Dex number" },
@@ -68,6 +78,8 @@ export interface PokedexFilters {
   gen: number | null;
   /** Selected rarity tier, or `null` for all. */
   rarity: PokedexRarity | null;
+  /** The viewer's relationship filter, or `null` for any status. */
+  status: PokedexStatus | null;
   /** Result order. Not a filter — it never narrows the list. */
   sort: PokedexSort;
 }
@@ -77,6 +89,7 @@ export const NO_POKEDEX_FILTERS: PokedexFilters = {
   types: [],
   gen: null,
   rarity: null,
+  status: null,
   sort: DEFAULT_POKEDEX_SORT,
 };
 
@@ -95,6 +108,10 @@ function parseRarity(value: string | undefined): PokedexRarity | null {
   return POKEDEX_RARITIES.find((rarity) => rarity.key === value) ?? null;
 }
 
+function parseStatus(value: string | undefined): PokedexStatus | null {
+  return POKEDEX_STATUSES.find((status) => status.key === value) ?? null;
+}
+
 function parseSort(value: string | undefined): PokedexSort {
   return POKEDEX_SORTS.find((sort) => sort.key === value) ?? DEFAULT_POKEDEX_SORT;
 }
@@ -104,6 +121,7 @@ export function parsePokedexFilters(params: {
   type?: string;
   gen?: string;
   rarity?: string;
+  status?: string;
   sort?: string;
 }): PokedexFilters {
   return {
@@ -111,13 +129,14 @@ export function parsePokedexFilters(params: {
     types: parseTypes(params.type),
     gen: parseGen(params.gen),
     rarity: parseRarity(params.rarity),
+    status: parseStatus(params.status),
     sort: parseSort(params.sort),
   };
 }
 
-/** Whether a type, generation or rarity filter is active (the search term doesn't count). */
-export function hasPokedexFilters({ types, gen, rarity }: PokedexFilters): boolean {
-  return types.length > 0 || gen !== null || rarity !== null;
+/** Whether a type, generation, rarity or status filter is active (the search term doesn't count). */
+export function hasPokedexFilters({ types, gen, rarity, status }: PokedexFilters): boolean {
+  return types.length > 0 || gen !== null || rarity !== null || status !== null;
 }
 
 /** `/pokedex` URL for `params`, or the bare path when there are none. */
@@ -134,6 +153,7 @@ export function pokedexHref(filters: PokedexFilters, count?: number): string {
   if (filters.types.length > 0) params.set("type", filters.types.join(","));
   if (filters.gen !== null) params.set("gen", String(filters.gen));
   if (filters.rarity !== null) params.set("rarity", filters.rarity.key);
+  if (filters.status !== null) params.set("status", filters.status.key);
   if (filters.sort.key !== DEFAULT_POKEDEX_SORT.key) params.set("sort", filters.sort.key);
   if (count !== undefined) params.set("count", String(count));
   return pokedexUrl(params);

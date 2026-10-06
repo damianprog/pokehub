@@ -33,6 +33,13 @@ function buildChips(filters: PokedexFilters) {
       removeHref: pokedexHref({ ...filters, rarity: null }),
     });
   }
+  if (filters.status !== null) {
+    chips.push({
+      label: filters.status.label,
+      color: CHIP_TEXT,
+      removeHref: pokedexHref({ ...filters, status: null }),
+    });
+  }
   if (filters.search) {
     chips.push({
       label: `“${filters.search}”`,
@@ -44,7 +51,7 @@ function buildChips(filters: PokedexFilters) {
 }
 
 /**
- * Removable chips for every active filter (types, generation, search), "Clear
+ * Removable chips for every active filter (types, generation, rarity, status, search), "Clear
  * all" and the "Showing N of 1,025" count. Desktop: one row, count on the
  * right. Mobile: chips scroll sideways edge to edge, count on its own line.
  */

@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@/generated/prisma/client";
-import type { PokedexFilters } from "@/lib/pokedex-filters";
+import type { PokedexFilters, PokedexStatus } from "@/lib/pokedex-filters";
 import { getRatingSummaries, type RatingSummary } from "@/lib/user-pokemon";
 
 export const getPokemon = cache((slug: string) =>
@@ -48,14 +48,43 @@ function pokedexSearchWhere(search: string): Prisma.PokemonWhereInput {
   return { OR: conditions };
 }
 
-/** Search AND type (any of the selected) AND generation AND rarity. */
-function pokedexWhere({ search, types, gen, rarity }: PokedexFilters): Prisma.PokemonWhereInput {
+/**
+ * The viewer's "My status" condition. Rated and Not rated share the inner
+ * condition and differ in the quantifier (`some` vs `none`), so "Not rated"
+ * also matches Pokémon the viewer has no row for at all.
+ */
+function pokedexStatusWhere(
+  status: PokedexStatus,
+  viewerId: string,
+): Prisma.PokemonWhereInput {
+  switch (status.key) {
+    case "rated":
+      return { userPokemons: { some: { userId: viewerId, rating: { not: null } } } };
+    case "not-rated":
+      return { userPokemons: { none: { userId: viewerId, rating: { not: null } } } };
+    case "favorites":
+      return { userPokemons: { some: { userId: viewerId, isFavorite: true } } };
+    case "wishlist":
+      return { userPokemons: { some: { userId: viewerId, isWishlist: true } } };
+  }
+}
+
+/**
+ * Search AND type (any of the selected) AND generation AND rarity AND the
+ * viewer's status. Without a viewer the status condition is skipped, so a
+ * logged-out `status` param can't narrow anything.
+ */
+function pokedexWhere(
+  { search, types, gen, rarity, status }: PokedexFilters,
+  viewerId: string | null,
+): Prisma.PokemonWhereInput {
   return {
     AND: [
       pokedexSearchWhere(search),
       types.length > 0 ? { types: { hasSome: types } } : {},
       gen !== null ? { generation: gen } : {},
       rarity !== null ? { rarity: rarity.tier } : {},
+      status !== null && viewerId !== null ? pokedexStatusWhere(status, viewerId) : {},
     ],
   };
 }
@@ -118,8 +147,12 @@ async function getRatingSortedPage(
 // in React `cache()` (it compares by identity) — the page calls each once.
 
 /** The first `count` Pokémon matching `filters`, in the order `filters.sort` asks for. Dex number breaks every tie. */
-export function getPokedexPage(count: number, filters: PokedexFilters): Promise<PokedexEntry[]> {
-  const where = pokedexWhere(filters);
+export function getPokedexPage(
+  count: number,
+  filters: PokedexFilters,
+  viewerId: string | null,
+): Promise<PokedexEntry[]> {
+  const where = pokedexWhere(filters, viewerId);
   const sortKey = filters.sort.key;
 
   if (sortKey === "highest-rated" || sortKey === "most-rated") {
@@ -135,8 +168,8 @@ export function getPokedexPage(count: number, filters: PokedexFilters): Promise<
 }
 
 /** How many Pokémon match `filters` — drives "Load more", the count line and the no-results state. */
-export function getPokedexMatchCount(filters: PokedexFilters) {
-  return prisma.pokemon.count({ where: pokedexWhere(filters) });
+export function getPokedexMatchCount(filters: PokedexFilters, viewerId: string | null) {
+  return prisma.pokemon.count({ where: pokedexWhere(filters, viewerId) });
 }
 
 // Not wrapped in React `cache()` — each call should roll a fresh random pick,
