@@ -19,7 +19,7 @@ export default async function PokedexLoading() {
     <div>
       <PokedexHeader total={null} search={<PokedexSearchPlaceholder />} />
       <PokedexFilterPanel filters={null} signedIn={Boolean(session?.user?.id)} />
-      <PokedexMobileSortRow filters={null} />
+      <PokedexMobileSortRow filters={null} sheet={null} />
       <PokedexActiveFilters filters={null} total={null} matches={null} />
       <PokedexGrid>
         {Array.from({ length: DESKTOP_PLACEHOLDERS }, (_, index) => (

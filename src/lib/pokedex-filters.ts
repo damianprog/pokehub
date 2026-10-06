@@ -139,15 +139,39 @@ export function hasPokedexFilters({ types, gen, rarity, status }: PokedexFilters
   return types.length > 0 || gen !== null || rarity !== null || status !== null;
 }
 
+/** How many filters are active — one per type, plus generation, rarity and status. The mobile Filters badge. */
+export function countPokedexFilters({ types, gen, rarity, status }: PokedexFilters): number {
+  return types.length + [gen, rarity, status].filter((value) => value !== null).length;
+}
+
+/** `filters` with every type, generation, rarity and status cleared — search and sort kept. */
+export function resetPokedexFilters(filters: PokedexFilters): PokedexFilters {
+  return { ...filters, types: [], gen: null, rarity: null, status: null };
+}
+
+// URLSearchParams encodes the comma; keep `type=fire,dragon` readable.
+function encodePokedexParams(params: URLSearchParams): string {
+  return params.toString().replace(/%2C/g, ",");
+}
+
 /** `/pokedex` URL for `params`, or the bare path when there are none. */
 export function pokedexUrl(params: URLSearchParams): string {
-  // URLSearchParams encodes the comma; keep `type=fire,dragon` readable.
-  const qs = params.toString().replace(/%2C/g, ",");
+  const qs = encodePokedexParams(params);
   return qs ? `/pokedex?${qs}` : "/pokedex";
 }
 
 /** `/pokedex` URL for `filters` — omits empty params, and `count` unless given. */
 export function pokedexHref(filters: PokedexFilters, count?: number): string {
+  const qs = pokedexQuery(filters, count);
+  return qs ? `/pokedex?${qs}` : "/pokedex";
+}
+
+/**
+ * Query string (no leading `?`) for `filters`, `""` when there's nothing to
+ * set. Shared by `pokedexHref` and the count endpoint's URL, so both carry
+ * identical params.
+ */
+export function pokedexQuery(filters: PokedexFilters, count?: number): string {
   const params = new URLSearchParams();
   if (filters.search) params.set("q", filters.search);
   if (filters.types.length > 0) params.set("type", filters.types.join(","));
@@ -156,7 +180,7 @@ export function pokedexHref(filters: PokedexFilters, count?: number): string {
   if (filters.status !== null) params.set("status", filters.status.key);
   if (filters.sort.key !== DEFAULT_POKEDEX_SORT.key) params.set("sort", filters.sort.key);
   if (count !== undefined) params.set("count", String(count));
-  return pokedexUrl(params);
+  return encodePokedexParams(params);
 }
 
 /** `filters` with `type` toggled on or off, kept in canonical order. */

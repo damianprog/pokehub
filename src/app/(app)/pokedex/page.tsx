@@ -76,7 +76,10 @@ export default async function PokedexPage({
     <div className="group/pokedex">
       <PokedexHeader total={total} search={<PokedexSearch query={filters.search} />} />
       <PokedexFilterPanel filters={filters} signedIn={viewerId !== null} />
-      <PokedexMobileSortRow filters={filters} />
+      <PokedexMobileSortRow
+        filters={filters}
+        sheet={{ signedIn: viewerId !== null, total, matches }}
+      />
       <PokedexActiveFilters filters={filters} total={total} matches={matches} />
 
       {/* Dims while a search or filter change is loading — pending controls set `data-pending`. */}

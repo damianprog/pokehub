@@ -57,7 +57,7 @@ function statusOptions(filters: PokedexFilters): PokedexRefineOption[] {
   }));
 }
 
-/** Desktop-only filter card: the Type chip row, then the Refine row's menus with Sort on the far right. Mobile filters arrive with slice 07's sheet. */
+/** Desktop-only filter card: the Type chip row, then the Refine row's menus with Sort on the far right. Mobile uses `PokedexFiltersSheet` instead. */
 export function PokedexFilterPanel({ filters, signedIn }: PokedexFilterPanelProps) {
   const current = filters ?? NO_POKEDEX_FILTERS;
   const disabled = filters === null;
