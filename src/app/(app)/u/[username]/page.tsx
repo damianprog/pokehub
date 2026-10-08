@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getUserByUsername } from "@/lib/user";
-import { getPokemonsByIds } from "@/lib/pokemon";
+import { getPokemonCount, getPokemonsByIds } from "@/lib/pokemon";
 import { getRecentReviews } from "@/lib/user-pokemon";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { ProfileBioStats } from "@/components/profile/ProfileBioStats";
@@ -48,7 +48,10 @@ export default async function ProfilePage({
     };
   });
 
-  const recentActivity = await getRecentReviews(user.id);
+  const [recentActivity, pokemonCount] = await Promise.all([
+    getRecentReviews(user.id),
+    getPokemonCount(),
+  ]);
 
   return (
     <div>
@@ -66,7 +69,7 @@ export default async function ProfilePage({
           types={PLACEHOLDER_FAVORITE_TYPES.types}
           avgRating={PLACEHOLDER_FAVORITE_TYPES.avgRating}
           collectionCaught={PLACEHOLDER_FAVORITE_TYPES.collectionCaught}
-          collectionTotal={PLACEHOLDER_FAVORITE_TYPES.collectionTotal}
+          collectionTotal={pokemonCount}
         />
       </div>
     </div>

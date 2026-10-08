@@ -48,7 +48,11 @@ function TrendingCard({
   );
 }
 
-export function Trending() {
+interface TrendingProps {
+  pokemonCount: number;
+}
+
+export function Trending({ pokemonCount }: TrendingProps) {
   return (
     <section className="mx-auto max-w-[1180px] px-4 pb-[90px] sm:px-[26px]">
       <div className="mb-6 flex items-baseline justify-between">
@@ -72,7 +76,7 @@ export function Trending() {
             color: "#e8eaed",
           }}
         >
-          Rate all 1,302 Pokémon →
+          Rate all {pokemonCount.toLocaleString("en-US")} Pokémon →
         </Link>
       </div>
     </section>

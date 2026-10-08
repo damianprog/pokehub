@@ -7,7 +7,13 @@ import { RARITY_CARD_COLORS } from "@/lib/rarity-colors";
 const SPRITE_BASE =
   "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork";
 
-export function Hero() {
+interface HeroProps {
+  pokemonCount: number;
+}
+
+export function Hero({ pokemonCount }: HeroProps) {
+  const formattedCount = pokemonCount.toLocaleString("en-US");
+
   return (
     <section className="mx-auto grid w-full max-w-[1180px] grid-cols-1 items-center gap-12 px-4 py-14 sm:px-[26px] lg:grid-cols-[1fr_500px] lg:gap-[60px] lg:py-[88px]">
       {/* Text column */}
@@ -31,7 +37,7 @@ export function Hero() {
 
         <p className="mb-8 max-w-[430px] text-lg leading-relaxed text-muted-foreground">
           The community Pokédex — write reviews, build ranked lists, open
-          daily packs, and track your shiny luck across all 1,302.
+          daily packs, and track your shiny luck across all {formattedCount}.
         </p>
 
         <div className="mb-10 flex flex-wrap gap-3">
@@ -50,7 +56,7 @@ export function Hero() {
         <div className="flex items-center gap-7">
           <Stat value="8.4M" label="reviews written" />
           <Divider />
-          <Stat value="1,302" label="Pokémon rated" />
+          <Stat value={formattedCount} label="Pokémon rated" />
           <Divider />
           <Stat value="1 in 4,096" label="shiny odds" />
         </div>
