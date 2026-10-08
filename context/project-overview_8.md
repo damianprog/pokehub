@@ -3,7 +3,7 @@
 > **Status:** Planning / pre-MVP
 > **Name:** PokeHub
 > **Author:** Damian
-> **Last updated:** 2026-07-08
+> **Last updated:** 2026-10-08
 
 ---
 
@@ -100,7 +100,7 @@ Each pack contains **3 Pokémon**, each rolled independently against the rarity 
 
 | Source                    | Rate                          | Cooldown             |
 | ------------------------- | ----------------------------- | -------------------- |
-| `DAILY_FREE`              | 1 / day                       | 24h since last claim |
+| `DAILY_FREE`              | 1 / day                       | Resets 00:00 UTC     |
 | `ACTIVITY_REVIEW`         | 1 per first review of the day | Daily reset          |
 | `ACTIVITY_LIST`           | 1 per list created            | 1 / day              |
 | `ACTIVITY_LIKES_RECEIVED` | 1 per 5 likes earned          | Cap: 1 / day         |
@@ -108,6 +108,14 @@ Each pack contains **3 Pokémon**, each rolled independently against the rarity 
 | `DUST_PURCHASE`           | 1 per 100 dust                | No cooldown          |
 
 **Hard cap:** 5 earned packs per user per day (excluding daily free + dust purchases). Prevents spam-content gaming the system.
+
+**Daily free pack.** One per UTC day: it becomes claimable again at 00:00 UTC, not 24h after the last claim. A rolling 24h window drifts later every day for a user who opens a little later each time, until they skip a UTC day and break their streak. Streaks count UTC days, so the reset does too. It isn't stored in advance: it's available whenever `lastDailyAt` is before today's 00:00 UTC.
+
+**Earned packs are an inventory.** Earning a pack (any source except `DAILY_FREE`) creates an unopened `Pack` row (`grantedAt` set, `openedAt` null) instead of opening it on the spot, so earning one never interrupts a review or list flow. "Packs available" is the user's unopened rows. Opening one rolls its three slots and sets `openedAt`. The daily cap counts rows *granted* today (UTC) from capped sources, whether opened or not.
+
+**Streak days.** A UTC day counts toward the streak when the user opens their daily free pack that day. Opening only earned packs doesn't count. Each time the streak reaches a multiple of 7 (day 7, 14, 21…), one `STREAK_BONUS` pack is granted into the inventory.
+
+**Sources that wait on other features.** `ACTIVITY_LIST` and `ACTIVITY_LIKES_RECEIVED` can only be granted once lists and likes exist. Until then, they stay in the enum and nothing grants them.
 
 ### 4.3 Pity counters
 
@@ -118,12 +126,17 @@ Stored on `User`:
 
 Pity is per-user and persists across sessions.
 
+Exact rule: a counter counts *opened* packs in a row without that tier. The pack that would bring it to the threshold (the 20th pack in a row without a RARE+, the 50th without an ULTRA_RARE) is guaranteed one. If none of its three slots rolls that tier naturally, slot 3 is forced to it. A forced or natural ULTRA_RARE also counts as RARE+ and resets both counters. Shinies don't touch pity: they're a separate roll applied after the tier.
+
 ### 4.4 Duplicates & dust
 
 - Duplicate of a Pokémon you already have → `count` increments on `UserPokemon`.
 - User can manually dissolve duplicates: `dissolve(pokemonId)` → +10 dust, `count -= 1`.
 - 100 dust → buy 1 pack of type `DUST_PURCHASE` (counts toward earned pack cap).
 - Shiny duplicates: separate counter (`shinyCount`), worth 100 dust each on dissolve.
+- `count` is all copies, shiny included; `shinyCount` is how many of them are shiny. Regular copies are `count − shinyCount`.
+- You always keep one of each you own: one regular copy (if you have any) and one shiny copy (if you have any). So the dissolvable extras are (regular − 1) regular and (`shinyCount` − 1) shiny, never below zero. Dissolving a copy decrements `count`, and also `shinyCount` for a shiny. Dissolving never sets `isCaught` back to false. Shiny extras are opt-in when dissolving, never included by default.
+- Every dust change (dissolve, purchase, reward) writes a `DustTransaction` row **and** updates `User.dust` in the same transaction. The ledger is the audit trail and `User.dust` is the cached balance pages read. A spend uses a guarded decrement (only if `dust >= cost`), so concurrent purchases can't overdraw.
 
 ### 4.5 Wishlist boost (soft targeting)
 
@@ -260,7 +273,7 @@ model User {
   password      String?   // argon2/bcrypt hash — null for OAuth / magic-link users
 
   // Currency & progression
-  dust                    Int @default(0)
+  dust                    Int @default(0) // cached balance — kept in sync with DustTransaction in the same transaction
   packsSinceLastRare      Int @default(0)
   packsSinceLastUltraRare Int @default(0)
 
@@ -405,16 +418,18 @@ enum PackSource {
 }
 
 model Pack {
-  id       String     @id @default(cuid())
-  userId   String
-  type     PackType   @default(DAILY)
-  source   PackSource
-  openedAt DateTime   @default(now())
+  id        String     @id @default(cuid())
+  userId    String
+  type      PackType   @default(DAILY)
+  source    PackSource
+  grantedAt DateTime   @default(now())
+  openedAt  DateTime?  // null = unopened (in the user's inventory)
 
   user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   rolls PackRoll[]
 
   @@index([userId, openedAt])
+  @@index([userId, grantedAt]) // daily earned-pack cap
   @@index([source, openedAt])
 }
 
@@ -627,7 +642,8 @@ model DustTransaction {
 | `Pokemon.id` is `Int` (pokedex number)                   | Stable, externally meaningful, debugging-friendly. Pokédex numbers don't change.                                                               |
 | `Comment` uses polymorphic two-nullable-FK               | Comments need a single table for unified queries (user's all comments). CHECK constraint added via migration.                                  |
 | `signatureTeam` as `Int[]` rather than join table        | Always exactly 0–6 items, no metadata per slot, ordered. Array is the right primitive.                                                         |
-| `DustTransaction` as ledger                              | Source of truth for user's dust; balance = `SUM(amount)`. Audit trail for free, easy to debug "where did my dust go?".                         |
+| `DustTransaction` as ledger + cached `User.dust`         | Ledger is the audit trail ("where did my dust go?"); `User.dust` is the balance pages read, updated in the same transaction as each ledger row, so `SUM(amount) === dust` always holds. |
+| Unopened `Pack` rows as inventory (`openedAt` nullable)  | Earned packs wait to be opened without a separate inventory table, and keep their source until opened. The daily cap counts by `grantedAt`.          |
 | `FeedEvent.metadata` as `Json`                           | Flexibility for varied event types without schema migrations per new event. Trade-off: less type safety; document shapes in a TS union.        |
 | Rarity stored on both `Pokemon` and `PackRoll`           | Snapshot pattern: if rarity tiers are rebalanced, historical pulls preserve the rarity they were when rolled.                                  |
 | No `Session` model — JWT session strategy                | Credentials provider only works with JWT. Adapter persists User/Account/VerificationToken; sessions live in a signed cookie. See §14.          |
@@ -659,6 +675,7 @@ model DustTransaction {
 /review/[id]               Single review view (deep-link from feed/notifications)
 
 /packs                     Pack opening — daily + earned + dust shop
+/packs/duplicates          Dissolve duplicate copies for dust
 /packs/history             Past pack contents
 
 /discover                  Trending lists, top reviewers, popular Pokémon
@@ -792,7 +809,7 @@ If the GitHub repo ever changes its URL structure, we re-run the seeder. Cheap i
 
 Set `DEV_UNLOCK_ALL=true` in `.env.local` to:
 
-- Bypass daily pack cooldown (open infinite packs)
+- Bypass daily pack reset (open infinite packs)
 - Bypass earned pack daily cap
 - Unlock all Pro features
 - Bypass NextAuth (auto-login as test user)
@@ -808,7 +825,7 @@ export const DEV_UNLOCK_ALL =
 export async function canOpenDailyPack(user: User) {
   if (DEV_UNLOCK_ALL) return true;
   if (!user.lastDailyAt) return true;
-  return Date.now() - user.lastDailyAt.getTime() >= 24 * 3600 * 1000;
+  return user.lastDailyAt < startOfUtcDay(new Date()); // resets at 00:00 UTC (§4.2)
 }
 ```
 
@@ -916,6 +933,8 @@ async function openPack(userId: string, source: PackSource) {
 ```
 
 All in one transaction → atomic. If any step fails, no half-opened packs.
+
+The pseudocode shows the daily free pack, which is created and opened in one go. An earned pack already exists as an unopened row (§4.2), so step 3 becomes "set `openedAt` on that row (only if it's still null, and only if it belongs to the user) and create its rolls". The guarded update is what stops a double-click from opening the same pack twice.
 
 ### 10.4 Environment variables
 
@@ -1043,8 +1062,11 @@ Pokédex numbers are stable, externally meaningful, and debugging-friendly. URLs
 **`signatureTeam` as `Int[]` instead of join table.**
 Always 0–6 items, ordered, no per-slot metadata. Postgres array is the right primitive. A `SignatureTeamSlot` model adds a join for zero gain.
 
-**`DustTransaction` as ledger, not balance field.**
-User's dust balance = `SUM(amount)` over their transactions. Append-only ledger gives free audit trail, easy debugging ("where did my dust go?"), and concurrency safety. Standard double-entry-ish pattern.
+**`DustTransaction` ledger plus a cached `User.dust` balance.**
+The append-only ledger gives a free audit trail and easy debugging ("where did my dust go?"). `User.dust` is a cached balance updated in the same transaction as every ledger insert, so `SUM(amount)` and `dust` can't diverge. Pages that show the balance (the nav pill on every page, the packs screen) read one column instead of aggregating, and spends use a guarded decrement (`dust >= cost`) so concurrent purchases can't overdraw. Rejected: ledger-only, which runs an aggregate on every page render for a number that changes a few times a day.
+
+**Earned packs as unopened `Pack` rows.**
+`Pack.openedAt` is nullable, and an unopened row is a pack waiting in the user's inventory. Rejected: a counter on `User` (loses each waiting pack's source until it's opened) and opening on the spot (interrupts the review/list flow that earned it). The daily earned cap counts rows by `grantedAt`, so it can't be dodged by not opening.
 
 **`FeedEvent.metadata` as `Json` instead of typed columns.**
 Different event types carry different payloads (rare pull → pokemonId; list created → listId). Json + a TypeScript discriminated union for shape validation gives flexibility without per-event-type schema churn. Trade-off: weaker DB-level type safety, mitigated by Zod validation at write time.
@@ -1065,6 +1087,9 @@ Could ship without it (duplicates just accumulate, dissolution in v2), but the l
 
 **Streaks in v1.**
 Cost: one cron job + ~30 lines in pack-open flow. Benefit: strong retention hook (Duolingo, Wordle effect) and a `STREAK_BONUS` pack source that feeds the dust/pack economy. Edge-case timezones deferred — v1 treats "user's day" as UTC. `User.timezone` field added when someone complains.
+
+**Daily free pack resets at 00:00 UTC, not 24h after the last claim.**
+A rolling 24h cooldown drifts: a user who opens a little later each day eventually can't open on some UTC day, and their streak breaks through no fault of their own. Resetting on the same UTC day boundary that streaks use keeps the two consistent. The cost is that someone who opens at 23:59 UTC can open again a minute later, which is harmless.
 
 **Pity thresholds 20 (rare) / 50 (ultra rare).**
 Tunable. At daily-only cadence: ~3 weeks worst-case wait for a rare, ~7 weeks for a mythical. Tighten based on retention metrics post-launch.

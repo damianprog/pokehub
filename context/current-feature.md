@@ -1,18 +1,48 @@
-# Current Feature
+# Current Feature: Packs 01 · Daily pack open + reveal
 
 <!-- Feature name and short description -->
+
+Spec: `context/features/packs/packs-01-daily-pack-open-spec.md` (slice plan in `context/features/packs/overview.md`). Once per UTC day a signed-in user opens a free pack on the new `/packs` page and sees three Pokémon revealed one by one, which land in their collection.
 
 ## Status
 
 <!-- Not Started | In Progress | Completed -->
 
+Not Started
+
 ## Goals
 
 <!-- Goals and requirements -->
 
+- New `/packs` route with a "Packs" header and a full-width stage card. No dust pill, tabs, shelf or sidebar yet.
+- Stage states for the daily pack:
+  - closed, with "Open daily pack" and a countdown to 00:00 UTC
+  - opening: the pack wobbles and the button shows a spinner
+  - error: "Your pack wasn't used", with Try again
+  - reveal
+  - already opened today
+- Server-side roll: tier per slot at 70/20/9/1, a uniform pick inside the tier, and an independent 0.5% shiny. Weights and the shiny rate live in one config module, and the random source can be injected.
+- `openDailyPack` domain function plus a thin server action. One transaction that:
+  - claims the day atomically through a conditional `lastDailyAt` update (the concurrency guard)
+  - creates the `Pack` and its 3 `PackRoll`s with the rarity snapshotted
+  - upserts `UserPokemon`: `count` +1, `shinyCount` +1 for a shiny, and `firstCaughtAt` only on the first catch, leaving rating and review untouched
+- Reveal: three cards staggered about 450 ms apart (instant with reduced motion), each labeled New! or Duplicate and linking to `/p/[slug]`, then a summary line, "Replay animation" and "Next pack in".
+- Already opened today: today's cards without animation, "Opened at" in local time, and a "Next free pack in" countdown. "New" is derived from `firstCaughtAt === openedAt`.
+- Card looks for all four tiers plus shiny. Common and Uncommon get added to `RARITY_CARD_COLORS`, with Uncommon's silver double rim.
+- `loading.tsx` skeleton covering the header and stage only.
+- `src/lib/dev.ts` with `DEV_UNLOCK_ALL`, used only for the daily bypass.
+- `SignedInNav` "Packs" link goes to `/packs` with the active pill.
+- Mobile layout at the `md` breakpoint, per the mobile artboards.
+
 ## Notes
 
 <!-- Any extra notes -->
+
+- Design: `PokeHub-Packs.dc.html`, artboards 01 (stage only), 02, 02 tiers, 03 and 12. The design's numbers are placeholders, and `project-overview_8.md` is authoritative for every mechanic and value.
+- Pity isn't read or written until slice 03. Feed events wait for slice 09.
+- The mobile tab bar is slice 02, so until then `/packs` is reachable on mobile only by URL.
+- Reuse the landing `PokemonCard` / `PackTease` card if one can be generalized; otherwise build a new pack card component.
+- Copy says "midnight UTC" rather than the design's "midnight".
 
 ## History
 
