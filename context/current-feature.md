@@ -28,7 +28,7 @@ Not Started
   - upserts `UserPokemon`: `count` +1, `shinyCount` +1 for a shiny, and `firstCaughtAt` only on the first catch, leaving rating and review untouched
 - Reveal: three cards staggered about 450 ms apart (instant with reduced motion), each labeled New! or Duplicate and linking to `/p/[slug]`, then a summary line, "Replay animation" and "Next pack in".
 - Already opened today: today's cards without animation, "Opened at" in local time, and a "Next free pack in" countdown. "New" is derived from `firstCaughtAt === openedAt`.
-- Card looks for all four tiers plus shiny. Common and Uncommon get added to `RARITY_CARD_COLORS`, with Uncommon's silver double rim.
+- Card looks for all four tiers plus shiny. Common and Uncommon get added to `RARITY_CARD_COLORS` with their colors swapped from the design: Common is silver-grey, and Uncommon is blue with the double rim.
 - `loading.tsx` skeleton covering the header and stage only.
 - `src/lib/dev.ts` with `DEV_UNLOCK_ALL`, used only for the daily bypass.
 - `SignedInNav` "Packs" link goes to `/packs` with the active pill.

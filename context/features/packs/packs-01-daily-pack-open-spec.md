@@ -65,7 +65,7 @@ The tier is decided first and the Pokémon second, so the rarity distribution ma
 
 **Card looks (artboard 02, "Card tiers").** Every tier has its own card background, border and label color, regardless of the Pokémon's type:
 
-- Common and Uncommon are added to `RARITY_CARD_COLORS` next to Rare and Ultra rare. Uncommon is the silver frame with the double rim.
+- Common and Uncommon are added to `RARITY_CARD_COLORS` next to Rare and Ultra rare, **with their colors swapped from the design**: Common takes the design's silver-grey background, border and label color, and Uncommon takes the design's blue ones. The double rim stays on Uncommon (`overview.md` §4).
 - Its file comment, which says Common and Uncommon have no look of their own, gets corrected.
 - A shiny card replaces the tier look with the gold-mint shiny finish, the shimmer sweep, the pulsing glow and the twinkling ✦ sparkles. It uses `shinyArtworkUrl`, and its label reads "✦ SHINY · {tier}".
 - On mobile the card is smaller, the shiny card puts "✦ SHINY" in its top-left corner, and the bottom label shows only the tier.

@@ -68,7 +68,7 @@ Built one slice at a time, with one spec per slice. Each spec gets written only 
 - Up to 5 earned packs a day across review, streak and dust packs. Packs you've already earned can still be opened once the limit is reached.
 - The earned-pack toast hides after 8 seconds, and the nav badge keeps the count.
 
-**Tier looks.** Common and Uncommon now have looks of their own, no longer the type gradient. Uncommon gets a silver frame with a double rim. Both get added next to Rare and Ultra rare in `RARITY_CARD_COLORS`. A shiny card always uses the gold-mint shiny finish and keeps its tier on the label.
+**Tier looks.** Common and Uncommon now have looks of their own, no longer the type gradient. Both get added next to Rare and Ultra rare in `RARITY_CARD_COLORS`. **Their colors are swapped from the design (Damian, 2026-10-08):** Common uses the design's silver-grey colors and Uncommon uses the design's blue. The double rim stays on Uncommon, so it still reads as a step above Common. A shiny card always uses the gold-mint shiny finish and keeps its tier on the label.
 
 **Not followed:**
 
