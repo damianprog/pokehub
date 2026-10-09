@@ -8,6 +8,7 @@ interface PokemonReviewsListProps {
   pokemonId: number;
   slug: string;
   pokemonName: string;
+  artworkUrl: string;
   ownReview: TopReviewItem | null;
   reviews: TopReviewItem[];
   isAuthenticated: boolean;
@@ -32,6 +33,7 @@ export function PokemonReviewsList({
   pokemonId,
   slug,
   pokemonName,
+  artworkUrl,
   ownReview,
   reviews,
   isAuthenticated,
@@ -40,7 +42,13 @@ export function PokemonReviewsList({
   count,
 }: PokemonReviewsListProps) {
   if (!ownReview && reviews.length === 0) {
-    return <TopReviewsEmptyState pokemonName={pokemonName} isAuthenticated={isAuthenticated} />;
+    return (
+      <TopReviewsEmptyState
+        pokemonName={pokemonName}
+        artworkUrl={artworkUrl}
+        isAuthenticated={isAuthenticated}
+      />
+    );
   }
 
   return (

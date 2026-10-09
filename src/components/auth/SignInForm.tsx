@@ -2,8 +2,12 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { footerTextClass, footerLinkClass } from "@/components/auth/auth-form-styles";
+
+const SPRITE_BASE =
+  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork";
 
 const oauthErrorMessages: Record<string, string> = {
   OAuthAccountNotLinked:
@@ -29,6 +33,13 @@ export function SignInForm() {
         </p>
       </div>
 
+      <Image
+        src={`${SPRITE_BASE}/25.png`}
+        alt=""
+        width={92}
+        height={92}
+        className="relative z-1 mt-[-24px] mr-[22px] mb-[-34px] ml-auto block size-[92px] object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.45)]"
+      />
       <div className="bg-card border border-[rgba(255,255,255,0.07)] rounded-[18px] p-[30px]">
         <LoginForm
           initialError={initialError}

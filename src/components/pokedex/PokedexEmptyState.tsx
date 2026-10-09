@@ -1,5 +1,8 @@
 import Link from "next/link";
-import { Search } from "lucide-react";
+import Image from "next/image";
+
+const SLOWPOKE_ARTWORK =
+  "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/79.png";
 
 interface PokedexEmptyStateProps {
   search: string;
@@ -23,10 +26,12 @@ export function PokedexEmptyState({ search, filtered }: PokedexEmptyStateProps) 
 
   return (
     <div className="rounded-[14px] border border-dashed border-white/[0.1] bg-[#13161b] px-[20px] py-[40px] text-center md:rounded-[16px] md:px-[24px] md:py-[72px]">
-      <Search
-        aria-hidden
-        className="mx-auto mb-[10px] size-[26px] text-[#7b818c] md:mb-[12px] md:size-[30px]"
-        strokeWidth={2}
+      <Image
+        src={SLOWPOKE_ARTWORK}
+        alt=""
+        width={120}
+        height={120}
+        className="mx-auto -mt-[14px] mb-[6px] block size-[96px] object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.45)] md:-mt-[30px] md:mb-[8px] md:size-[120px]"
       />
       <h2 className="font-heading m-0 text-[16px] font-bold tracking-[-0.01em] break-words md:text-[19px]">
         {text.heading}

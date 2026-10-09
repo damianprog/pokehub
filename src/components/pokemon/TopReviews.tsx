@@ -6,6 +6,7 @@ import { TopReviewsEmptyState } from "@/components/pokemon/TopReviewsEmptyState"
 interface TopReviewsProps {
   slug: string;
   pokemonName: string;
+  artworkUrl: string;
   totalReviewCount: number;
   reviews: TopReviewItem[];
   isAuthenticated: boolean;
@@ -14,6 +15,7 @@ interface TopReviewsProps {
 export function TopReviews({
   slug,
   pokemonName,
+  artworkUrl,
   totalReviewCount,
   reviews,
   isAuthenticated,
@@ -30,7 +32,11 @@ export function TopReviews({
         </Link>
       </div>
       {reviews.length === 0 ? (
-        <TopReviewsEmptyState pokemonName={pokemonName} isAuthenticated={isAuthenticated} />
+        <TopReviewsEmptyState
+          pokemonName={pokemonName}
+          artworkUrl={artworkUrl}
+          isAuthenticated={isAuthenticated}
+        />
       ) : (
         reviews.map((review) => (
           <ReviewCard

@@ -165,6 +165,7 @@ export default async function PokemonPage({
           <TopReviews
             slug={pokemon.slug}
             pokemonName={pokemon.name}
+            artworkUrl={pokemon.artworkUrl}
             totalReviewCount={topReviews.totalReviewCount}
             reviews={topReviews.reviews}
             isAuthenticated={isAuthenticated}

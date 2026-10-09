@@ -115,6 +115,7 @@ export default async function PokemonReviewsPage({
         pokemonId={pokemon.id}
         slug={pokemon.slug}
         pokemonName={pokemon.name}
+        artworkUrl={pokemon.artworkUrl}
         ownReview={allReviews.ownReview}
         reviews={allReviews.reviews}
         isAuthenticated={isAuthenticated}
