@@ -68,7 +68,15 @@ Built one slice at a time, with one spec per slice. Each spec gets written only 
 - Up to 5 earned packs a day across review, streak and dust packs. Packs you've already earned can still be opened once the limit is reached.
 - The earned-pack toast hides after 8 seconds, and the nav badge keeps the count.
 
-**Tier looks.** Common and Uncommon now have looks of their own, no longer the type gradient. Both get added next to Rare and Ultra rare in `RARITY_CARD_COLORS`. **Their colors are swapped from the design (Damian, 2026-10-08):** Common uses the design's silver-grey colors and Uncommon uses the design's blue. The double rim stays on Uncommon, so it still reads as a step above Common. A shiny card always uses the gold-mint shiny finish and keeps its tier on the label.
+**Tier looks.** Common and Uncommon now have looks of their own, no longer the type gradient. Both get added next to Rare and Ultra rare in `RARITY_CARD_COLORS`. Common is silver-grey, and Uncommon is blue with a double rim. This was swapped at Damian's request on 2026-10-08, and the design was updated to match the same day.
+
+**Pack art.** Every pack, whether on the stage or as a mini tile in "Your packs", is drawn as a foil booster wrapper (design revision of 2026-10-08):
+- crimped top and bottom seals and a gloss sheen;
+- the PokeHub logo at the top;
+- a window with three decorative Pokémon;
+- the source tag and "3 CARDS" at the foot.
+
+Only the tint and tag change per source (daily, review, streak, dust). A shiny card always uses the gold-mint shiny finish and keeps its tier on the label.
 
 **Not followed:**
 

@@ -38,7 +38,13 @@ From top to bottom:
 
 The stage shows the daily pack in exactly one of these states. Copy follows the design's daily-pack variant.
 
-- **Closed** (the daily pack is available). The "FREE TODAY" kicker and a "Daily pack" title sit above the pack art: two tilted dark card backs behind the green-tinted front pack, which has the crosshatch overlay, the gradient "P" badge and a small "DAILY" tag at its foot. Below the art is the brand-gradient "Open daily pack" button and the line "One free pack a day · resets at midnight UTC".
+- **Closed** (the daily pack is available). The "FREE TODAY" kicker and a "Daily pack" title sit above the pack art, a single foil booster wrapper in the daily pack's green tint:
+  - crimped, serrated seals along the top and bottom edges, with a diagonal gloss sheen over the whole wrapper;
+  - the "P" badge and a "PokeHub" wordmark near the top;
+  - a rounded window in the middle with three fixed, decorative Pokémon artworks (Gengar and Dragonite tilted outward, Pikachu in front) on a soft light glow;
+  - the "DAILY" tag and "3 CARDS" at its foot.
+
+  The artworks are fixed decoration, not the pack's contents. Build the wrapper as its own component, since slice 06's "Your packs" tiles reuse a miniature of it with a different tint and tag per source. Below the art is the brand-gradient "Open daily pack" button and the line "One free pack a day · resets at midnight UTC".
 - **Opening.** While the request is in flight, the pack wobbles and the button turns dimmed, with a spinner and "Opening…". The line under it reads "Shuffling your cards". The button can't be pressed again.
 - **Error.** If the open fails (for example, a transport failure from `runAction`), a red notice above the button reads "Couldn't open the pack, try again." with "Your pack wasn't used. It's still waiting for you." beneath it. The button becomes "Try again" and retries the same action. The open is a single transaction, so the claim really wasn't used.
 - **Reveal** (right after a successful open) and **already opened today** (any later visit the same UTC day) are described in §5.
@@ -154,7 +160,7 @@ The same components, made responsive at the `md` breakpoint and following the mo
 
 - smaller title;
 - stage padding reduced to the screen edge;
-- smaller pack art with a single card back;
+- a smaller foil wrapper;
 - full-width primary button and full-width "Replay animation";
 - the three reveal cards in one row at roughly a third of the width each, with smaller labels (§5);
 - the countdown panel stacked and centered.

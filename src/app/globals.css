@@ -64,6 +64,9 @@
   --animate-modal-in: modalIn 0.2s ease both;
   --animate-fade-up: fadeUp 0.45s ease both;
   --animate-shake: shake 0.4s ease;
+  --animate-pack-shake: packShake 0.7s ease-in-out infinite;
+  --animate-pack-card-in: packCardIn 0.45s ease both;
+  --animate-twinkle: twinkle 1.8s ease-in-out infinite;
 }
 
 @keyframes scrollLeft {
@@ -133,6 +136,43 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Packs: the opening wobble, the staggered card reveal and the shiny sparkles */
+@keyframes packShake {
+  0%,
+  100% {
+    transform: rotate(0) scale(1);
+  }
+  25% {
+    transform: rotate(-3deg) scale(1.03);
+  }
+  75% {
+    transform: rotate(3deg) scale(1.03);
+  }
+}
+
+@keyframes packCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.7);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
   }
 }
 

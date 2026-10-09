@@ -7,9 +7,10 @@ interface SignedInNavProps {
     image?: string | null;
   };
   isPokedexActive: boolean;
+  isPacksActive: boolean;
 }
 
-export function SignedInNav({ user, isPokedexActive }: SignedInNavProps) {
+export function SignedInNav({ user, isPokedexActive, isPacksActive }: SignedInNavProps) {
   const letter = user.username.charAt(0).toUpperCase();
 
   return (
@@ -28,8 +29,8 @@ export function SignedInNav({ user, isPokedexActive }: SignedInNavProps) {
           Pokedex
         </Link>
         <Link
-          href="/"
-          className="rounded-[9px] px-3.5 py-2 text-sm font-semibold text-muted-foreground hover:bg-[rgba(255,255,255,0.06)] hover:text-foreground"
+          href="/packs"
+          className={`rounded-[9px] px-3.5 py-2 text-sm font-semibold hover:bg-[rgba(255,255,255,0.06)] hover:text-foreground ${isPacksActive ? "bg-[rgba(255,255,255,0.08)] text-foreground" : "text-muted-foreground"}`}
         >
           Packs
         </Link>

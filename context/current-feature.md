@@ -8,7 +8,7 @@ Spec: `context/features/packs/packs-01-daily-pack-open-spec.md` (slice plan in `
 
 <!-- Not Started | In Progress | Completed -->
 
-Not Started
+In Progress
 
 ## Goals
 
@@ -16,7 +16,7 @@ Not Started
 
 - New `/packs` route with a "Packs" header and a full-width stage card. No dust pill, tabs, shelf or sidebar yet.
 - Stage states for the daily pack:
-  - closed, with "Open daily pack" and a countdown to 00:00 UTC
+  - closed: a foil booster-wrapper pack (its own component), "Open daily pack" and a countdown to 00:00 UTC
   - opening: the pack wobbles and the button shows a spinner
   - error: "Your pack wasn't used", with Try again
   - reveal

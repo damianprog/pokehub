@@ -12,6 +12,7 @@ export function Nav() {
   const pathname = usePathname();
   const hasMobileChrome = pathname.startsWith("/p/");
   const isPokedexActive = pathname === "/pokedex";
+  const isPacksActive = pathname === "/packs" || pathname.startsWith("/packs/");
 
   return (
     <header
@@ -28,7 +29,11 @@ export function Nav() {
         </Link>
 
         {session?.user?.username ? (
-          <SignedInNav user={session.user} isPokedexActive={isPokedexActive} />
+          <SignedInNav
+            user={session.user}
+            isPokedexActive={isPokedexActive}
+            isPacksActive={isPacksActive}
+          />
         ) : session ? (
           // Signed in but still on /signup/username — the one page proxy.ts
           // exempts from the username gate, so the only place this session can
