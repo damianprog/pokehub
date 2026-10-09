@@ -27,7 +27,7 @@ export function rollTier(random: RandomSource): Rarity {
 }
 
 function pickUniform(ids: number[], random: RandomSource): number {
-  return ids[Math.min(Math.floor(random() * ids.length), ids.length - 1)];
+  return ids[Math.floor(random() * ids.length)];
 }
 
 /**
