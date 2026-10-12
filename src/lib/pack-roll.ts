@@ -36,15 +36,17 @@ function pickUniform(ids: number[], random: RandomSource): number {
  * matter how many Pokémon each tier holds. The same Pokémon may land twice.
  */
 export function rollPack(pools: TierPools, random: RandomSource): RolledSlot[] {
-  return Array.from({ length: PACK_SIZE }, (_, index) => {
+  const slots: RolledSlot[] = [];
+  for (let position = 1; position <= PACK_SIZE; position++) {
     const rarity = rollTier(random);
     const pool = pools[rarity];
     if (pool.length === 0) throw new Error(`No Pokémon in the ${rarity} tier`);
-    return {
-      position: index + 1,
+    slots.push({
+      position,
       pokemonId: pickUniform(pool, random),
       rarity,
       isShiny: random() < SHINY_RATE,
-    };
-  });
+    });
+  }
+  return slots;
 }
