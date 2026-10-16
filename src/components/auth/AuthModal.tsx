@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useAuthModal } from "@/store/auth-modal";
 import { LogoMark } from "@/components/auth/LogoMark";
 import { LoginView } from "@/components/auth/LoginView";
@@ -8,9 +9,10 @@ import { SignupView } from "@/components/auth/SignupView";
 
 export function AuthModal() {
   const router = useRouter();
+  const { status } = useSession();
   const { mode, open, close } = useAuthModal();
 
-  if (!mode) return null;
+  if (!mode || status === "authenticated") return null;
 
   function handleAuthSuccess() {
     close();

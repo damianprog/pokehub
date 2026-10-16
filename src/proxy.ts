@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 
 const USERNAME_PAGE = "/signup/username";
+const GUEST_ONLY_PAGES = ["/sign-in", "/register", "/forgot-password", "/reset-password"];
 
 export const proxy = auth((req) => {
   const { pathname } = req.nextUrl;
@@ -26,6 +27,10 @@ export const proxy = auth((req) => {
       );
     }
     return NextResponse.redirect(new URL(USERNAME_PAGE, req.nextUrl.origin));
+  }
+
+  if (req.auth && GUEST_ONLY_PAGES.includes(pathname)) {
+    return NextResponse.redirect(new URL("/", req.nextUrl.origin));
   }
 });
 

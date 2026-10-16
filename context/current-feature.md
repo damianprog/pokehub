@@ -2,13 +2,18 @@
 
 <!-- Feature name and short description -->
 
+Fix · Guest-only auth surfaces — a signed-in user can still open `/sign-in`, `/register`, `/forgot-password`, `/reset-password` and the login/sign-up modal. They shouldn't.
+
 ## Status
 
 <!-- Not Started | In Progress | Completed -->
 
-Not Started
+In Progress
 
 ## Goals
+
+- `src/proxy.ts` redirects a signed-in user away from `/sign-in`, `/register`, `/forgot-password` and `/reset-password` to `/`.
+- `AuthModal` never renders for a signed-in user, whichever button tries to open it.
 
 <!-- Goals and requirements -->
 
