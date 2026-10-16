@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PokemonCard } from "@/components/landing/PokemonCard";
-import { HeroSignupButton } from "@/components/landing/HeroSignupButton";
+import { HeroPrimaryButton } from "@/components/landing/HeroPrimaryButton";
 import { RARITY_CARD_COLORS } from "@/lib/rarity-colors";
 
 const SPRITE_BASE =
@@ -41,7 +41,7 @@ export function Hero({ pokemonCount }: HeroProps) {
         </p>
 
         <div className="mb-10 flex flex-wrap gap-3">
-          <HeroSignupButton />
+          <HeroPrimaryButton />
           <Button
             render={<Link href="/pokedex" />}
             nativeButton={false}
