@@ -52,9 +52,9 @@ Built one slice at a time, with one spec per slice written after the previous on
 - **"Edit profile".** There's no `/settings` page yet, so the owner gets no button there until it exists.
 - **The mobile bottom tab bar.** That's Packs slice 02, not this feature.
 
-**Decisions to confirm before the specs:**
+**Decisions (confirmed 2026-10-19):**
 
-- **Reviews and Lists tabs.** Neither `/u/[username]/reviews` nor `/u/[username]/lists` exists. Proposed: render only the tabs whose page exists (Overview and Collection for now), adding each tab when its page ships.
-- **Duplicates in the owner strip.** `/packs/duplicates` doesn't exist yet. Proposed: leave the duplicates half out until Packs slice 05. When it lands, "extra copies" follows §4.4: regular extras (regular copies − 1) only, since shiny extras are opt-in.
-- **Empty-collection copy.** The owner explainer says you "earn more by reviewing and keeping your streak", but earned packs and streaks aren't built. Proposed: mention only the free daily pack until Packs slices 06 and 08 ship.
-- **Sort options.** The design only shows Dex number and Recently caught (the menu isn't drawn open). Proposed: also Most copies and Name, as asked of the design.
+- **Reviews and Lists tabs.** Neither `/u/[username]/reviews` nor `/u/[username]/lists` exists, so only the tabs whose page exists are rendered (Overview and Collection for now). Each tab is added when its page ships.
+- **Duplicates in the owner strip.** `/packs/duplicates` doesn't exist yet, so the duplicates half is left out until Packs slice 05. When it lands, "extra copies" follows §4.4: regular extras (regular copies − 1) only, since shiny extras are opt-in.
+- **Empty-collection copy.** The owner explainer says you "earn more by reviewing and keeping your streak", but earned packs and streaks aren't built. It mentions only the free daily pack until Packs slices 06 and 08 ship.
+- **Sort options.** The design only shows Dex number and Recently caught (the menu isn't drawn open). We also offer Most copies (by `count`, missing Pokémon last) and Name.
