@@ -1,6 +1,8 @@
-# Current Feature
+# Current Feature: Collection 01 · Profile sub-navigation + page shell
 
 <!-- Feature name and short description -->
+
+Spec: `context/features/collection/collection-01-profile-subnav-shell-spec.md`. A compact profile header and a tab row (Overview, Collection) shared by `/u/[username]` and the new `/u/[username]/collection`, which renders the header and tabs only.
 
 ## Status
 
@@ -12,9 +14,26 @@ Not Started
 
 <!-- Goals and requirements -->
 
+- New nested layout for `/u/[username]` holding the profile header and tab row; Overview and Collection both render inside it, so the header stays mounted when switching tabs
+- Layout looks the user up with the cached `getUserByUsername` and calls `notFound()` for unknown usernames (both `/u/x` and `/u/x/collection` 404)
+- `ProfileHeader` reworked into the compact header from artboard 00: shorter banner, smaller rounded-square avatar (real image or letter badge), name, "@username · joined {Mon YYYY}"
+- Owner sees no "Follow"; visitors (signed in or not) see the inert gradient "Follow". "⋯" stays inert, desktop only
+- Mobile header per the mobile artboard: name and handle beside the avatar, button on the same row
+- Tab row: Overview and Collection, active tab brighter with a short brand-gradient underline, Collection shows the real caught count in a pill (plain text on mobile)
+- Active tab from the selected layout segment via a small client component; everything else stays server-side, and adding a tab later is a single entry
+- `src/lib/collection.ts` with a caught count (`UserPokemon.isCaught`), formatted with thousands separators, same number for owner and visitors
+- New `src/app/(app)/u/[username]/collection/page.tsx` with nothing below the tabs and a "{name}'s collection — PokeHub" title
+- Overview page drops its own `ProfileHeader`; everything below it unchanged
+
 ## Notes
 
 <!-- Any extra notes -->
+
+- Design: `PokeHub-Collection.dc.html` artboard 00 (both widths), plus the header and tab row of artboards 01 and 02. Read it from the Claude Design project via DesignSync and take exact sizes from it.
+- Not from the design: Reviews and Lists tabs (their pages don't exist yet), "Edit profile" (no `/settings`), the PRO badge and the location in the handle line.
+- No schema change, server action or API route.
+- Out of scope: everything below the tabs on the Collection page (slices 02–06), with no placeholder message either; wiring "Follow" or "⋯"; making the Overview's Reviews/Lists stats real; switching the Favorite types caught number to the real count (slice 02).
+- Testing: compare against the DB caught count for a user with catches and one with none, check owner vs visitor vs logged out, back navigation, 404s, screenshots at 375 / ~1366 / 1440px, no console errors, `npm run build` and `lint` pass (apart from the known `scripts/seed-pokemon.ts` lint errors).
 
 ## History
 
